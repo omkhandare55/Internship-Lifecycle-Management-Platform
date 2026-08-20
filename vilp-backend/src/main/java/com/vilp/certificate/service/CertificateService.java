@@ -9,6 +9,8 @@ import com.vilp.internship.entity.Internship;
 import com.vilp.internship.repository.InternshipRepository;
 import com.vilp.student.entity.Student;
 import com.vilp.student.repository.StudentRepository;
+import com.vilp.notification.dto.NotificationDto;
+import com.vilp.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -34,6 +36,7 @@ public class CertificateService {
     private final CertificateRepository certificateRepository;
     private final StudentRepository studentRepository;
     private final InternshipRepository internshipRepository;
+    private final NotificationService notificationService;
 
     public CertificateDto.CertificateResponse issueCertificate(CertificateDto.IssueCertificateRequest req) {
         Student student = studentRepository.findById(req.getStudentId())

@@ -3,20 +3,17 @@ import { persist } from 'zustand/middleware';
 import type { AuthUser } from '@/types/auth.types';
 import { tokenUtils } from '@/utils/tokenUtils';
 
-/**
- * Auth store — manages authentication state.
- * Persisted to localStorage so user stays logged in on refresh.
- * Source: TRD §44 (local state: Zustand)
- */
-
 interface AuthState {
   user: AuthUser | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
+  sessionExpired: boolean;
 
-  // Actions
   setAuth: (user: AuthUser, accessToken: string, refreshToken: string) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateUser: (user: AuthUser) => void;
+  handleSessionExpired: () => void;
+  setLoading: (loading: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -24,18 +21,35 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       isAuthenticated: false,
+      isLoading: false,
+      sessionExpired: false,
 
       setAuth: (user, accessToken, refreshToken) => {
         tokenUtils.setTokens(accessToken, refreshToken);
-        set({ user, isAuthenticated: true });
+        set({ user, isAuthenticated: true, sessionExpired: false });
       },
 
-      logout: () => {
+      logout: async () => {
+        const token = tokenUtils.getAccessToken();
+        // Fire-and-forget: tell backend to invalidate (best-effort)
+        if (token) {
+          fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://vilp-backend.onrender.com/api'}/auth/logout`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` },
+          }).catch(() => {}); // ignore errors — client clears tokens regardless
+        }
         tokenUtils.clearTokens();
-        set({ user: null, isAuthenticated: false });
+        set({ user: null, isAuthenticated: false, sessionExpired: false });
       },
 
       updateUser: (user) => set({ user }),
+
+      handleSessionExpired: () => {
+        tokenUtils.clearTokens();
+        set({ user: null, isAuthenticated: false, sessionExpired: true });
+      },
+
+      setLoading: (loading) => set({ isLoading: loading }),
     }),
     {
       name: 'vilp-auth',
@@ -43,3 +57,10 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
+
+// Listen for session expiry events dispatched by axiosInstance interceptor
+if (typeof window !== 'undefined') {
+  window.addEventListener('vilp:session-expired', () => {
+    useAuthStore.getState().handleSessionExpired();
+  });
+}

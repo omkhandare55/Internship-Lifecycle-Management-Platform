@@ -68,15 +68,12 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(tokens));
     }
 
-    /**
-     * POST /api/auth/logout
-     * Client-side logout — instructs frontend to discard tokens.
-     * (Stateless JWT: server-side revocation requires token blacklist — post-MVP feature)
-     */
-    @PostMapping("/logout")
-    @Operation(summary = "Logout (discard tokens on client)")
-    public ResponseEntity<ApiResponse<String>> logout() {
-        return ResponseEntity.ok(ApiResponse.success("Logged out successfully. Please discard your tokens."));
+    @DeleteMapping("/logout")
+    @Operation(summary = "Logout", description = "Invalidates the current session on the client side. JWT tokens should be cleared by the client.")
+    public ResponseEntity<ApiResponse<String>> logout(@AuthenticationPrincipal UserDetails userDetails) {
+        UUID userId = UUID.fromString(userDetails.getUsername());
+        authService.logout(userId);
+        return ResponseEntity.ok(ApiResponse.success("Logged out successfully"));
     }
 
     /**

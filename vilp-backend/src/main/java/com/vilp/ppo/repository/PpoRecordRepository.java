@@ -26,4 +26,7 @@ public interface PpoRecordRepository extends JpaRepository<PpoRecord, UUID> {
 
     @Query("SELECT AVG(p.ctcAnnual) FROM PpoRecord p WHERE p.status = 'ACCEPTED' OR p.status = 'JOINED'")
     Double getAverageAcceptedCtc();
+
+    @Query("SELECT COUNT(p) FROM PpoRecord p WHERE p.student.department.id = :departmentId")
+    long countByStudentDepartmentId(@Param("departmentId") Long departmentId);
 }

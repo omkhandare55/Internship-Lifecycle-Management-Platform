@@ -13,6 +13,8 @@ import com.vilp.offer.repository.NocRequestRepository;
 import com.vilp.offer.repository.OfferRepository;
 import com.vilp.student.entity.Student;
 import com.vilp.student.repository.StudentRepository;
+import com.vilp.notification.dto.NotificationDto;
+import com.vilp.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -36,6 +38,7 @@ public class OfferService {
     private final ApplicationRepository applicationRepository;
     private final CompanyRepository companyRepository;
     private final StudentRepository studentRepository;
+    private final NotificationService notificationService;
 
     public OfferDto.OfferResponse createOffer(UUID companyUserId, OfferDto.CreateOfferRequest req) {
         Company company = companyRepository.findByUserId(companyUserId)
@@ -70,6 +73,17 @@ public class OfferService {
         // Update application state
         app.setStatus("SELECTED");
         applicationRepository.save(app);
+
+        // Notify student of new offer
+        tryNotify(() -> notificationService.createNotification(
+            NotificationDto.CreateNotificationRequest.builder()
+                .userId(offer.getStudent().getUser().getId())
+                .title("New Internship Offer Received")
+                .message(offer.getCompany().getName() + " has extended you an offer for '" +
+                         offer.getInternship().getTitle() + "'. Please respond within 7 days.")
+                .type("ACTION_REQUIRED")
+                .targetUrl("/student/offers")
+                .build()));
 
         log.info("Offer created: {} for student {} by company {}", offer.getId(), app.getStudent().getId(), company.getId());
         return OfferDto.toResponse(offer);
@@ -111,6 +125,16 @@ public class OfferService {
             // Automatically trigger institutional NOC Request
             createNocRequest(offer);
 
+            tryNotify(() -> notificationService.createNotification(
+                NotificationDto.CreateNotificationRequest.builder()
+                    .userId(offer.getCompany().getUser().getId())
+                    .title("Offer Accepted")
+                    .message(offer.getStudent().getFullName() + " accepted the offer for '" +
+                             offer.getInternship().getTitle() + "'. NOC process has been initiated.")
+                    .type("SUCCESS")
+                    .targetUrl("/company/offers")
+                    .build()));
+
             log.info("Offer {} ACCEPTED by student {}. Auto-initiated NOC request.", offerId, student.getId());
         } else if ("REJECT".equalsIgnoreCase(req.getAction())) {
             offer.setStatus("REJECTED");
@@ -121,6 +145,16 @@ public class OfferService {
             offer.getApplication().setStatus("REJECTED");
             offer.getApplication().setRejectionReason("Candidate declined offer: " + (req.getNotes() != null ? req.getNotes() : "No reason provided"));
             applicationRepository.save(offer.getApplication());
+
+            tryNotify(() -> notificationService.createNotification(
+                NotificationDto.CreateNotificationRequest.builder()
+                    .userId(offer.getCompany().getUser().getId())
+                    .title("Offer Declined")
+                    .message(offer.getStudent().getFullName() + " has declined the offer for '" +
+                             offer.getInternship().getTitle() + "'.")
+                    .type("INFO")
+                    .targetUrl("/company/offers")
+                    .build()));
 
             log.info("Offer {} REJECTED by student {}", offerId, student.getId());
         } else {
@@ -169,5 +203,16 @@ public class OfferService {
 
         nocRequestRepository.save(noc);
         log.info("Generated NOC request {} with code {}", noc.getId(), verificationCode);
+    }
+
+    /**
+     * Fire-and-forget notification — notification failure must never break the main workflow.
+     */
+    private void tryNotify(Runnable notificationTask) {
+        try {
+            notificationTask.run();
+        } catch (Exception e) {
+            log.warn("Notification dispatch failed (non-fatal): {}", e.getMessage());
+        }
     }
 }

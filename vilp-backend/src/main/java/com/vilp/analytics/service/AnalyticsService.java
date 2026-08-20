@@ -55,9 +55,9 @@ public class AnalyticsService {
         List<AnalyticsDto.DepartmentMetric> deptMetrics = new ArrayList<>();
 
         for (Department d : departments) {
-            long stuCount = studentRepository.findByDepartmentId(d.getId()).size();
-            long activeIntCount = Math.max(1, Math.round(stuCount * 0.45));
-            long ppoCount = Math.max(0, Math.round(stuCount * 0.22));
+            long stuCount = studentRepository.countByDepartmentId(d.getId());
+            long activeIntCount = internshipRepository.countActiveByDepartmentCode(d.getCode());
+            long ppoCount = ppoRecordRepository.countByStudentDepartmentId(d.getId());
 
             deptMetrics.add(AnalyticsDto.DepartmentMetric.builder()
                     .departmentName(d.getName())

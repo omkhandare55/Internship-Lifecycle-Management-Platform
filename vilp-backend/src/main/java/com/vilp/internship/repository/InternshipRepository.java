@@ -28,4 +28,7 @@ public interface InternshipRepository extends JpaRepository<Internship, UUID> {
 
     @Query("SELECT i FROM Internship i WHERE i.company.id = :companyId AND i.status != 'DRAFT'")
     Page<Internship> findPublishedByCompany(@Param("companyId") UUID companyId, Pageable pageable);
+
+    @Query("SELECT COUNT(i) FROM Internship i WHERE i.requirement.department = :dept AND i.status IN ('APPLICATION_OPEN', 'ONGOING')")
+    long countActiveByDepartmentCode(@Param("dept") String dept);
 }

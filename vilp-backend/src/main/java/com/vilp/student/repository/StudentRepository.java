@@ -24,6 +24,8 @@ public interface StudentRepository extends JpaRepository<Student, UUID> {
 
     Page<Student> findByVerificationStatus(String status, Pageable pageable);
 
+    long countByDepartmentId(Long departmentId);
+
     @Query("SELECT s FROM Student s WHERE s.department.id = :deptId")
     java.util.List<Student> findByDepartmentId(@Param("deptId") Long deptId);
 

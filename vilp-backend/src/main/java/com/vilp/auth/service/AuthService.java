@@ -112,6 +112,12 @@ public class AuthService {
                     "Account temporarily locked due to too many failed login attempts. Try again later.");
         }
 
+        // Enforce email verification before allowing login (TRD §8)
+        if (!Boolean.TRUE.equals(user.getEmailVerified())) {
+            throw new AuthException("EMAIL_NOT_VERIFIED",
+                    "Please verify your email address before logging in. Check your inbox for the verification link.");
+        }
+
         // Authenticate
         try {
             authenticationManager.authenticate(
@@ -213,6 +219,14 @@ public class AuthService {
                 .role(user.getRoleName())
                 .emailVerified(user.getEmailVerified())
                 .build();
+    }
+
+    /**
+     * Record a logout event. JWT is stateless so the client clears tokens.
+     * A future Redis blacklist integration should be added here for full revocation.
+     */
+    public void logout(UUID userId) {
+        log.info("User {} logged out at {}", userId, OffsetDateTime.now());
     }
 
     // ─── Private helpers ───────────────────────────────────────────────────

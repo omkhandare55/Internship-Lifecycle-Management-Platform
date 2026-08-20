@@ -1,22 +1,28 @@
 import { QueryClient } from '@tanstack/react-query';
+import { ApiError } from '@/services/axiosInstance';
 
 /**
- * Enterprise Query Client Configuration
- * - Stale Time: 5 Minutes (Zero redundant network requests within window)
- * - GC Time: 10 Minutes (Garbage collection cache retention)
- * - Exponential backoff retry logic (up to 2 retries for transient network drops)
- * - Refetch on window focus enabled only for critical states
+ * Production Query Client Configuration
+ * - Stale Time: 5 minutes — zero redundant network requests within window
+ * - GC Time: 10 minutes — cache retention
+ * - Smart retry: skips retry for 4xx client errors, only retries on server/network errors
+ * - ApiError-aware retry logic (works with new typed error system)
  */
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes fresh data
-      gcTime: 1000 * 60 * 10,   // 10 minutes cache retention
-      retry: (failureCount, error: any) => {
-        // Do not retry on 401 Unauthorized or 404 Not Found
-        const status = error?.response?.status;
-        if (status === 401 || status === 403 || status === 404) {
-          return false;
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 10,
+      retry: (failureCount, error: unknown) => {
+        // Never retry on auth, forbidden, or not-found errors
+        if (error instanceof ApiError) {
+          if (error.status === 401 || error.status === 403 || error.status === 404) {
+            return false;
+          }
+          // Don't retry any other client errors (4xx)
+          if (error.status >= 400 && error.status < 500) {
+            return false;
+          }
         }
         return failureCount < 2;
       },

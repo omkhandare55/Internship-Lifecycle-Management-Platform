@@ -11,6 +11,8 @@ import com.vilp.student.entity.Student;
 import com.vilp.student.repository.StudentRepository;
 import com.vilp.user.entity.User;
 import com.vilp.user.repository.UserRepository;
+import com.vilp.notification.dto.NotificationDto;
+import com.vilp.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -33,6 +35,7 @@ public class WeeklyReportService {
     private final StudentRepository studentRepository;
     private final InternshipRepository internshipRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     public WeeklyReportDto.WeeklyReportResponse submitReport(UUID studentUserId, WeeklyReportDto.SubmitReportRequest req) {
         Student student = studentRepository.findByUserId(studentUserId)
@@ -78,6 +81,18 @@ public class WeeklyReportService {
         report.setReviewedAt(OffsetDateTime.now());
 
         weeklyReportRepository.save(report);
+
+        tryNotify(() -> notificationService.createNotification(
+            NotificationDto.CreateNotificationRequest.builder()
+                .userId(report.getStudent().getUser().getId())
+                .title("Week " + report.getWeekNumber() + " Logbook Reviewed")
+                .message("Your week " + report.getWeekNumber() + " logbook was " +
+                         report.getStatus().toLowerCase() + "." +
+                         (req.getFeedback() != null && !req.getFeedback().isBlank() ? " Feedback: " + req.getFeedback() : ""))
+                .type("APPROVED".equals(report.getStatus()) ? "SUCCESS" : "ACTION_REQUIRED")
+                .targetUrl("/student/progress")
+                .build()));
+
         log.info("Weekly report {} reviewed as {} with rating {} by reviewer {}", reportId, req.getStatus(), req.getRating(), reviewerUserId);
         return WeeklyReportDto.toResponse(report);
     }
@@ -114,5 +129,16 @@ public class WeeklyReportService {
         Student student = studentRepository.findByUserId(studentUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student profile not found"));
         return weeklyReportRepository.getTotalApprovedHours(student.getId());
+    }
+
+    /**
+     * Fire-and-forget notification — notification failure must never break the main workflow.
+     */
+    private void tryNotify(Runnable notificationTask) {
+        try {
+            notificationTask.run();
+        } catch (Exception e) {
+            log.warn("Notification dispatch failed (non-fatal): {}", e.getMessage());
+        }
     }
 }

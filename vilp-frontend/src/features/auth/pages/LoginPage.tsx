@@ -7,6 +7,7 @@ import { loginSchema, type LoginFormData } from '../schemas/authSchemas';
 import { authApi } from '../api/authApi';
 import { useAuthStore } from '@/stores/authStore';
 import { supabase } from '@/services/supabaseClient';
+import { ApiError } from '@/services/axiosInstance';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -43,10 +44,20 @@ export function LoginPage() {
         navigate(getRolePath(user.role));
       }
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { error?: { message?: string } } } };
-      setServerError(
-        error.response?.data?.error?.message || 'Invalid credentials. Please verify and try again.'
-      );
+      if (err instanceof ApiError) {
+        // Map backend error codes to user-friendly messages
+        const messages: Record<string, string> = {
+          INVALID_CREDENTIALS: 'Invalid email or password. Please try again.',
+          ACCOUNT_LOCKED: 'Account temporarily locked due to too many failed attempts. Try again in 30 minutes.',
+          EMAIL_NOT_VERIFIED: 'Please verify your email address before logging in. Check your inbox.',
+          ACCOUNT_SUSPENDED: 'Your account has been suspended. Contact the administrator.',
+          REQUEST_TIMEOUT: 'The server is waking up (cold start). Please wait 30 seconds and try again.',
+          NETWORK_ERROR: 'Cannot connect to server. Please check your internet connection.',
+        };
+        setServerError(messages[err.code] || err.message || 'Login failed. Please try again.');
+      } else {
+        setServerError('An unexpected error occurred. Please try again.');
+      }
     }
   };
 
