@@ -143,7 +143,7 @@ export function ResponsivePortalLayout({
   const roleName = user?.role ? user.role.replace('_', ' ') : 'USER';
 
   return (
-    <div className="container-fluid p-0 min-h-screen bg-[#F8FAFC] text-[#0F172A] d-flex flex-column font-mono selection:bg-[#2563EB] selection:text-white antialiased position-relative">
+    <div className="w-100 h-screen max-h-screen overflow-hidden bg-[#F8FAFC] text-[#0F172A] d-flex flex-column font-mono selection:bg-[#2563EB] selection:text-white antialiased position-relative">
       {/* ── Live Toast Notification Banner (Top Right) ────────────────────────── */}
       {activeToast && (
         <div className="fixed top-4 right-4 z-50 max-w-sm w-full bg-white border border-[#2563EB] shadow-2xl p-4 rounded-xs animate-bounce-short">
@@ -171,7 +171,7 @@ export function ResponsivePortalLayout({
       )}
 
       {/* ── Top Status Ribbon (#0A2540 Stripe Marine) ───────────────────────── */}
-      <div className="bg-[#0A2540] border-b border-[#1E3A5F] text-[10px] text-white px-3 sm:px-6 py-1.5 flex flex-wrap items-center justify-between gap-2 select-none">
+      <div className="bg-[#0A2540] border-b border-[#1E3A5F] text-[10px] text-white px-3 sm:px-6 py-1.5 flex flex-wrap items-center justify-between gap-2 select-none shrink-0">
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <span className="font-bold text-[#2563EB]">[ VILP // GHR JALGAON ]</span>
           <span className="text-slate-600 hidden sm:inline">|</span>
@@ -214,10 +214,10 @@ export function ResponsivePortalLayout({
         </div>
       </div>
 
-      <div className="flex flex-1 relative overflow-hidden">
+      <div className="flex flex-1 relative overflow-hidden h-[calc(100vh-32px)]">
         {/* ── Desktop Sidebar (#F1F5F9) ────────────────────────────────────── */}
         <aside
-          className={`hidden md:flex flex-col bg-[#F1F5F9] border-r border-[#CBD5E1] transition-all duration-150 select-none z-30 overflow-hidden ${
+          className={`hidden md:flex flex-col bg-[#F1F5F9] border-r border-[#CBD5E1] transition-all duration-150 select-none z-30 h-full shrink-0 overflow-hidden ${
             sidebarCollapsed ? 'w-[72px]' : 'w-64'
           }`}
         >
