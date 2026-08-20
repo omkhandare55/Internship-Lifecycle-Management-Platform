@@ -609,7 +609,7 @@ const dualModeAdapter = async (config: InternalAxiosRequestConfig): Promise<Axio
 };
 
 const axiosInstance = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://vilp-backend.onrender.com/api',
   adapter: dualModeAdapter,
   headers: {
     'Content-Type': 'application/json',
