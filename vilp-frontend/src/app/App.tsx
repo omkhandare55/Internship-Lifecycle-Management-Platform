@@ -7,6 +7,13 @@ import { SupportModal } from '@/components/SupportModal';
 import { CookieConsentBanner } from '@/components/CookieConsentBanner';
 import { SessionExpiredModal } from '@/components/SessionExpiredModal';
 
+import { useNotificationStream } from '@/hooks/useNotificationStream';
+
+function GlobalHooks() {
+  useNotificationStream();
+  return null;
+}
+
 /**
  * App root — TanStack Query + React Router providers.
  * Protected with Global React ErrorBoundary, Caching Strategy & Support Helpdesk.
@@ -16,6 +23,7 @@ export function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
+        <GlobalHooks />
         <RouterProvider router={router} future={{ v7_startTransition: true }} />
         <SessionExpiredModal />
         <SupportModal />

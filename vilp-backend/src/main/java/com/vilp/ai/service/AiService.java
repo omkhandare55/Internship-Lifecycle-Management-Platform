@@ -9,9 +9,12 @@ import com.vilp.student.entity.Student;
 import com.vilp.student.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -31,6 +34,9 @@ public class AiService {
 
     private final StudentRepository studentRepository;
     private final InternshipRepository internshipRepository;
+
+    @Autowired(required = false)
+    private GeminiAiClient geminiClient;
 
     public List<AiDto.InternshipRecommendation> getRecommendations(UUID studentUserId) {
         Student student = studentRepository.findByUserId(studentUserId)
@@ -104,6 +110,29 @@ public class AiService {
     }
 
     public AiDto.ResumeScoreResponse evaluateResume(UUID studentUserId) {
+        // Try real AI first (only available when GEMINI_API_KEY is set)
+        if (geminiClient != null) {
+            try {
+                Student student = studentRepository.findByUserId(studentUserId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Student profile not found"));
+                List<String> skillNames = student.getSkills() != null
+                        ? student.getSkills().stream().map(s -> s.getName()).collect(Collectors.toList())
+                        : Collections.emptyList();
+                String geminiResult = geminiClient.analyzeResume(
+                        student.getFullName(),
+                        student.getAbout(),
+                        skillNames,
+                        student.getCgpa() != null ? student.getCgpa().toString() : null,
+                        student.getProfileCompletion() != null ? student.getProfileCompletion() : 0);
+                if (geminiResult != null) {
+                    AiDto.ResumeScoreResponse parsed = parseGeminiResumeResponse(geminiResult);
+                    if (parsed != null) return parsed;
+                }
+            } catch (Exception e) {
+                log.debug("Gemini resume analysis failed, falling back to rule-based: {}", e.getMessage());
+            }
+        }
+
         Student student = studentRepository.findByUserId(studentUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student profile not found"));
 
@@ -197,5 +226,34 @@ public class AiService {
                 .missingSkills(missing)
                 .learningRoadmap(roadmap)
                 .build();
+    }
+
+    private AiDto.ResumeScoreResponse parseGeminiResumeResponse(String json) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode node = mapper.readTree(json);
+            return AiDto.ResumeScoreResponse.builder()
+                    .overallScore(node.path("overallScore").asInt(70))
+                    .technicalFitScore(node.path("technicalFitScore").asInt(70))
+                    .formattingScore(90) // Gemini doesn't assess formatting
+                    .completenessScore(node.path("completenessScore").asInt(70))
+                    .strengths(parseStringList(node.path("strengths")))
+                    .improvementAreas(parseStringList(node.path("improvementAreas")))
+                    .recommendedKeywords(parseStringList(node.path("recommendedKeywords")))
+                    .build();
+        } catch (Exception e) {
+            log.debug("Failed to parse Gemini resume response: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    private List<String> parseStringList(JsonNode arrayNode) {
+        List<String> result = new ArrayList<>();
+        if (arrayNode.isArray()) {
+            for (JsonNode item : arrayNode) {
+                result.add(item.asText());
+            }
+        }
+        return result;
     }
 }

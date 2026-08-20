@@ -68,6 +68,9 @@ app:
     anon-key: ${SUPABASE_ANON_KEY:}
     service-role-key: ${SUPABASE_SERVICE_ROLE_KEY:}
     storage-bucket: ${SUPABASE_STORAGE_BUCKET:vilp-documents}
+  gemini:
+    api-key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_MODEL:gemini-2.0-flash}
 
 # Swagger / OpenAPI
 springdoc:
