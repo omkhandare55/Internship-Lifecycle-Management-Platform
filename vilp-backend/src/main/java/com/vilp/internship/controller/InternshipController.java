@@ -96,4 +96,15 @@ public class InternshipController {
         return ResponseEntity.ok(ApiResponse.success(
                 internshipService.verify(id, body.get("status"))));
     }
+
+    /** DELETE /api/internships/{id} — Company: soft-delete a DRAFT internship */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('COMPANY')")
+    @Operation(summary = "Delete a draft internship (Company)")
+    public ResponseEntity<ApiResponse<String>> delete(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserDetails ud) {
+        internshipService.softDelete(UUID.fromString(ud.getUsername()), id);
+        return ResponseEntity.ok(ApiResponse.success("Internship deleted successfully"));
+    }
 }

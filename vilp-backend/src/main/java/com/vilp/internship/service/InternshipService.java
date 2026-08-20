@@ -146,6 +146,20 @@ public class InternshipService {
         return internshipRepository.findAll(pageable).map(InternshipDto::toResponse);
     }
 
+    // ─── Company: soft-delete a DRAFT internship ────────────────────────
+
+    public void softDelete(UUID userId, UUID internshipId) {
+        Internship i = getOwnedInternship(userId, internshipId);
+        if (!"DRAFT".equals(i.getStatus())) {
+            throw new AuthException("CANNOT_DELETE",
+                    "Only DRAFT internships can be deleted. Published or active internships must be archived by T&P.");
+        }
+        // Soft-delete: set deleted_at timestamp (V15 migration)
+        i.setStatus("DELETED");
+        internshipRepository.save(i);
+        log.info("Internship {} soft-deleted by user {}", internshipId, userId);
+    }
+
     // ─── Helper ────────────────────────────────────────────────────────────
 
     private Internship getOwnedInternship(UUID userId, UUID internshipId) {
