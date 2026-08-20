@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { logbookApi } from '@/services/vilpApi';
 import { StatusBadge } from '@/components/StatusBadge';
+import { sendFirebaseNotification } from '@/services/firebaseNotificationService';
 import type { WeeklyReport } from '@/types/vilp.types';
 
 export function MentorLogbookReviewPage() {
@@ -35,6 +36,16 @@ export function MentorLogbookReviewPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mentorLogbookQueue'] });
+
+      // Realtime Event Dispatch to Student
+      sendFirebaseNotification({
+        userId: selectedReport?.studentId || 'usr-1',
+        title: `Weekly Logbook ${decision === 'APPROVED' ? 'Approved (40 hrs credited)' : 'Revisions Requested'}`,
+        message: `Faculty mentor audited Week ${selectedReport?.weekNumber || 1} report (${rating}/5 stars).`,
+        type: 'LOGBOOK',
+        isRead: false,
+      });
+
       setSelectedReport(null);
       setFeedback('');
       setMsg({ type: 'success', text: `Weekly logbook marked as ${decision} with ${rating}-star rating!` });

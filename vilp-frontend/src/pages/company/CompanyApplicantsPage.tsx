@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Users, Loader2, X, Award, CheckCircle2, AlertCircle } from 'lucide-react';
 import { internshipApi, applicationApi, offerApi } from '@/services/vilpApi';
 import { StatusBadge } from '@/components/StatusBadge';
+import { sendFirebaseNotification } from '@/services/firebaseNotificationService';
 import type { Application, CreateOfferInput } from '@/types/vilp.types';
 
 export function CompanyApplicantsPage() {
@@ -56,6 +57,16 @@ export function CompanyApplicantsPage() {
     mutationFn: (input: CreateOfferInput) => offerApi.createOffer(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['applicants', activeInternshipId] });
+      
+      // Realtime Event Dispatch to Student
+      sendFirebaseNotification({
+        userId: offerApp?.studentId || 'usr-1',
+        title: 'Official Internship Offer Extended',
+        message: `Google Cloud India issued your formal internship offer letter (${offerData.stipend ? `₹${offerData.stipend}/mo` : 'Stipend Included'}).`,
+        type: 'OFFER',
+        isRead: false,
+      });
+
       setOfferApp(null);
       setMsg({
         type: 'success',
