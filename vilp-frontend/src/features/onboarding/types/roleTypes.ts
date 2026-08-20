@@ -29,7 +29,7 @@ export const PLATFORM_ROLES: RoleMetadata[] = [
     category: 'STUDENT',
     tagline: 'Undergraduate / Postgraduate seeking accredited internships',
     description: 'Access AICTE-compliant opportunities, 240-hour degree accumulation meter, neural ATS resume scoring, and single-active offer locking.',
-    verificationRequirements: ['Institutional Email OTP', 'Mobile SMS OTP', 'University Roll Number', 'Student ID Card (Optional)'],
+    verificationRequirements: ['Institutional Email OTP', 'Mobile Contact Number', 'University Roll Number', 'Student ID Card (Optional)'],
     defaultTrustLevel: 'Level 2: Institutional',
     targetDashboard: '/student/dashboard',
     aiCapabilities: ['ATS Resume Match Radar (91/100)', 'Skill Gap Accelerators', 'Placement Readiness Score', 'Personalized Learning Roadmap'],
