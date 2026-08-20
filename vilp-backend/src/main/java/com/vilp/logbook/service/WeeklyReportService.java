@@ -98,13 +98,11 @@ public class WeeklyReportService {
     }
 
     @Transactional(readOnly = true)
-    public List<WeeklyReportDto.WeeklyReportResponse> getMyReports(UUID studentUserId) {
+    public Page<WeeklyReportDto.WeeklyReportResponse> getMyReports(UUID studentUserId, Pageable pageable) {
         Student student = studentRepository.findByUserId(studentUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student profile not found"));
-        return weeklyReportRepository.findByStudentIdOrderByWeekNumberDesc(student.getId())
-                .stream()
-                .map(WeeklyReportDto::toResponse)
-                .collect(Collectors.toList());
+        return weeklyReportRepository.findByStudentId(student.getId(), pageable)
+                .map(WeeklyReportDto::toResponse);
     }
 
     @Transactional(readOnly = true)

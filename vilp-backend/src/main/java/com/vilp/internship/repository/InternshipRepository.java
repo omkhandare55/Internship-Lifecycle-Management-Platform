@@ -22,6 +22,17 @@ public interface InternshipRepository extends JpaRepository<Internship, UUID> {
 
     Optional<Internship> findByUniqueId(String uniqueId);
 
+    @Query("SELECT i FROM Internship i WHERE " +
+           "(LOWER(i.title) LIKE LOWER(CONCAT('%', :q, '%')) " +
+           "OR LOWER(i.company.name) LIKE LOWER(CONCAT('%', :q, '%')) " +
+           "OR LOWER(i.location) LIKE LOWER(CONCAT('%', :q, '%'))) " +
+           "AND (:status IS NULL OR i.status = :status)")
+    Page<Internship> search(@Param("q") String query, @Param("status") String status, Pageable pageable);
+
+    @Query("SELECT i FROM Internship i WHERE " +
+           "(:status IS NULL OR i.status = :status)")
+    Page<Internship> findAllFiltered(@Param("status") String status, Pageable pageable);
+
     @Query("SELECT i FROM Internship i WHERE i.status IN ('APPLICATION_OPEN') " +
            "AND (i.applicationDeadline IS NULL OR i.applicationDeadline > CURRENT_TIMESTAMP)")
     Page<Internship> findOpenInternships(Pageable pageable);

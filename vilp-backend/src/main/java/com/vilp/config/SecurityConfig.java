@@ -44,6 +44,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final com.vilp.security.CustomUserDetailsService userDetailsService;
+    private final RateLimitingFilter rateLimitingFilter;
 
     @Value("${app.cors-allowed-origins}")
     private String corsAllowedOrigins;
@@ -82,6 +83,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
                 .anyRequest().authenticated()
             )
+
+            // Rate Limiting filter
+            .addFilterBefore(rateLimitingFilter, JwtAuthenticationFilter.class)
 
             // JWT filter runs before standard auth filter
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

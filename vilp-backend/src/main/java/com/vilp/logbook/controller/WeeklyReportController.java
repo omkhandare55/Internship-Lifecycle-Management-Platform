@@ -43,10 +43,11 @@ public class WeeklyReportController {
     @GetMapping("/mine")
     @PreAuthorize("hasRole('STUDENT')")
     @Operation(summary = "Get all weekly reports submitted by logged-in student")
-    public ResponseEntity<ApiResponse<List<WeeklyReportDto.WeeklyReportResponse>>> getMyReports(
+    public ResponseEntity<ApiResponse<Page<WeeklyReportDto.WeeklyReportResponse>>> getMyReports(
+            @PageableDefault(size = 20, sort = "weekNumber", direction = org.springframework.data.domain.Sort.Direction.DESC) Pageable pageable,
             @AuthenticationPrincipal UserDetails ud) {
         UUID studentUserId = UUID.fromString(ud.getUsername());
-        return ResponseEntity.ok(ApiResponse.success(weeklyReportService.getMyReports(studentUserId)));
+        return ResponseEntity.ok(ApiResponse.success(weeklyReportService.getMyReports(studentUserId, pageable)));
     }
 
     @GetMapping("/hours/approved")

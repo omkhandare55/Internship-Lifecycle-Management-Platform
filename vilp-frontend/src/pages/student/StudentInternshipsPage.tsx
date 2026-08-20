@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Briefcase,
@@ -18,21 +18,31 @@ import {
 import { internshipApi, applicationApi, studentApi } from '@/services/vilpApi';
 import { StatusBadge } from '@/components/StatusBadge';
 import { EligibilityModal } from '@/components/EligibilityModal';
+import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
+import { ApiErrorState } from '@/components/ui/ApiErrorState';
 import type { Internship } from '@/types/vilp.types';
 
 export function StudentInternshipsPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedMode, setSelectedMode] = useState<string>('ALL');
   const [selectedInternship, setSelectedInternship] = useState<Internship | null>(null);
   const [eligibilityAuditItem, setEligibilityAuditItem] = useState<Internship | null>(null);
   const [coverLetter, setCoverLetter] = useState('');
   const [actionMsg, setActionMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [search]);
+
   // Queries
-  const { data: internshipsData, isLoading } = useQuery({
-    queryKey: ['openInternships'],
-    queryFn: () => internshipApi.listOpen(0, 50),
+  const { data: internshipsData, isLoading, error, refetch } = useQuery({
+    queryKey: ['openInternships', debouncedSearch],
+    queryFn: () => internshipApi.listOpen(0, 50, debouncedSearch),
   });
 
   const { data: studentProfileData } = useQuery({
@@ -45,12 +55,8 @@ export function StudentInternshipsPage() {
 
   // Filtered internships
   const filtered = internships.filter((i) => {
-    const matchesSearch =
-      i.title.toLowerCase().includes(search.toLowerCase()) ||
-      i.company?.name.toLowerCase().includes(search.toLowerCase()) ||
-      i.description?.toLowerCase().includes(search.toLowerCase());
     const matchesMode = selectedMode === 'ALL' || i.mode === selectedMode;
-    return matchesSearch && matchesMode;
+    return matchesMode;
   });
 
   // Apply Mutation
@@ -133,8 +139,10 @@ export function StudentInternshipsPage() {
 
       {/* Internship Cards Grid */}
       {isLoading ? (
-        <div className="py-20 flex justify-center">
-          <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
+        <LoadingSkeleton type="card" rows={4} />
+      ) : error ? (
+        <div className="bg-white rounded-2xl border">
+          <ApiErrorState error={error} onRetry={refetch} />
         </div>
       ) : filtered.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

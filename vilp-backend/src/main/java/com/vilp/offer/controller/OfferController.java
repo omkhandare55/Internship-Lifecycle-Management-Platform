@@ -54,10 +54,11 @@ public class OfferController {
     @GetMapping("/mine")
     @PreAuthorize("hasRole('STUDENT')")
     @Operation(summary = "Get offers extended to the logged-in student")
-    public ResponseEntity<ApiResponse<List<OfferDto.OfferResponse>>> getMyStudentOffers(
+    public ResponseEntity<ApiResponse<Page<OfferDto.OfferResponse>>> getMyStudentOffers(
+            @PageableDefault(size = 20) Pageable pageable,
             @AuthenticationPrincipal UserDetails ud) {
         UUID studentUserId = UUID.fromString(ud.getUsername());
-        return ResponseEntity.ok(ApiResponse.success(offerService.getMyStudentOffers(studentUserId)));
+        return ResponseEntity.ok(ApiResponse.success(offerService.getMyStudentOffers(studentUserId, pageable)));
     }
 
     @GetMapping("/company")

@@ -152,7 +152,8 @@ public class AuthService {
             throw new AuthException("ACCOUNT_SUSPENDED", "Account is suspended");
         }
 
-        return buildTokenResponse(user);
+        log.info("Refresh token rotated for user {}", userId);
+        return buildTokenResponseWithRotation(user);
     }
 
     // ─── 4. Email Verification ─────────────────────────────────────────────
@@ -238,6 +239,24 @@ public class AuthService {
         return TokenResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .tokenType("Bearer")
+                .expiresIn(accessTokenExpiryMs / 1000)
+                .user(TokenResponse.AuthUserDto.builder()
+                        .id(user.getId())
+                        .email(user.getEmail())
+                        .role(user.getRoleName())
+                        .emailVerified(user.getEmailVerified())
+                        .build())
+                .build();
+    }
+
+    private TokenResponse buildTokenResponseWithRotation(User user) {
+        String newAccessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getRoleName());
+        String newRefreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
+
+        return TokenResponse.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)  // rotated — client must store the new one
                 .tokenType("Bearer")
                 .expiresIn(accessTokenExpiryMs / 1000)
                 .user(TokenResponse.AuthUserDto.builder()

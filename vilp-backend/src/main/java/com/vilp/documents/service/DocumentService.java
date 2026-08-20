@@ -31,6 +31,17 @@ public class DocumentService {
     private final UserRepository userRepository;
     private final StorageService storageService;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private SupabaseStorageService supabaseStorageService;
+
+    private String buildDownloadUrl(Document doc) {
+        if (supabaseStorageService != null) {
+            // 1-hour signed URL
+            return supabaseStorageService.getSignedUrl(doc.getStorageKey(), 3600);
+        }
+        return "/api/documents/" + doc.getId() + "/download";
+    }
+
     public DocumentDto.DocumentResponse upload(
             UUID userId,
             String entityType,
@@ -59,15 +70,14 @@ public class DocumentService {
         documentRepository.save(doc);
         log.info("Document uploaded: {} by user {}", doc.getId(), userId);
 
-        String downloadUrl = "/api/documents/" + doc.getId() + "/download";
-        return DocumentDto.toResponse(doc, downloadUrl);
+        return DocumentDto.toResponse(doc, buildDownloadUrl(doc));
     }
 
     @Transactional(readOnly = true)
     public List<DocumentDto.DocumentResponse> getByEntity(String entityType, UUID entityId) {
         return documentRepository.findByEntityTypeAndEntityId(entityType.toUpperCase(), entityId)
                 .stream()
-                .map(d -> DocumentDto.toResponse(d, "/api/documents/" + d.getId() + "/download"))
+                .map(d -> DocumentDto.toResponse(d, buildDownloadUrl(d)))
                 .collect(Collectors.toList());
     }
 
@@ -99,12 +109,12 @@ public class DocumentService {
         documentRepository.save(doc);
         log.info("Document {} status updated to {} by reviewer {}", documentId, req.getStatus(), reviewerId);
 
-        return DocumentDto.toResponse(doc, "/api/documents/" + doc.getId() + "/download");
+        return DocumentDto.toResponse(doc, buildDownloadUrl(doc));
     }
 
     @Transactional(readOnly = true)
     public Page<DocumentDto.DocumentResponse> listByStatus(String status, Pageable pageable) {
         return documentRepository.findByStatus(status.toUpperCase(), pageable)
-                .map(d -> DocumentDto.toResponse(d, "/api/documents/" + d.getId() + "/download"));
+                .map(d -> DocumentDto.toResponse(d, buildDownloadUrl(d)));
     }
 }

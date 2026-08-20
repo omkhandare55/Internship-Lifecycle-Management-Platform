@@ -80,6 +80,17 @@ public class InternshipService {
     // ─── List open internships (student-facing) ────────────────────────────
 
     @Transactional(readOnly = true)
+    public Page<InternshipDto.InternshipResponse> search(String q, String status, Pageable pageable) {
+        Page<Internship> results;
+        if (q != null && !q.isBlank()) {
+            results = internshipRepository.search(q.trim(), status, pageable);
+        } else {
+            results = internshipRepository.findAllFiltered(status, pageable);
+        }
+        return results.map(InternshipDto::toResponse);
+    }
+
+    @Transactional(readOnly = true)
     public Page<InternshipDto.InternshipResponse> listOpen(Pageable pageable) {
         return internshipRepository.findOpenInternships(pageable).map(InternshipDto::toResponse);
     }

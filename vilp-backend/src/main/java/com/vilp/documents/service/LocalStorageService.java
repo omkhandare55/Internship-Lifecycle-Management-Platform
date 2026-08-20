@@ -20,7 +20,10 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+
 @Service
+@ConditionalOnMissingBean(SupabaseStorageService.class)
 @Slf4j
 public class LocalStorageService implements StorageService {
 

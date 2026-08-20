@@ -161,6 +161,26 @@ public class StudentService {
         return studentRepository.findByVerificationStatus(status, pageable).map(StudentDto::toResponse);
     }
 
+    @Transactional(readOnly = true)
+    public Page<StudentDto.StudentResponse> search(String q, String status, String department, Pageable pageable) {
+        if (q != null && !q.isBlank()) {
+            Page<Student> results = studentRepository.searchByNameOrNumber(q.trim(), pageable);
+            // Filter by status in memory if both are provided (small result set from search)
+            if (status != null && !status.isBlank()) {
+                java.util.List<Student> filtered = results.getContent().stream()
+                        .filter(s -> status.equalsIgnoreCase(s.getVerificationStatus()))
+                        .toList();
+                return new org.springframework.data.domain.PageImpl<>(filtered, pageable, filtered.size())
+                        .map(StudentDto::toResponse);
+            }
+            return results.map(StudentDto::toResponse);
+        }
+        if (status != null && !status.isBlank()) {
+            return studentRepository.findByVerificationStatus(status.toUpperCase(), pageable).map(StudentDto::toResponse);
+        }
+        return studentRepository.findAll(pageable).map(StudentDto::toResponse);
+    }
+
     // ─── Profile completion calculator ─────────────────────────────────────
 
     private int calculateCompletion(Student s) {

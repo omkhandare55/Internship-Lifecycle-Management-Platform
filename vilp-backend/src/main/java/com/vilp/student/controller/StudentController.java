@@ -97,14 +97,14 @@ public class StudentController {
 
     /** GET /api/students — T&P list all students (paginated) */
     @GetMapping
-    @PreAuthorize("hasAnyRole('TNP_OFFICER','TNP_HEAD','SUPER_ADMIN')")
-    @Operation(summary = "List all students (T&P)")
-    public ResponseEntity<ApiResponse<Page<StudentDto.StudentResponse>>> listAll(
-            @PageableDefault(size = 20) Pageable pageable,
-            @RequestParam(required = false) String status) {
-        Page<StudentDto.StudentResponse> result = (status != null)
-                ? studentService.listByStatus(status, pageable)
-                : studentService.listAll(pageable);
-        return ResponseEntity.ok(ApiResponse.success(result));
+    @PreAuthorize("hasAnyRole('TNP_OFFICER','TNP_HEAD','SUPER_ADMIN','MENTOR')")
+    @Operation(summary = "List/search students")
+    public ResponseEntity<ApiResponse<Page<StudentDto.StudentResponse>>> listStudents(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String department,
+            @PageableDefault(size = 20, sort = "fullName") Pageable pageable,
+            @AuthenticationPrincipal UserDetails ud) {
+        return ResponseEntity.ok(ApiResponse.success(studentService.search(q, status, department, pageable)));
     }
 }

@@ -19,6 +19,8 @@ public interface WeeklyReportRepository extends JpaRepository<WeeklyReport, UUID
 
     List<WeeklyReport> findByStudentIdOrderByWeekNumberDesc(UUID studentId);
 
+    Page<WeeklyReport> findByStudentId(UUID studentId, Pageable pageable);
+
     Page<WeeklyReport> findByInternshipId(UUID internshipId, Pageable pageable);
 
     Page<WeeklyReport> findByStatus(String status, Pageable pageable);

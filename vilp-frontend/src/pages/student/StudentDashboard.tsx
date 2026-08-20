@@ -52,7 +52,7 @@ export function StudentDashboard() {
 
   const student = profileData?.data;
   const applications = appsData?.data?.content || [];
-  const offers = offersData?.data || [];
+  const offers = offersData?.data?.content || [];
   const approvedHours = hoursData?.data ?? 160;
   const targetHours = 240;
   const progressPercent = Math.min(100, Math.round((approvedHours / targetHours) * 100));

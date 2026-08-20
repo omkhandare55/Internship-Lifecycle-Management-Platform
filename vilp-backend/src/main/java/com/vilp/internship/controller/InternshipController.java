@@ -36,19 +36,13 @@ public class InternshipController {
     /** GET /api/internships — Open internships visible to students */
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "List open internships")
+    @Operation(summary = "List internships with optional search and status filter")
     public ResponseEntity<ApiResponse<Page<InternshipDto.InternshipResponse>>> listOpen(
-            @PageableDefault(size = 20) Pageable pageable,
+            @PageableDefault(size = 20, sort = "createdAt", direction = org.springframework.data.domain.Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(required = false) String q,
             @RequestParam(required = false) String status,
             @AuthenticationPrincipal UserDetails ud) {
-        // T&P / Admin can see all; students see only open
-        Page<InternshipDto.InternshipResponse> result;
-        if (status != null) {
-            result = internshipService.listAll(status, pageable);
-        } else {
-            result = internshipService.listOpen(pageable);
-        }
-        return ResponseEntity.ok(ApiResponse.success(result));
+        return ResponseEntity.ok(ApiResponse.success(internshipService.search(q, status, pageable)));
     }
 
     /** GET /api/internships/{id} */

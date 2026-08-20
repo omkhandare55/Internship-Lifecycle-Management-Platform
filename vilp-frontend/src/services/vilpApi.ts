@@ -65,9 +65,11 @@ export const studentApi = {
     const res = await axiosInstance.delete<ApiResponse<StudentProfile>>(`/students/me/skills/${skillId}`);
     return res.data;
   },
-  listAll: async (page = 0, size = 20, status?: string): Promise<ApiResponse<PageResponse<StudentProfile>>> => {
+  listAll: async (page = 0, size = 20, status?: string, q?: string, department?: string): Promise<ApiResponse<PageResponse<StudentProfile>>> => {
     const params = new URLSearchParams({ page: String(page), size: String(size) });
     if (status) params.append('status', status);
+    if (q) params.append('q', q);
+    if (department) params.append('department', department);
     const res = await axiosInstance.get<ApiResponse<PageResponse<StudentProfile>>>(`/students?${params.toString()}`);
     return res.data;
   },
@@ -99,8 +101,11 @@ export const companyApi = {
 };
 
 export const internshipApi = {
-  listOpen: async (page = 0, size = 20): Promise<ApiResponse<PageResponse<Internship>>> => {
-    const res = await axiosInstance.get<ApiResponse<PageResponse<Internship>>>(`/internships?page=${page}&size=${size}`);
+  listOpen: async (page = 0, size = 20, q?: string, status?: string): Promise<ApiResponse<PageResponse<Internship>>> => {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (q) params.append('q', q);
+    if (status) params.append('status', status);
+    const res = await axiosInstance.get<ApiResponse<PageResponse<Internship>>>(`/internships?${params.toString()}`);
     return res.data;
   },
   listMine: async (page = 0, size = 20): Promise<ApiResponse<PageResponse<Internship>>> => {
@@ -170,8 +175,8 @@ export const offerApi = {
     const res = await axiosInstance.post<ApiResponse<Offer>>(`/offers/${offerId}/respond`, { action, notes });
     return res.data;
   },
-  getMyOffers: async (): Promise<ApiResponse<Offer[]>> => {
-    const res = await axiosInstance.get<ApiResponse<Offer[]>>('/offers/mine');
+  getMyOffers: async (page = 0, size = 20): Promise<ApiResponse<PageResponse<Offer>>> => {
+    const res = await axiosInstance.get<ApiResponse<PageResponse<Offer>>>(`/offers/mine?page=${page}&size=${size}`);
     return res.data;
   },
   getCompanyOffers: async (page = 0, size = 20): Promise<ApiResponse<PageResponse<Offer>>> => {
@@ -206,8 +211,8 @@ export const logbookApi = {
     const res = await axiosInstance.post<ApiResponse<WeeklyReport>>('/logbooks', data);
     return res.data;
   },
-  getMyReports: async (): Promise<ApiResponse<WeeklyReport[]>> => {
-    const res = await axiosInstance.get<ApiResponse<WeeklyReport[]>>('/logbooks/mine');
+  getMyReports: async (page = 0, size = 50): Promise<ApiResponse<PageResponse<WeeklyReport>>> => {
+    const res = await axiosInstance.get<ApiResponse<PageResponse<WeeklyReport>>>(`/logbooks/mine?page=${page}&size=${size}`);
     return res.data;
   },
   getTotalApprovedHours: async (): Promise<ApiResponse<number>> => {

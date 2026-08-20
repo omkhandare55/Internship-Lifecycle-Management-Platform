@@ -59,6 +59,11 @@ jwt:
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
   cors-allowed-origins: ${CORS_ORIGINS:http://localhost:5173}
+  supabase:
+    url: ${SUPABASE_URL:}
+    anon-key: ${SUPABASE_ANON_KEY:}
+    service-role-key: ${SUPABASE_SERVICE_ROLE_KEY:}
+    storage-bucket: ${SUPABASE_STORAGE_BUCKET:vilp-documents}
 
 # Swagger / OpenAPI
 springdoc:

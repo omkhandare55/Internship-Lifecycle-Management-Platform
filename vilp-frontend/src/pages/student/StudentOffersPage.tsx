@@ -9,7 +9,6 @@ import {
   FileCheck,
   Printer,
   QrCode,
-  Loader2,
   X,
   Clock,
   ShieldCheck,
@@ -17,6 +16,8 @@ import {
 import { offerApi } from '@/services/vilpApi';
 import { MOCK_STUDENT_PROFILE } from '@/services/mockData';
 import { sendFirebaseNotification } from '@/services/firebaseNotificationService';
+import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
+import { ApiErrorState } from '@/components/ui/ApiErrorState';
 import type { Offer } from '@/types/vilp.types';
 
 export function StudentOffersPage() {
@@ -27,12 +28,12 @@ export function StudentOffersPage() {
   const [viewNocForOfferId, setViewNocForOfferId] = useState<string | null>(null);
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const { data: offersData, isLoading } = useQuery({
+  const { data: offersData, isLoading, error, refetch } = useQuery({
     queryKey: ['myOffers'],
-    queryFn: offerApi.getMyOffers,
+    queryFn: () => offerApi.getMyOffers(0, 50),
   });
 
-  const offers = offersData?.data || [];
+  const offers = offersData?.data?.content || [];
 
   const respondMutation = useMutation({
     mutationFn: () => {
@@ -96,8 +97,12 @@ export function StudentOffersPage() {
 
       {/* ── Offers Ledger ──────────────────────────────────────────────────── */}
       {isLoading ? (
-        <div className="py-12 flex justify-center bg-white border border-[#E0D3E8]">
-          <Loader2 className="w-6 h-6 animate-spin text-[#723ECF]" />
+        <div className="mb-4">
+          <LoadingSkeleton type="card" rows={2} />
+        </div>
+      ) : error ? (
+        <div className="bg-white border border-[#E0D3E8]">
+          <ApiErrorState error={error} onRetry={refetch} />
         </div>
       ) : offers.length === 0 ? (
         <div className="border border-[#E0D3E8] bg-white p-12 text-center space-y-2">

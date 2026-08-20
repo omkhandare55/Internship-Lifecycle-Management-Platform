@@ -4,11 +4,12 @@ import {
   Clock,
   CheckCircle2,
   Plus,
-  Loader2,
   X,
 } from 'lucide-react';
 import { logbookApi, offerApi } from '@/services/vilpApi';
 import { sendFirebaseNotification } from '@/services/firebaseNotificationService';
+import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
+import { ApiErrorState } from '@/components/ui/ApiErrorState';
 import type { SubmitWeeklyReportInput } from '@/types/vilp.types';
 
 export function StudentProgressPage() {
@@ -18,14 +19,14 @@ export function StudentProgressPage() {
 
   const { data: offersData } = useQuery({
     queryKey: ['myOffers'],
-    queryFn: offerApi.getMyOffers,
+    queryFn: () => offerApi.getMyOffers(0, 50),
   });
 
-  const activeOffer = offersData?.data?.find((o) => o.status === 'ACCEPTED');
+  const activeOffer = offersData?.data?.content?.find((o) => o.status === 'ACCEPTED');
 
-  const { data: reportsData, isLoading: loadingReports } = useQuery({
+  const { data: reportsData, isLoading: loadingReports, error: reportsError, refetch: refetchReports } = useQuery({
     queryKey: ['myLogbooks'],
-    queryFn: logbookApi.getMyReports,
+    queryFn: () => logbookApi.getMyReports(0, 50),
   });
 
   const { data: approvedHoursData } = useQuery({
@@ -33,7 +34,7 @@ export function StudentProgressPage() {
     queryFn: logbookApi.getTotalApprovedHours,
   });
 
-  const reports = reportsData?.data || [];
+  const reports = reportsData?.data?.content || [];
   const approvedHours = approvedHoursData?.data ?? 160;
   const targetHours = 240;
   const hoursPercentage = Math.min(Math.round((approvedHours / targetHours) * 100), 100);
@@ -166,9 +167,11 @@ export function StudentProgressPage() {
         </div>
 
         {loadingReports ? (
-          <div className="py-12 flex justify-center">
-            <Loader2 className="w-6 h-6 animate-spin text-[#723ECF]" />
+          <div className="mb-4">
+            <LoadingSkeleton type="row" rows={3} />
           </div>
+        ) : reportsError ? (
+          <ApiErrorState error={reportsError} onRetry={refetchReports} />
         ) : reports.length === 0 ? (
           <div className="p-8 text-center text-zinc-500 text-xs">
             No weekly reports logged yet. Click &quot;Submit New Week Log&quot; above to begin.
