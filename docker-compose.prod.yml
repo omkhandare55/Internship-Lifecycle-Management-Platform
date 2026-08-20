@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # ─── Production PostgreSQL ───────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: vilp-prod-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-vilpdb}
+      POSTGRES_USER: ${POSTGRES_USER:-vilpuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vilppassword}
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vilpuser} -d ${POSTGRES_DB:-vilpdb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vilp-internal
+
+  # ─── Production Spring Boot Backend ──────────────────────────────────────
+  backend:
+    build:
+      context: ./vilp-backend
+      dockerfile: Dockerfile
+    container_name: vilp-prod-backend
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-vilpdb}
+      DATABASE_USERNAME: ${POSTGRES_USER:-vilpuser}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-vilppassword}
+      JWT_SECRET: ${JWT_SECRET:-d9b6c4e1a8f27305e6b4c3a2f19876543210fedcba9876543210abcdef012345}
+      JWT_ACCESS_EXPIRY_MS: 1800000
+      JWT_REFRESH_EXPIRY_MS: 604800000
+      MAIL_HOST: ${MAIL_HOST:-smtp.sendgrid.net}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - vilp-internal
+
+  # ─── Production Nginx & React Frontend ───────────────────────────────────
+  frontend:
+    build:
+      context: ./vilp-frontend
+      dockerfile: Dockerfile
+    container_name: vilp-prod-frontend
+    restart: always
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - vilp-internal
+
+volumes:
+  postgres_prod_data:
+    driver: local
+
+networks:
+  vilp-internal:
+    driver: bridge

@@ -1,0 +1,38 @@
+{
+  "name": "VILP — Verified Internship Lifecycle Platform",
+  "short_name": "VILP",
+  "description": "Institutional internship governance, verified credentialing, and placement portal.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Student Catalog",
+      "short_name": "Internships",
+      "url": "/student/internships",
+      "description": "Browse accredited internship offerings"
+    },
+    {
+      "name": "Weekly Logbook",
+      "short_name": "Logbook",
+      "url": "/student/progress",
+      "description": "Submit periodic internship progress"
+    },
+    {
+      "name": "Offers & NOC",
+      "short_name": "Offers",
+      "url": "/student/offers",
+      "description": "View offers and institutional NOC"
+    }
+  ]
+}

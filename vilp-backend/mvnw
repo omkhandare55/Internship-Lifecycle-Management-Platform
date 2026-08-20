@@ -1,0 +1,19 @@
+#!/bin/sh
+# Maven Wrapper Script (mvnw) for Unix/Linux/macOS
+# Compatible with Maven 3.9.x
+
+MAVEN_WRAPPER_JAR=".mvn/wrapper/maven-wrapper.jar"
+MAVEN_WRAPPER_PROPERTIES=".mvn/wrapper/maven-wrapper.properties"
+
+DISTRIBUTION_URL=$(sed -n 's/.*distributionUrl=\(.*\)/\1/p' "$MAVEN_WRAPPER_PROPERTIES")
+MAVEN_HOME="${HOME}/.m2/wrapper/dists/$(basename "$DISTRIBUTION_URL" .zip)"
+
+if [ ! -d "$MAVEN_HOME" ]; then
+  echo "Downloading Maven from $DISTRIBUTION_URL"
+  mkdir -p "$(dirname "$MAVEN_HOME")"
+  curl -o "/tmp/maven.zip" "$DISTRIBUTION_URL"
+  unzip -q "/tmp/maven.zip" -d "$(dirname "$MAVEN_HOME")"
+  mv "$(dirname "$MAVEN_HOME")/$(basename "$DISTRIBUTION_URL" -bin.zip)" "$MAVEN_HOME"
+fi
+
+exec "$MAVEN_HOME/bin/mvn" "$@"

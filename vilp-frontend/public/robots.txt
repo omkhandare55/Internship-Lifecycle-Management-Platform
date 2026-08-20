@@ -1,0 +1,16 @@
+# VILP Robots.txt
+User-agent: *
+Allow: /
+Allow: /verify/
+Allow: /auth/login
+Allow: /privacy
+Allow: /terms
+
+Disallow: /api/
+Disallow: /admin/
+Disallow: /tnp/
+Disallow: /student/
+Disallow: /company/
+Disallow: /mentor/
+
+Sitemap: https://vilp.edu/sitemap.xml

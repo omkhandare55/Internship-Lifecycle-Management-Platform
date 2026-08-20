@@ -1,0 +1,130 @@
+{
+  "name": "VILP Institutional Placement, Offers, Reminders & e-Cert Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "vilp-events",
+        "options": {}
+      },
+      "name": "VILP Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "vilp-events"
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{$json.body.eventType}}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "OFFER_LETTER_DISPATCHED"
+            },
+            {
+              "value2": "DAILY_LOGBOOK_REMINDER"
+            },
+            {
+              "value2": "E_CERTIFICATE_ISSUED"
+            },
+            {
+              "value2": "NOC_APPROVED"
+            },
+            {
+              "value2": "PPO_REGISTERED"
+            }
+          ]
+        }
+      },
+      "name": "Event Type Switcher",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "text": "=📩 New Offer Letter!\n\nHi {{$json.body.studentName}},\n{{$json.body.companyName}} has extended a formal offer for {{$json.body.role}} (Stipend: {{$json.body.stipendPerMonth}}).\n\nYou have 48 hours to accept or decline:\n{{$json.body.offerLetterUrl}}"
+      },
+      "name": "Offer Letter WhatsApp & Email Dispatcher",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [760, 100]
+    },
+    {
+      "parameters": {
+        "text": "=⏰ Daily Logbook Reminder!\n\nHi {{$json.body.studentName}},\nYou have {{$json.body.targetHoursThisWeek - $json.body.loggedHoursThisWeek}} hours remaining to log for Week {{$json.body.currentWeek}} at {{$json.body.activeCompany}}.\n\nSubmit your logbook before Friday 6 PM to maintain 100% attendance."
+      },
+      "name": "Daily Logbook Attendance Bot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [760, 220]
+    },
+    {
+      "parameters": {
+        "text": "=🎓 Verified e-Certificate Issued!\n\nCongratulations {{$json.body.studentName}}!\nYour completion certificate for {{$json.body.companyName}} (240 Hours, Grade {{$json.body.gradeAchieved}}) has been generated with tamper-proof SHA-256 seal: {{$json.body.sha256Hash}}.\n\nPublic Verification URL:\n{{$json.body.publicVerificationUrl}}"
+      },
+      "name": "e-Certificate SHA-256 Dispatcher",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [760, 340]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "sheetId": "VILP_MASTER_PLACEMENTS",
+        "range": "A:G",
+        "options": {}
+      },
+      "name": "Sync PPO to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [760, 460]
+    }
+  ],
+  "connections": {
+    "VILP Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Event Type Switcher",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Event Type Switcher": {
+      "main": [
+        [
+          {
+            "node": "Offer Letter WhatsApp & Email Dispatcher",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Daily Logbook Attendance Bot",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "e-Certificate SHA-256 Dispatcher",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sync PPO to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
