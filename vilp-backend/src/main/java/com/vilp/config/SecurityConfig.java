@@ -84,8 +84,8 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
 
-            // Rate Limiting filter
-            .addFilterBefore(rateLimitingFilter, JwtAuthenticationFilter.class)
+            // Rate Limiting filter runs before LogoutFilter (earliest in chain)
+            .addFilterBefore(rateLimitingFilter, org.springframework.security.web.authentication.logout.LogoutFilter.class)
 
             // JWT filter runs before standard auth filter
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
