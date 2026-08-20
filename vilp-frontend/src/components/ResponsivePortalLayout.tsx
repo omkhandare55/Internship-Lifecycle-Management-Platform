@@ -217,12 +217,12 @@ export function ResponsivePortalLayout({
       <div className="flex flex-1 relative overflow-hidden">
         {/* ── Desktop Sidebar (#F1F5F9) ────────────────────────────────────── */}
         <aside
-          className={`hidden md:flex flex-col bg-[#F1F5F9] border-r border-[#CBD5E1] transition-all duration-150 select-none z-30 ${
+          className={`hidden md:flex flex-col bg-[#F1F5F9] border-r border-[#CBD5E1] transition-all duration-150 select-none z-30 overflow-hidden ${
             sidebarCollapsed ? 'w-[72px]' : 'w-64'
           }`}
         >
           {/* Brand Header */}
-          <div className="h-16 px-4 flex items-center justify-between border-b border-[#CBD5E1]">
+          <div className="h-16 px-4 flex items-center justify-between border-b border-[#CBD5E1] shrink-0">
             <div className="flex items-center gap-2.5 overflow-hidden">
               <div className="w-8 h-8 bg-[#0A2540] text-white flex items-center justify-center font-bold text-xs shrink-0 rounded-xs shadow-xs">
                 V
@@ -243,8 +243,8 @@ export function ResponsivePortalLayout({
             </button>
           </div>
 
-          {/* Navigation Links */}
-          <div className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
+          {/* Navigation Links (Non-scrollable, fits viewport) */}
+          <div className="flex-1 py-3 px-2 space-y-1 overflow-hidden">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
@@ -330,7 +330,7 @@ export function ResponsivePortalLayout({
                 </button>
               </div>
 
-              <div className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
+              <div className="flex-1 py-4 px-2 space-y-1 overflow-hidden">
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   return (
