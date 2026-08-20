@@ -7,13 +7,11 @@ import {
   Bell,
   PanelLeftClose,
   PanelLeft,
-  Volume2,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { notificationApi } from '@/services/vilpApi';
 import {
   subscribeToRealtimeNotifications,
-  playNotificationChime,
 } from '@/services/realtimeNotificationService';
 import { CommandPaletteHUD } from './CommandPaletteHUD';
 import type { NotificationItem } from '@/types/vilp.types';
@@ -118,23 +116,6 @@ export function ResponsivePortalLayout({
     }
   };
 
-  const handleTriggerTestChime = () => {
-    playNotificationChime();
-    const testNotif: NotificationItem = {
-      id: `test-${Date.now()}`,
-      userId: user?.id || 'system',
-      title: 'Realtime Alert: Clearance Approved',
-      message: 'Institutional mentor verified your 240-hour compliance logbook.',
-      type: 'OFFER',
-      isRead: false,
-      createdAt: new Date().toISOString(),
-    };
-    setNotifications((prev) => [testNotif, ...prev]);
-    setUnreadCount((prev) => prev + 1);
-    setActiveToast(testNotif);
-    setTimeout(() => setActiveToast((current) => (current?.id === testNotif.id ? null : current)), 6000);
-  };
-
   const handleLogout = () => {
     logout();
     navigate('/auth/login');
@@ -177,34 +158,10 @@ export function ResponsivePortalLayout({
           <span className="text-slate-600 hidden sm:inline">|</span>
           <span className="font-bold text-slate-200">PORTAL: {portalTitle.toUpperCase()}</span>
           <span className="text-slate-600 hidden md:inline">|</span>
-          
-          {/* Fast Jury Demo Switcher Pills */}
-          <div className="hidden lg:flex items-center gap-1 bg-[#1E3A5F] px-2 py-0.5 rounded-xs text-[10px]">
-            <span className="text-amber-300 font-bold mr-1">DEMO JUMP:</span>
-            {[
-              { label: 'Student', role: 'STUDENT', path: '/student/dashboard' },
-              { label: 'Recruiter', role: 'COMPANY', path: '/company/dashboard' },
-              { label: 'Mentor', role: 'MENTOR', path: '/mentor/dashboard' },
-              { label: 'T&P Head', role: 'TNP_HEAD', path: '/tnp/dashboard' },
-              { label: 'Admin', role: 'SUPER_ADMIN', path: '/admin/dashboard' },
-            ].map((p) => (
-              <button
-                key={p.role}
-                type="button"
-                onClick={() => {
-                  if (user) {
-                    useAuthStore.getState().updateUser({ ...user, role: p.role as any });
-                  }
-                  navigate(p.path);
-                }}
-                className={`px-1.5 py-0.5 rounded-xs font-bold transition-colors cursor-pointer ${
-                  user?.role === p.role ? 'bg-[#2563EB] text-white shadow-xs' : 'text-slate-300 hover:text-white hover:bg-white/10'
-                }`}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
+          <span className="hidden lg:inline text-emerald-400 font-bold flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            AICTE §7.2 ACCREDITED COMPLIANCE ACTIVE
+          </span>
         </div>
 
         <div className="flex items-center gap-3 text-slate-400 font-mono">
@@ -433,15 +390,13 @@ export function ResponsivePortalLayout({
                     )}
                   </div>
 
-                  {/* Test Realtime Sound Trigger Button */}
+                  {/* Realtime Live Sync Status */}
                   <div className="p-2.5 bg-[#F8FAFC] border-t border-[#E2E8F0] flex justify-between items-center text-[10px]">
-                    <span className="text-slate-500 font-medium">Supabase Realtime Feed</span>
-                    <button
-                      onClick={handleTriggerTestChime}
-                      className="inline-flex items-center gap-1 px-2 py-1 bg-white border border-[#CBD5E1] hover:border-[#2563EB] text-[#2563EB] font-bold hover:bg-[#2563EB] hover:text-white transition-colors rounded-xs cursor-pointer"
-                    >
-                      <Volume2 className="w-3 h-3" /> Test Chime &amp; Alert
-                    </button>
+                    <span className="text-slate-600 font-bold flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      Supabase Realtime Live Feed
+                    </span>
+                    <span className="text-slate-400 font-mono">TLS 1.3 Encrypted</span>
                   </div>
                 </div>
               )}

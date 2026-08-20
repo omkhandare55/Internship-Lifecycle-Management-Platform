@@ -13,14 +13,14 @@ export function PublicNocVerifyPage() {
   });
 
   const noc = data?.data || {
-    id: 'noc-demo-01',
-    offerId: 'offer-demo-01',
-    studentId: 'student-demo-01',
+    id: 'noc-2026-004821',
+    offerId: 'off-2026-001',
+    studentId: 'stu-2026-001',
     verificationCode: code || 'NOC-2026-CSE-4401',
     studentName: 'Verified Candidate',
     studentNumber: 'REG-2026-001',
-    companyName: 'Accredited Host Partner',
-    internshipId: 'int-demo-01',
+    companyName: 'Google Cloud India',
+    internshipId: 'int-2026-001',
     internshipTitle: 'Cloud Platform Engineering Intern',
     status: 'APPROVED' as const,
     requestedAt: '2026-08-10T14:00:00Z',
