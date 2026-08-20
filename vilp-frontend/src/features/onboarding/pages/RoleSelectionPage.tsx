@@ -8,7 +8,6 @@ import {
   Briefcase,
   Building2,
   Award,
-  Users,
   Lock,
   CheckCircle2,
 } from 'lucide-react';
@@ -46,17 +45,13 @@ export function RoleSelectionPage() {
       case 'STUDENT':
         return <GraduationCap className="w-5 h-5 text-[#2563EB]" />;
       case 'FACULTY_MENTOR':
-      case 'HOD':
-      case 'DEPT_COORDINATOR':
         return <Award className="w-5 h-5 text-[#F97316]" />;
       case 'TNP_OFFICER':
-      case 'COLLEGE_ADMIN':
-      case 'SUPER_ADMIN':
         return <ShieldCheck className="w-5 h-5 text-emerald-600" />;
       case 'COMPANY_RECRUITER':
         return <Briefcase className="w-5 h-5 text-[#0A2540]" />;
-      case 'EXTERNAL_EVALUATOR':
-        return <Users className="w-5 h-5 text-indigo-600" />;
+      case 'SUPER_ADMIN':
+        return <Lock className="w-5 h-5 text-indigo-600" />;
       default:
         return <Building2 className="w-5 h-5 text-[#2563EB]" />;
     }
@@ -71,7 +66,7 @@ export function RoleSelectionPage() {
             <div className="d-inline-flex align-items-center gap-2 px-2.5 py-1 bg-[#2563EB] text-white text-[11px] font-mono font-bold uppercase rounded-xs">
               <Sparkles className="w-3.5 h-3.5 text-[#F97316] shrink-0" />
               <span className="truncate">
-                {isGoogleAuth ? 'GOOGLE AUTHENTICATED // SELECT YOUR ROLE' : 'ENTERPRISE ACCESS // RBAC SUITE'}
+                {isGoogleAuth ? 'GOOGLE AUTHENTICATED // SELECT YOUR ROLE' : 'ENTERPRISE ACCESS // 5 CORE ROLES'}
               </span>
             </div>
             <h1 className="text-xl sm:text-3xl font-black uppercase tracking-tight font-sans m-0">
@@ -110,12 +105,12 @@ export function RoleSelectionPage() {
         {/* ── Category Filter Bar ─────────────────────────────────────────── */}
         <div className="bg-white border border-[#CBD5E1] p-2 rounded-[2px_8px_2px_8px] d-flex align-items-center gap-2 overflow-x-auto font-mono text-xs shadow-[2px_2px_0px_0px_#E2E8F0] w-100">
           {[
-            { id: 'ALL', label: 'ALL ROLES (9)' },
-            { id: 'STUDENT', label: 'STUDENTS' },
-            { id: 'FACULTY', label: 'FACULTY & MENTORS' },
-            { id: 'ADMIN', label: 'T&P & COLLEGE ADMIN' },
-            { id: 'CORPORATE', label: 'CORPORATE RECRUITERS' },
-            { id: 'EVALUATOR', label: 'EXTERNAL EVALUATORS' },
+            { id: 'ALL', label: 'ALL 5 ROLES' },
+            { id: 'STUDENT', label: 'STUDENT' },
+            { id: 'FACULTY', label: 'FACULTY MENTOR' },
+            { id: 'TNP', label: 'T&P CELL' },
+            { id: 'COMPANY', label: 'COMPANY' },
+            { id: 'ADMIN', label: 'ADMIN' },
           ].map((cat) => (
             <button
               key={cat.id}

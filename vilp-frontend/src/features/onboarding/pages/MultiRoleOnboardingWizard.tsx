@@ -140,11 +140,10 @@ export function MultiRoleOnboardingWizard() {
   };
 
   const handleFinishOnboarding = () => {
-    let mappedRole: 'STUDENT' | 'COMPANY' | 'MENTOR' | 'TNP_OFFICER' | 'TNP_HEAD' | 'SUPER_ADMIN' = 'STUDENT';
+    let mappedRole: 'STUDENT' | 'COMPANY' | 'MENTOR' | 'TNP_OFFICER' | 'SUPER_ADMIN' = 'STUDENT';
     if (roleParam === 'COMPANY_RECRUITER') mappedRole = 'COMPANY';
-    else if (roleParam === 'FACULTY_MENTOR' || roleParam === 'EXTERNAL_EVALUATOR') mappedRole = 'MENTOR';
-    else if (roleParam === 'TNP_OFFICER' || roleParam === 'DEPT_COORDINATOR') mappedRole = 'TNP_OFFICER';
-    else if (roleParam === 'HOD' || roleParam === 'COLLEGE_ADMIN') mappedRole = 'TNP_HEAD';
+    else if (roleParam === 'FACULTY_MENTOR') mappedRole = 'MENTOR';
+    else if (roleParam === 'TNP_OFFICER') mappedRole = 'TNP_OFFICER';
     else if (roleParam === 'SUPER_ADMIN') mappedRole = 'SUPER_ADMIN';
 
     const mockId = `usr-${Date.now()}`;

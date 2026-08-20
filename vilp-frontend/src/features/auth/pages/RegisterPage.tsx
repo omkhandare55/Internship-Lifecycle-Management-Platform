@@ -34,16 +34,12 @@ export function RegisterPage() {
       case 'STUDENT':
         return <GraduationCap className="w-5 h-5 text-[#723ECF]" />;
       case 'FACULTY_MENTOR':
-      case 'HOD':
-      case 'DEPT_COORDINATOR':
         return <Award className="w-5 h-5 text-[#ED4B86]" />;
       case 'TNP_OFFICER':
-      case 'COLLEGE_ADMIN':
-      case 'SUPER_ADMIN':
         return <ShieldCheck className="w-5 h-5 text-emerald-600" />;
       case 'COMPANY_RECRUITER':
         return <Briefcase className="w-5 h-5 text-[#723ECF]" />;
-      case 'EXTERNAL_EVALUATOR':
+      case 'SUPER_ADMIN':
         return <Users className="w-5 h-5 text-indigo-600" />;
       default:
         return <GraduationCap className="w-5 h-5 text-[#723ECF]" />;

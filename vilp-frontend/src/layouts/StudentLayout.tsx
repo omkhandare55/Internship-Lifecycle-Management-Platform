@@ -14,13 +14,13 @@ import { ResponsivePortalLayout } from '@/components/ResponsivePortalLayout';
 
 const studentNavItems = [
   { to: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/student/profile', icon: User, label: 'My Profile' },
   { to: '/student/internships', icon: Briefcase, label: 'Internships' },
   { to: '/student/applications', icon: FileText, label: 'Applications' },
   { to: '/student/offers', icon: Award, label: 'Offers & NOC' },
   { to: '/student/progress', icon: TrendingUp, label: 'Progress' },
   { to: '/student/ai-advisor', icon: Sparkles, label: 'AI Advisor' },
   { to: '/student/certificates', icon: FileCheck, label: 'Certificates & PPO' },
+  { to: '/student/profile', icon: User, label: 'My Profile' },
 ];
 
 const studentMobileNav = [

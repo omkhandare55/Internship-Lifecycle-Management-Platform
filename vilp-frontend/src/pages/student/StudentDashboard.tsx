@@ -69,7 +69,7 @@ export function StudentDashboard() {
               <span>VERIFIED ACADEMIC PROFILE · {student?.studentNumber || 'REG-2026-001'}</span>
             </div>
             <h1 className="text-xl sm:text-3xl font-black uppercase text-[#0A2540] font-sans tracking-tight m-0">
-              STUDENT COMMAND // {student?.fullName || user?.email?.split('@')[0] || 'Verified Candidate'}
+              {student?.fullName || user?.email?.split('@')[0] || 'Verified Candidate'}
             </h1>
             <p className="text-xs text-slate-600 font-mono m-0">
               {student?.department?.name || 'Computer Science & Engineering'} · Semester {student?.semester || 6} (Batch of {student?.passingYear || 2026})

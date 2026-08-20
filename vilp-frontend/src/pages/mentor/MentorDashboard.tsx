@@ -116,13 +116,15 @@ export function MentorDashboard() {
                     <CheckCircle2 className="w-3 h-3" /> Up to date
                   </span>
                 </td>
-                <td className="px-4 py-3 text-end space-x-2">
-                  <Link to="/mentor/logbooks" className="btn-secondary text-xs px-2.5 py-1">
-                    Logbooks
-                  </Link>
-                  <Link to="/mentor/evaluations" className="btn-primary text-xs px-2.5 py-1">
-                    Evaluate
-                  </Link>
+                <td className="px-4 py-3 text-end">
+                  <div className="d-inline-flex align-items-center justify-content-end gap-2 text-nowrap">
+                    <Link to="/mentor/logbooks" className="btn-secondary text-xs px-3 py-1.5 text-nowrap">
+                      Logbooks
+                    </Link>
+                    <Link to="/mentor/evaluations" className="btn-primary text-xs px-3 py-1.5 text-nowrap">
+                      Evaluate
+                    </Link>
+                  </div>
                 </td>
               </tr>
             </tbody>

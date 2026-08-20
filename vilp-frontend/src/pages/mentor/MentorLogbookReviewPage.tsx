@@ -82,15 +82,15 @@ export function MentorLogbookReviewPage() {
       )}
 
       {/* Filter tabs */}
-      <div className="bg-white p-4 rounded-2xl border shadow-sm flex gap-2">
+      <div className="flex gap-2 overflow-x-auto">
         {['SUBMITTED', 'APPROVED', 'REVISIONS_REQUESTED', 'ALL'].map((s) => (
           <button
             key={s}
             onClick={() => setStatusFilter(s)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+            className={`px-3.5 py-2 text-xs font-bold transition-all shrink-0 cursor-pointer ${
               statusFilter === s
-                ? 'bg-brand text-white border-brand'
-                : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                ? 'btn-primary'
+                : 'btn-secondary'
             }`}
           >
             {s.replace(/_/g, ' ')}

@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Award,
   Printer,
-  QrCode,
   CheckCircle2,
   ExternalLink,
   Loader2,
@@ -117,10 +116,24 @@ export function StudentCertificatesPage() {
                 </div>
 
                 <div className="flex flex-col items-center justify-center text-center">
-                  <div className="w-16 h-16 border border-[#E0D3E8] bg-[#FEF8E7] p-1 flex items-center justify-center">
-                    <QrCode className="w-full h-full text-[#171024]" />
-                  </div>
-                  <span className="text-[8px] font-bold text-[#723ECF] mt-1 font-mono">SCAN TO VERIFY</span>
+                  <a
+                    href={`/verify/certificate/${cert.certificateNumber}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-18 h-18 border border-[#E0D3E8] bg-[#FEF8E7] p-1 flex items-center justify-center cursor-pointer group hover:scale-105 transition-transform shadow-xs"
+                    title="Click or Scan to Verify Authenticity"
+                  >
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+                        typeof window !== 'undefined'
+                          ? `${window.location.origin}/verify/certificate/${cert.certificateNumber}`
+                          : `https://internship-lifecycle-management-pla.vercel.app/verify/certificate/${cert.certificateNumber}`
+                      )}&bgcolor=FEF8E7&color=171024`}
+                      alt="Verification QR Code"
+                      className="w-full h-full object-contain"
+                    />
+                  </a>
+                  <span className="text-[8px] font-bold text-[#723ECF] mt-1 font-mono">SCAN / CLICK TO VERIFY</span>
                 </div>
 
                 <div className="space-y-1 sm:text-right">

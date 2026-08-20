@@ -58,7 +58,7 @@ export const realOtpService = {
   },
 
   /**
-   * Verifies the email OTP token
+   * Verifies the email OTP token against Supabase or session security store
    */
   async verifyEmailOtp(email: string, token: string): Promise<OtpResponse> {
     const cleanEmail = email.trim().toLowerCase();
@@ -68,23 +68,7 @@ export const realOtpService = {
       throw new Error('Please enter a valid 6-digit verification code.');
     }
 
-    const sessionEntry = activeTokens.get(cleanEmail);
-    const storedCode = typeof window !== 'undefined' ? sessionStorage.getItem(`vilp_email_otp_${cleanEmail}`) : null;
-
-    if (
-      (sessionEntry && sessionEntry.code === cleanToken && Date.now() < sessionEntry.expiresAt) ||
-      storedCode === cleanToken ||
-      cleanToken === '123456' ||
-      cleanToken === '000000' ||
-      (cleanToken.length === 6 && /^\d+$/.test(cleanToken))
-    ) {
-      activeTokens.delete(cleanEmail);
-      return {
-        success: true,
-        message: 'Institutional email address verified successfully by Verified Internship Lifecycle Platform (VILP)!',
-      };
-    }
-
+    // 1. Check live Supabase OTP verification first
     try {
       if (supabase) {
         const { error: err1 } = await supabase.auth.verifyOtp({
@@ -93,14 +77,36 @@ export const realOtpService = {
           type: 'email',
         });
         if (!err1) {
-          return { success: true, message: 'Email address verified successfully!' };
+          activeTokens.delete(cleanEmail);
+          try {
+            sessionStorage.removeItem(`vilp_email_otp_${cleanEmail}`);
+          } catch {}
+          return { success: true, message: 'Institutional email verified successfully!' };
         }
       }
     } catch {
-      // Fallback
+      // Continue to session token check
     }
 
-    throw new Error('Invalid verification code. Please check your inbox and try again.');
+    // 2. Check generated session security code
+    const sessionEntry = activeTokens.get(cleanEmail);
+    const storedCode = typeof window !== 'undefined' ? sessionStorage.getItem(`vilp_email_otp_${cleanEmail}`) : null;
+
+    if (
+      (sessionEntry && sessionEntry.code === cleanToken && Date.now() < sessionEntry.expiresAt) ||
+      (storedCode && storedCode === cleanToken)
+    ) {
+      activeTokens.delete(cleanEmail);
+      try {
+        sessionStorage.removeItem(`vilp_email_otp_${cleanEmail}`);
+      } catch {}
+      return {
+        success: true,
+        message: 'Institutional email address verified successfully!',
+      };
+    }
+
+    throw new Error('Invalid verification code. Please check your email inbox or click resend.');
   },
 
   /**

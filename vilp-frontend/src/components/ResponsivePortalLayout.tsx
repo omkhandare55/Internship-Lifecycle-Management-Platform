@@ -151,27 +151,7 @@ export function ResponsivePortalLayout({
         </div>
       )}
 
-      {/* ── Top Status Ribbon (#0A2540 Stripe Marine) ───────────────────────── */}
-      <div className="bg-[#0A2540] border-b border-[#1E3A5F] text-[10px] text-white px-3 sm:px-6 py-1.5 flex flex-wrap items-center justify-between gap-2 select-none shrink-0">
-        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-          <span className="font-bold text-[#2563EB]">[ VILP // GHR JALGAON ]</span>
-          <span className="text-slate-600 hidden sm:inline">|</span>
-          <span className="font-bold text-slate-200">PORTAL: {portalTitle.toUpperCase()}</span>
-          <span className="text-slate-600 hidden md:inline">|</span>
-          <span className="hidden lg:inline text-emerald-400 font-bold flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            AICTE §7.2 ACCREDITED COMPLIANCE ACTIVE
-          </span>
-        </div>
-
-        <div className="flex items-center gap-3 text-slate-400 font-mono">
-          <span className="truncate max-w-[140px] sm:max-w-none">AUTH: {user?.email || 'OFFLINE'}</span>
-          <span className="text-slate-600 hidden sm:inline">|</span>
-          <span className="text-[#2563EB] font-bold hidden sm:inline">[CTRL+B COLLAPSE]</span>
-        </div>
-      </div>
-
-      <div className="flex flex-1 relative overflow-hidden h-[calc(100vh-32px)]">
+      <div className="flex flex-1 relative overflow-hidden h-screen">
         {/* ── Desktop Sidebar (#F1F5F9) ────────────────────────────────────── */}
         <aside
           className={`hidden md:flex flex-col bg-[#F1F5F9] border-r border-[#CBD5E1] transition-all duration-150 select-none z-30 h-full shrink-0 overflow-hidden ${

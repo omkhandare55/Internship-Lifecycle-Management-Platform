@@ -4,10 +4,10 @@ import { ResponsivePortalLayout } from '@/components/ResponsivePortalLayout';
 
 const companyNavItems = [
   { to: '/company/dashboard',   icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/company/profile',     icon: Building2,       label: 'Company Profile' },
   { to: '/company/internships', icon: Briefcase,       label: 'Internships' },
   { to: '/company/applicants',  icon: Users,           label: 'Applicants' },
   { to: '/company/billing',     icon: CreditCard,      label: 'Billing & Tiers' },
+  { to: '/company/profile',     icon: Building2,       label: 'Company Profile' },
 ];
 
 export function CompanyLayout() {
