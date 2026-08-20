@@ -2,7 +2,7 @@ package com.vilp.admin.controller;
 
 import com.vilp.admin.dto.BulkIngestionDto;
 import com.vilp.admin.service.BulkStudentIngestionService;
-import com.vilp.common.ApiResponse;
+import com.vilp.common.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
