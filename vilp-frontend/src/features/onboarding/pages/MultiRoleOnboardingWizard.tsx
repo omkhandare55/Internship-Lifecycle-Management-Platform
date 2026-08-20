@@ -269,7 +269,11 @@ export function MultiRoleOnboardingWizard() {
         )}
 
         {/* ── Dynamic Form Container (Bootstrap Row/Col System) ─────────────── */}
-        <div className="bg-white border border-[#E2E8F0] rounded-xs p-3 p-sm-4 p-md-5 shadow-xs space-y-4 w-100">
+        <div className="relative bg-white border border-[#CBD5E1] rounded-[2px_12px_2px_12px] p-4 sm:p-6 p-md-8 shadow-[4px_4px_0px_0px_#0A2540] space-y-4 w-100">
+          {/* Corner Crosshair Decoration */}
+          <div className="absolute top-2 right-2.5 text-[10px] text-slate-300 font-bold select-none pointer-events-none">
+            +
+          </div>
           {/* =========================================================================
               STUDENT ONBOARDING FLOW
              ========================================================================= */}
@@ -277,7 +281,7 @@ export function MultiRoleOnboardingWizard() {
             <>
               {currentStep === 1 && (
                 <div className="space-y-4 animate-fade-in font-mono w-100">
-                  <div className="border-bottom border-[#E2E8F0] pb-3 space-y-1">
+                  <div className="border-bottom border-[#CBD5E1] pb-3 space-y-1">
                     <div className="d-inline-flex align-items-center gap-1.5 text-xs text-[#2563EB] font-bold">
                       <ShieldCheck className="w-4 h-4 text-[#F97316] shrink-0" /> STEP 1 // ACCOUNT IDENTITY &amp; EMAIL VERIFICATION
                     </div>
@@ -297,7 +301,7 @@ export function MultiRoleOnboardingWizard() {
                         placeholder="Enter full legal name"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-medium focus:border-[#2563EB] outline-hidden rounded-xs"
+                        className="input-field"
                       />
                     </div>
 
@@ -311,7 +315,7 @@ export function MultiRoleOnboardingWizard() {
                         placeholder="e.g. 9876543210"
                         value={mobileNumber}
                         onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, ''))}
-                        className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-medium focus:border-[#2563EB] outline-hidden rounded-xs"
+                        className="input-field"
                       />
                     </div>
 
@@ -322,7 +326,7 @@ export function MultiRoleOnboardingWizard() {
                         placeholder="••••••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs focus:border-[#2563EB] outline-hidden rounded-xs"
+                        className="input-field"
                       />
                     </div>
 
@@ -388,7 +392,7 @@ export function MultiRoleOnboardingWizard() {
                     </div>
                   </div>
 
-                  <div className="d-flex justify-content-end pt-3 border-top border-[#E2E8F0]">
+                  <div className="d-flex justify-content-end pt-3 border-top border-[#CBD5E1]">
                     <button
                       type="button"
                       disabled={!emailOtpVerified || !fullName || mobileNumber.length < 10}
@@ -396,11 +400,7 @@ export function MultiRoleOnboardingWizard() {
                         setErrorMessage('');
                         setCurrentStep(2);
                       }}
-                      className={`w-100 w-sm-auto px-5 py-3 font-bold text-xs d-flex align-items-center justify-content-center gap-2 rounded-xs shadow-xs min-h-[44px] ${
-                        emailOtpVerified && fullName && mobileNumber.length >= 10
-                          ? 'bg-[#2563EB] hover:bg-[#1d4ed8] text-white cursor-pointer'
-                          : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                      }`}
+                      className="btn-primary w-100 w-sm-auto min-h-[44px] cursor-pointer"
                     >
                       PROCEED TO INSTITUTIONAL DETAILS <ArrowRight className="w-4 h-4 shrink-0" />
                     </button>
@@ -410,7 +410,7 @@ export function MultiRoleOnboardingWizard() {
 
               {currentStep === 2 && (
                 <div className="space-y-4 animate-fade-in font-mono w-100">
-                  <div className="border-bottom border-[#E2E8F0] pb-3 space-y-1">
+                  <div className="border-bottom border-[#CBD5E1] pb-3 space-y-1">
                     <div className="d-inline-flex align-items-center gap-1.5 text-xs text-[#2563EB] font-bold">
                       <GraduationCap className="w-4 h-4 text-[#F97316] shrink-0" /> STEP 2 // ACADEMIC DETAILS
                     </div>
@@ -427,7 +427,7 @@ export function MultiRoleOnboardingWizard() {
                         placeholder="Enter college / institute name"
                         value={collegeName}
                         onChange={(e) => setCollegeName(e.target.value)}
-                        className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-medium focus:border-[#2563EB] outline-hidden rounded-xs"
+                        className="input-field"
                       />
                     </div>
 
@@ -438,7 +438,7 @@ export function MultiRoleOnboardingWizard() {
                         placeholder="Enter university name"
                         value={universityName}
                         onChange={(e) => setUniversityName(e.target.value)}
-                        className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-medium focus:border-[#2563EB] outline-hidden rounded-xs"
+                        className="input-field"
                       />
                     </div>
 
@@ -449,7 +449,7 @@ export function MultiRoleOnboardingWizard() {
                         placeholder="Enter branch / department"
                         value={branch}
                         onChange={(e) => setBranch(e.target.value)}
-                        className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-medium focus:border-[#2563EB] outline-hidden rounded-xs"
+                        className="input-field"
                       />
                     </div>
 
@@ -460,16 +460,16 @@ export function MultiRoleOnboardingWizard() {
                         placeholder="Enter university roll / enrollment number"
                         value={enrollmentNumber}
                         onChange={(e) => setEnrollmentNumber(e.target.value)}
-                        className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-bold focus:border-[#2563EB] outline-hidden rounded-xs"
+                        className="input-field font-bold"
                       />
                     </div>
                   </div>
 
-                  <div className="d-flex flex-column flex-sm-row justify-content-between gap-3 pt-3 border-top border-[#E2E8F0]">
+                  <div className="d-flex flex-column flex-sm-row justify-content-between gap-3 pt-3 border-top border-[#CBD5E1]">
                     <button
                       type="button"
                       onClick={() => setCurrentStep(1)}
-                      className="w-100 w-sm-auto px-4 py-2.5 bg-[#F1F5F9] hover:bg-white text-[#0A2540] border border-[#CBD5E1] font-bold text-xs d-flex align-items-center justify-content-center gap-2 rounded-xs min-h-[44px] cursor-pointer"
+                      className="btn-secondary w-100 w-sm-auto min-h-[44px] cursor-pointer"
                     >
                       <ArrowLeft className="w-4 h-4 shrink-0" /> PREVIOUS
                     </button>
@@ -477,7 +477,7 @@ export function MultiRoleOnboardingWizard() {
                       type="button"
                       disabled={!collegeName || !enrollmentNumber}
                       onClick={() => setCurrentStep(3)}
-                      className="w-100 w-sm-auto px-5 py-3 bg-[#2563EB] hover:bg-[#1d4ed8] disabled:opacity-50 text-white font-bold text-xs d-flex align-items-center justify-content-center gap-2 rounded-xs shadow-xs min-h-[44px] cursor-pointer"
+                      className="btn-primary w-100 w-sm-auto min-h-[44px] cursor-pointer"
                     >
                       RESUME INGESTION <ArrowRight className="w-4 h-4 shrink-0" />
                     </button>
@@ -487,7 +487,7 @@ export function MultiRoleOnboardingWizard() {
 
               {currentStep === 3 && (
                 <div className="space-y-4 animate-fade-in font-mono w-100">
-                  <div className="border-bottom border-[#E2E8F0] pb-3 space-y-1">
+                  <div className="border-bottom border-[#CBD5E1] pb-3 space-y-1">
                     <div className="d-inline-flex align-items-center gap-1.5 text-xs text-[#2563EB] font-bold">
                       <Upload className="w-4 h-4 text-[#F97316] shrink-0" /> STEP 3 // SMART RESUME DROP
                     </div>
@@ -496,11 +496,11 @@ export function MultiRoleOnboardingWizard() {
                     </h2>
                   </div>
 
-                  <div className="border-2 border-dashed border-[#2563EB] bg-[#F8FAFC] p-4 p-sm-5 text-center rounded-xs space-y-3 w-100">
+                  <div className="border-2 border-dashed border-[#2563EB] bg-[#F8FAFC] p-4 p-sm-6 text-center rounded-[2px_8px_2px_8px] space-y-3 w-100 shadow-[2px_2px_0px_0px_#CBD5E1]">
                     <FileText className="w-10 h-10 text-[#2563EB] mx-auto" />
                     <p className="text-xs text-slate-600 m-0">Supports PDF &bull; AI Entity Extractor</p>
                     <div className="d-flex flex-column flex-sm-row justify-content-center gap-3">
-                      <label className="px-4 py-2.5 bg-[#2563EB] text-white font-bold text-xs rounded-xs cursor-pointer hover:bg-[#1d4ed8] text-center min-h-[44px] d-flex align-items-center justify-content-center shadow-xs">
+                      <label className="btn-primary cursor-pointer text-center min-h-[44px] d-flex align-items-center justify-content-center">
                         CHOOSE RESUME FILE
                         <input
                           type="file"
@@ -514,18 +514,18 @@ export function MultiRoleOnboardingWizard() {
                     </div>
                   </div>
 
-                  <div className="d-flex flex-column flex-sm-row justify-content-between gap-3 pt-3 border-top border-[#E2E8F0]">
+                  <div className="d-flex flex-column flex-sm-row justify-content-between gap-3 pt-3 border-top border-[#CBD5E1]">
                     <button
                       type="button"
                       onClick={() => setCurrentStep(2)}
-                      className="w-100 w-sm-auto px-4 py-2.5 bg-[#F1F5F9] text-[#0A2540] border border-[#CBD5E1] font-bold text-xs d-flex align-items-center justify-content-center gap-2 rounded-xs min-h-[44px] cursor-pointer"
+                      className="btn-secondary w-100 w-sm-auto min-h-[44px] cursor-pointer"
                     >
                       <ArrowLeft className="w-4 h-4 shrink-0" /> PREVIOUS
                     </button>
                     <button
                       type="button"
                       onClick={() => handleFinishOnboarding()}
-                      className="w-100 w-sm-auto px-5 py-3 bg-[#2563EB] text-white font-bold text-xs rounded-xs shadow-xs min-h-[44px] cursor-pointer"
+                      className="btn-primary w-100 w-sm-auto min-h-[44px] cursor-pointer"
                     >
                       COMPLETE REGISTRATION &rarr;
                     </button>
@@ -540,7 +540,7 @@ export function MultiRoleOnboardingWizard() {
              ========================================================================= */}
           {roleParam !== 'STUDENT' && (
             <div className="space-y-4 animate-fade-in font-mono w-100">
-              <div className="border-bottom border-[#E2E8F0] pb-3 space-y-1">
+              <div className="border-bottom border-[#CBD5E1] pb-3 space-y-1">
                 <div className="d-inline-flex align-items-center gap-1.5 text-xs text-[#2563EB] font-bold">
                   <ShieldCheck className="w-4 h-4 text-[#F97316] shrink-0" /> {roleMeta.title.toUpperCase()} // REGISTRATION &amp; VERIFICATION
                 </div>
@@ -560,7 +560,7 @@ export function MultiRoleOnboardingWizard() {
                     placeholder="Enter full legal name"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-medium focus:border-[#2563EB] outline-hidden rounded-xs"
+                    className="input-field"
                   />
                 </div>
 
@@ -574,7 +574,7 @@ export function MultiRoleOnboardingWizard() {
                     placeholder="e.g. 9876543210"
                     value={mobileNumber}
                     onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, ''))}
-                    className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-medium focus:border-[#2563EB] outline-hidden rounded-xs"
+                    className="input-field"
                   />
                 </div>
 
@@ -587,7 +587,7 @@ export function MultiRoleOnboardingWizard() {
                     placeholder={roleParam === 'COMPANY_RECRUITER' ? 'recruiter@company.com' : 'official@institution.edu'}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-medium focus:border-[#2563EB] outline-hidden rounded-xs"
+                    className="input-field"
                   />
                 </div>
 
@@ -600,7 +600,7 @@ export function MultiRoleOnboardingWizard() {
                         placeholder="Enter organization / corporate entity name"
                         value={companyName}
                         onChange={(e) => setCompanyName(e.target.value)}
-                        className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-bold focus:border-[#2563EB] outline-hidden rounded-xs"
+                        className="input-field font-bold"
                       />
                     </div>
                     <div className="col-12 col-md-6 space-y-1.5">
@@ -610,7 +610,7 @@ export function MultiRoleOnboardingWizard() {
                         placeholder="https://yourcompany.com"
                         value={companyWebsite}
                         onChange={(e) => setCompanyWebsite(e.target.value)}
-                        className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs focus:border-[#2563EB] outline-hidden rounded-xs"
+                        className="input-field"
                       />
                     </div>
                   </>
@@ -623,7 +623,7 @@ export function MultiRoleOnboardingWizard() {
                         placeholder="Enter department name"
                         value={department}
                         onChange={(e) => setDepartment(e.target.value)}
-                        className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-medium focus:border-[#2563EB] outline-hidden rounded-xs"
+                        className="input-field"
                       />
                     </div>
                     <div className="col-12 col-md-6 space-y-1.5">
@@ -633,7 +633,7 @@ export function MultiRoleOnboardingWizard() {
                         placeholder="Enter employee / faculty ID"
                         value={employeeId}
                         onChange={(e) => setEmployeeId(e.target.value)}
-                        className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-bold focus:border-[#2563EB] outline-hidden rounded-xs"
+                        className="input-field font-bold"
                       />
                     </div>
                   </>
@@ -646,7 +646,7 @@ export function MultiRoleOnboardingWizard() {
                     placeholder="Enter designation (e.g. Associate Professor, Dean)"
                     value={designation}
                     onChange={(e) => setDesignation(e.target.value)}
-                    className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-medium focus:border-[#2563EB] outline-hidden rounded-xs"
+                    className="input-field"
                   />
                 </div>
 
@@ -656,18 +656,18 @@ export function MultiRoleOnboardingWizard() {
                     type="number"
                     value={experienceYears}
                     onChange={(e) => setExperienceYears(Number(e.target.value))}
-                    className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-bold focus:border-[#2563EB] outline-hidden rounded-xs"
+                    className="input-field font-bold"
                   />
                 </div>
               </div>
 
               {/* Final Submit */}
-              <div className="pt-3 border-top border-[#E2E8F0]">
+              <div className="pt-3 border-top border-[#CBD5E1]">
                 <button
                   type="button"
                   disabled={!fullName || !email || mobileNumber.length < 10}
                   onClick={handleFinishOnboarding}
-                  className="w-100 py-3.5 bg-[#2563EB] hover:bg-[#1d4ed8] disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider d-flex align-items-center justify-content-center gap-2 rounded-xs shadow-xs transition-all min-h-[44px] cursor-pointer"
+                  className="btn-primary w-100 min-h-[44px] cursor-pointer"
                 >
                   <Zap className="w-4 h-4 text-[#F97316] shrink-0" /> COMPLETE REGISTRATION &amp; ENTER DASHBOARD
                 </button>

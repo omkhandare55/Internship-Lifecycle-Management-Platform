@@ -102,7 +102,7 @@ export function ResetPasswordPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-medium focus:border-[#2563EB] outline-hidden rounded-xs"
+            className="input-field"
             placeholder="user@institution.edu"
           />
         </div>
@@ -116,7 +116,7 @@ export function ResetPasswordPage() {
             required
             value={token}
             onChange={(e) => setToken(e.target.value)}
-            className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-mono font-bold tracking-widest focus:border-[#2563EB] outline-hidden rounded-xs"
+            className="input-field font-mono font-bold tracking-widest"
             placeholder="Enter 6-digit Code"
           />
         </div>
@@ -130,7 +130,7 @@ export function ResetPasswordPage() {
             required
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs focus:border-[#2563EB] outline-hidden rounded-xs"
+            className="input-field"
             placeholder="••••••••••••"
           />
         </div>
@@ -142,7 +142,7 @@ export function ResetPasswordPage() {
             required
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs focus:border-[#2563EB] outline-hidden rounded-xs"
+            className="input-field"
             placeholder="••••••••••••"
           />
         </div>
@@ -150,7 +150,7 @@ export function ResetPasswordPage() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="btn-primary w-100 py-3 text-xs font-bold uppercase tracking-wider d-flex align-items-center justify-content-center gap-2 min-h-[44px] cursor-pointer"
+          className="btn-primary w-100 min-h-[44px] cursor-pointer"
         >
           {isSubmitting ? (
             <Loader2 className="w-4 h-4 animate-spin" />

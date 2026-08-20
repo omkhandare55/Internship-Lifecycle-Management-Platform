@@ -100,7 +100,7 @@ export function LoginPage() {
         type="button"
         onClick={handleGoogleLogin}
         disabled={googleLoading}
-        className="w-100 py-2.5 px-4 bg-white border border-[#CBD5E1] hover:bg-[#F8FAFC] text-[#0A2540] font-bold text-xs d-flex align-items-center justify-content-center gap-2.5 transition-colors shadow-xs font-mono uppercase rounded-xs cursor-pointer min-h-[44px]"
+        className="btn-secondary w-100 min-h-[44px] flex items-center justify-center gap-2.5 font-bold text-xs uppercase cursor-pointer"
       >
         {googleLoading ? (
           <Loader2 className="w-4 h-4 text-[#2563EB] animate-spin" />
@@ -144,7 +144,7 @@ export function LoginPage() {
             {...register('email')}
             type="email"
             placeholder="user@institution.edu"
-            className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-medium focus:border-[#2563EB] outline-hidden rounded-xs"
+            className="input-field"
           />
           {errors.email && <p className="text-[11px] text-red-600 font-bold m-0">{errors.email.message}</p>}
         </div>
@@ -166,7 +166,7 @@ export function LoginPage() {
               {...register('password')}
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••••••"
-              className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs focus:border-[#2563EB] outline-hidden rounded-xs"
+              className="input-field pr-10"
             />
             <button
               type="button"
@@ -184,7 +184,7 @@ export function LoginPage() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="btn-primary w-100 py-3 text-xs font-bold uppercase tracking-wider d-flex align-items-center justify-content-center gap-2 min-h-[44px] cursor-pointer"
+          className="btn-primary w-100 min-h-[44px] cursor-pointer"
         >
           {isSubmitting ? (
             <Loader2 className="w-4 h-4 animate-spin" />
