@@ -157,7 +157,7 @@ export function StudentDashboard() {
 
       {/* ── Main Two-Column Bootstrap Grid Layout ───────────────────────────── */}
       <div className="row g-4">
-        {/* Left 2 Cols: Active Placement & AI Radar */}
+        {/* Left 2 Cols: Active Placement & Smart Radar */}
         <div className="col-12 col-lg-8 space-y-4">
           {/* Active Internship Live Tracking Card */}
           <div className="border border-[#E2E8F0] bg-white p-4 p-sm-5 rounded-xs space-y-4 shadow-xs">
@@ -222,7 +222,7 @@ export function StudentDashboard() {
             </div>
           </div>
 
-          {/* AI Skill Radar & Opportunity Feed */}
+          {/* Smart Skill Radar & Opportunity Feed */}
           <div className="border border-[#E2E8F0] bg-white p-4 p-sm-5 rounded-xs space-y-3 shadow-xs">
             <div className="d-flex align-items-center justify-content-between border-bottom border-[#E2E8F0] pb-3">
               <div>

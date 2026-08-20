@@ -8,6 +8,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -22,6 +23,9 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+    @Value("${spring.profiles.active:default}")
+    private String activeProfile;
 
     // ─── Validation errors ─────────────────────────────────────────────────
 
@@ -85,7 +89,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleGenericException(Exception ex) {
         log.error("Unhandled exception: {}", ex.getMessage(), ex);
+        String message = ("dev".equals(activeProfile) || "local".equals(activeProfile))
+                ? ex.getClass().getSimpleName() + ": " + ex.getMessage()
+                : "An unexpected error occurred. Please try again.";
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("INTERNAL_ERROR", "An unexpected error occurred. Please try again."));
+                .body(ApiResponse.error("INTERNAL_ERROR", message));
     }
 }

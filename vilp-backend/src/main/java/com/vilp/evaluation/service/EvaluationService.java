@@ -4,6 +4,8 @@ import com.vilp.evaluation.dto.EvaluationDto;
 import com.vilp.evaluation.entity.Evaluation;
 import com.vilp.evaluation.repository.EvaluationRepository;
 import com.vilp.exception.ResourceNotFoundException;
+import com.vilp.notification.dto.NotificationDto;
+import com.vilp.notification.service.NotificationService;
 import com.vilp.internship.entity.Internship;
 import com.vilp.internship.repository.InternshipRepository;
 import com.vilp.student.entity.Student;
@@ -29,6 +31,7 @@ public class EvaluationService {
     private final StudentRepository studentRepository;
     private final InternshipRepository internshipRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     public EvaluationDto.EvaluationResponse submitEvaluation(UUID evaluatorUserId, EvaluationDto.SubmitEvaluationRequest req) {
         User evaluator = userRepository.findById(evaluatorUserId)
@@ -63,6 +66,15 @@ public class EvaluationService {
 
         evaluationRepository.save(evaluation);
         log.info("Evaluation ({}) submitted by user {} for student {}", req.getEvaluationType(), evaluatorUserId, student.getId());
+
+        tryNotify(() -> notificationService.createNotification(
+                NotificationDto.CreateNotificationRequest.builder()
+                        .userId(student.getUser().getId())
+                        .title("New Evaluation Submitted")
+                        .message("Your " + evaluation.getEvaluationType().toLowerCase() + " evaluation has been submitted")
+                        .type("EVALUATION_SUBMITTED")
+                        .build()));
+
         return EvaluationDto.toResponse(evaluation);
     }
 
@@ -82,5 +94,10 @@ public class EvaluationService {
                 .stream()
                 .map(EvaluationDto::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    private void tryNotify(Runnable action) {
+        try { action.run(); }
+        catch (Exception e) { log.debug("Notification skipped: {}", e.getMessage()); }
     }
 }

@@ -6,6 +6,8 @@ import com.vilp.exception.AuthException;
 import com.vilp.exception.ResourceNotFoundException;
 import com.vilp.internship.entity.Internship;
 import com.vilp.internship.repository.InternshipRepository;
+import com.vilp.notification.dto.NotificationDto;
+import com.vilp.notification.service.NotificationService;
 import com.vilp.ppo.dto.PpoDto;
 import com.vilp.ppo.entity.PpoRecord;
 import com.vilp.ppo.repository.PpoRecordRepository;
@@ -33,6 +35,7 @@ public class PpoService {
     private final CompanyRepository companyRepository;
     private final StudentRepository studentRepository;
     private final InternshipRepository internshipRepository;
+    private final NotificationService notificationService;
 
     public PpoDto.PpoResponse createPpo(UUID companyUserId, PpoDto.CreatePpoRequest req) {
         Company company = companyRepository.findByUserId(companyUserId)
@@ -61,6 +64,15 @@ public class PpoService {
 
         ppoRecordRepository.save(ppo);
         log.info("PPO registered by company {} for student {} with CTC {}", company.getId(), student.getId(), req.getCtcAnnual());
+
+        tryNotify(() -> notificationService.createNotification(
+                NotificationDto.CreateNotificationRequest.builder()
+                        .userId(student.getUser().getId())
+                        .title("New Pre-Placement Offer")
+                        .message("You received a PPO from " + company.getName() + " — " + req.getDesignation())
+                        .type("PPO_RECEIVED")
+                        .build()));
+
         return PpoDto.toResponse(ppo);
     }
 
@@ -85,6 +97,15 @@ public class PpoService {
         }
 
         ppoRecordRepository.save(ppo);
+
+        tryNotify(() -> notificationService.createNotification(
+                NotificationDto.CreateNotificationRequest.builder()
+                        .userId(ppo.getCompany().getUser().getId())
+                        .title("PPO " + ppo.getStatus())
+                        .message(student.getFullName() + " has " + ppo.getStatus().toLowerCase() + " the PPO for " + ppo.getDesignation())
+                        .type("PPO_RESPONSE")
+                        .build()));
+
         return PpoDto.toResponse(ppo);
     }
 
@@ -105,5 +126,10 @@ public class PpoService {
                     .map(PpoDto::toResponse);
         }
         return ppoRecordRepository.findAll(pageable).map(PpoDto::toResponse);
+    }
+
+    private void tryNotify(Runnable action) {
+        try { action.run(); }
+        catch (Exception e) { log.debug("Notification skipped: {}", e.getMessage()); }
     }
 }

@@ -31,3 +31,21 @@ export const tokenUtils = {
     }
   },
 };
+
+export const isTokenExpired = tokenUtils.isTokenExpired;
+
+/**
+ * Parse JWT payload without verification (client-side claims extraction).
+ * Used to extract role from token for tamper-proof route guards.
+ */
+export function parseJwtPayload(token: string | null): Record<string, unknown> | null {
+  if (!token) return null;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
+    return JSON.parse(payload);
+  } catch {
+    return null;
+  }
+}

@@ -42,10 +42,10 @@ export function StudentAiAdvisorPage() {
       <div className="bg-[#FEF8E7] border border-[#E0D3E8] p-6 sm:p-8 space-y-3">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-white text-xs text-[#723ECF] border border-[#E0D3E8] font-bold">
           <Sparkles className="w-3.5 h-3.5 text-[#ED4B86]" />
-          <span>NEURAL CAREER RADAR // BATCH 2026 SPECIFICATION</span>
+          <span>SMART CAREER RADAR // BATCH 2026 SPECIFICATION</span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-black uppercase text-[#171024] font-sans tracking-tight">
-          AI Career Intelligence &amp; Skill Gap Radar
+          Smart Career Intelligence &amp; Skill Gap Radar
         </h1>
         <p className="text-xs text-zinc-600 font-mono max-w-3xl">
           Automated profile strength scoring, deterministic keyword extraction, and personalized opportunity matching based on AICTE placement cutoffs.
@@ -140,13 +140,11 @@ export function StudentAiAdvisorPage() {
         </div>
       </div>
 
-      {/* ── AI Matching Opportunities Feed ─────────────────────────────────── */}
+      {/* ── Smart Matching Opportunities Feed ─────────────────────────────────── */}
       <div className="border border-[#E0D3E8] bg-white p-6 sm:p-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E0D3E8] pb-4">
           <div>
-            <span className="text-[10px] text-[#723ECF] font-bold uppercase tracking-wider block">
-              RECOMMENDED BY AI RADAR
-            </span>
+            <h3 className="text-xl font-mono text-neon-green mb-8 flex items-center tracking-widest"><span className="w-2 h-2 bg-neon-green rounded-full mr-3 shadow-glow-green"></span>RECOMMENDED BY SMART RADAR</h3>
             <h2 className="text-xl font-black text-[#171024] uppercase font-sans">
               Matched Opportunities with Deterministic Fit
             </h2>
