@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ShieldOff, LogIn } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -12,17 +11,16 @@ import { useAuthStore } from '@/stores/authStore';
  */
 export function SessionExpiredModal() {
   const sessionExpired = useAuthStore((s) => s.sessionExpired);
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (sessionExpired) {
       // Small delay so any in-flight renders complete
       const timer = setTimeout(() => {
-        navigate('/auth/login', { replace: true });
+        window.location.replace('/auth/login');
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [sessionExpired, navigate]);
+  }, [sessionExpired]);
 
   if (!sessionExpired) return null;
 
@@ -62,7 +60,7 @@ export function SessionExpiredModal() {
 
         {/* Manual redirect button */}
         <button
-          onClick={() => navigate('/auth/login', { replace: true })}
+          onClick={() => window.location.replace('/auth/login')}
           className="w-full py-2.5 px-4 bg-[#723ECF] text-white text-xs font-bold uppercase flex items-center justify-center gap-2 hover:bg-[#5f33ad] transition-colors"
         >
           <LogIn className="w-3.5 h-3.5" />
