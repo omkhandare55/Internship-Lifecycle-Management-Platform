@@ -76,6 +76,16 @@ public class CertificateService {
         internship.setStatus("COMPLETED");
         internshipRepository.save(internship);
 
+        tryNotify(() -> notificationService.createNotification(
+            NotificationDto.CreateNotificationRequest.builder()
+                .userId(student.getUser().getId())
+                .title("Internship Certificate Issued")
+                .message("Your completion certificate for '" + internship.getTitle() +
+                         "' has been issued. Certificate #: " + certificateNumber + ". Grade: " + grade + ".")
+                .type("SUCCESS")
+                .targetUrl("/student/certificates")
+                .build()));
+
         log.info("Certificate {} issued for student {} on internship {}", certificateNumber, student.getId(), internship.getId());
         return CertificateDto.toResponse(certificate);
     }
@@ -110,6 +120,17 @@ public class CertificateService {
             return HexFormat.of().formatHex(hash);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("SHA-256 algorithm unavailable", e);
+        }
+    }
+
+    /**
+     * Fire-and-forget notification — notification failure must never break the main workflow.
+     */
+    private void tryNotify(Runnable notificationTask) {
+        try {
+            notificationTask.run();
+        } catch (Exception e) {
+            log.warn("Notification dispatch failed (non-fatal): {}", e.getMessage());
         }
     }
 }
