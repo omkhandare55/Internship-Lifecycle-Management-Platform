@@ -22,12 +22,25 @@ export function OAuthCallbackPage() {
 
         if (data.session) {
           const sessionUser = data.session.user;
-          const role = (sessionUser.user_metadata?.role as any) || 'STUDENT';
+          const email = sessionUser.email || '';
+          const fullName = sessionUser.user_metadata?.full_name || sessionUser.user_metadata?.name || '';
+          const existingRole = sessionUser.user_metadata?.role as any;
+          const isOnboarded = localStorage.getItem(`vilp_user_onboarded_${sessionUser.id}`) === 'true' || !!sessionUser.user_metadata?.onboarded;
 
+          // If new user who has not completed role registration, route them to register / select role first
+          if (!isOnboarded && !existingRole) {
+            setStatus('success');
+            setTimeout(() => {
+              navigate(`/onboarding/roles?email=${encodeURIComponent(email)}&name=${encodeURIComponent(fullName)}&googleAuth=true`);
+            }, 600);
+            return;
+          }
+
+          // Existing onboarded user
           const userObj = {
             id: sessionUser.id,
-            email: sessionUser.email || '',
-            role: role,
+            email: email,
+            role: existingRole || 'STUDENT',
             emailVerified: true,
             createdAt: sessionUser.created_at,
           };
@@ -36,10 +49,10 @@ export function OAuthCallbackPage() {
           setStatus('success');
 
           setTimeout(() => {
-            if (role === 'COMPANY') navigate('/company/dashboard');
-            else if (role === 'MENTOR') navigate('/mentor/dashboard');
-            else if (role === 'TNP_OFFICER' || role === 'TNP_HEAD') navigate('/tnp/dashboard');
-            else if (role === 'SUPER_ADMIN') navigate('/admin/dashboard');
+            if (existingRole === 'COMPANY') navigate('/company/dashboard');
+            else if (existingRole === 'MENTOR') navigate('/mentor/dashboard');
+            else if (existingRole === 'TNP_OFFICER' || existingRole === 'TNP_HEAD') navigate('/tnp/dashboard');
+            else if (existingRole === 'SUPER_ADMIN') navigate('/admin/dashboard');
             else navigate('/student/dashboard');
           }, 800);
         } else {
@@ -47,7 +60,7 @@ export function OAuthCallbackPage() {
           const hash = window.location.hash;
           if (hash && hash.includes('access_token')) {
             setStatus('success');
-            setTimeout(() => navigate('/student/dashboard'), 800);
+            setTimeout(() => navigate('/onboarding/roles?googleAuth=true'), 800);
           } else {
             navigate('/auth/login');
           }
@@ -62,16 +75,16 @@ export function OAuthCallbackPage() {
   }, [navigate, setAuth]);
 
   return (
-    <div className="min-h-screen bg-[#F4EEF7] flex flex-col items-center justify-center p-4 text-[#171024]">
-      <div className="max-w-md w-full bg-white p-8 border border-[#E0D3E8] rounded-sm shadow-sm text-center space-y-4">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-4 text-[#0F172A] font-mono">
+      <div className="max-w-md w-full bg-white p-6 sm:p-8 border border-[#CBD5E1] rounded-xs shadow-xs text-center space-y-4">
         {status === 'loading' && (
           <>
-            <Loader2 className="w-10 h-10 text-[#723ECF] animate-spin mx-auto" />
-            <h2 className="font-bold text-base font-['Space_Grotesk']">
+            <Loader2 className="w-10 h-10 text-[#2563EB] animate-spin mx-auto" />
+            <h2 className="font-bold text-base uppercase font-sans text-[#0A2540] m-0">
               Authenticating with Google...
             </h2>
-            <p className="text-xs text-[#5D4A75]">
-              Validating identity tokens with Supabase Auth provider...
+            <p className="text-xs text-slate-600 font-mono m-0">
+              Validating identity credentials with Verified Internship Lifecycle Platform (VILP)...
             </p>
           </>
         )}
@@ -79,23 +92,25 @@ export function OAuthCallbackPage() {
         {status === 'success' && (
           <>
             <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto" />
-            <h2 className="font-bold text-base text-emerald-900 font-['Space_Grotesk']">
-              Authentication Successful
+            <h2 className="font-bold text-base text-emerald-900 uppercase font-sans m-0">
+              Google Identity Verified
             </h2>
-            <p className="text-xs text-emerald-700">Redirecting to your VILP portal...</p>
+            <p className="text-xs text-emerald-700 font-mono m-0">
+              Routing to institutional profile setup...
+            </p>
           </>
         )}
 
         {status === 'error' && (
           <>
-            <AlertCircle className="w-10 h-10 text-rose-600 mx-auto" />
-            <h2 className="font-bold text-base text-rose-900 font-['Space_Grotesk']">
+            <AlertCircle className="w-10 h-10 text-red-600 mx-auto" />
+            <h2 className="font-bold text-base text-red-900 uppercase font-sans m-0">
               Authentication Failed
             </h2>
-            <p className="text-xs text-rose-700">{errorMsg}</p>
+            <p className="text-xs text-red-700 font-mono m-0">{errorMsg}</p>
             <button
               onClick={() => navigate('/auth/login')}
-              className="mt-4 px-4 py-2 bg-[#723ECF] text-white text-xs font-bold rounded-sm"
+              className="mt-4 px-4 py-2 bg-[#0A2540] text-white text-xs font-bold font-mono uppercase rounded-xs"
             >
               Return to Login
             </button>

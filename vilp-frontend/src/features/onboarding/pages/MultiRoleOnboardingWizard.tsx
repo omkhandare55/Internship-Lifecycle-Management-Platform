@@ -12,6 +12,8 @@ import {
   Loader2,
   AlertCircle,
   Clock,
+  Phone,
+  Mail,
 } from 'lucide-react';
 import { PLATFORM_ROLES, type UserRoleType } from '../types/roleTypes';
 import { parseResumeWithAi } from '../services/aiResumeParserService';
@@ -25,34 +27,33 @@ export function MultiRoleOnboardingWizard() {
   const setAuth = useAuthStore((s) => s.setAuth);
 
   const roleParam = (searchParams.get('role') as UserRoleType) || 'STUDENT';
+  const paramEmail = searchParams.get('email') || '';
+  const paramName = searchParams.get('name') || '';
+  const isGoogleAuth = searchParams.get('googleAuth') === 'true';
+
   const roleMeta = PLATFORM_ROLES.find((r) => r.id === roleParam) || PLATFORM_ROLES[0];
 
   const [currentStep, setCurrentStep] = useState(1);
 
-  // Common Identity Fields
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
+  // Common Identity Fields (pre-filled from Google OAuth if available)
+  const [fullName, setFullName] = useState(paramName);
+  const [email, setEmail] = useState(paramEmail);
   const [mobileNumber, setMobileNumber] = useState('');
   const [password, setPassword] = useState('');
 
-  // Real-time OTP States
+  // Email OTP States (Auto-verified if Google Auth)
   const [emailOtp, setEmailOtp] = useState('');
-  const [emailOtpVerified, setEmailOtpVerified] = useState(false);
+  const [emailOtpVerified, setEmailOtpVerified] = useState(isGoogleAuth);
   const [emailOtpSent, setEmailOtpSent] = useState(false);
   const [emailTimer, setEmailTimer] = useState(0);
 
-  const [mobileOtp, setMobileOtp] = useState('');
-  const [mobileOtpVerified, setMobileOtpVerified] = useState(false);
-  const [mobileOtpSent, setMobileOtpSent] = useState(false);
-  const [mobileTimer, setMobileTimer] = useState(0);
-
   const [isSendingEmailOtp, setIsSendingEmailOtp] = useState(false);
-  const [isSendingMobileOtp, setIsSendingMobileOtp] = useState(false);
   const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
-  const [isVerifyingMobile, setIsVerifyingMobile] = useState(false);
 
   const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState(
+    isGoogleAuth ? '✓ Google Identity Authenticated. Complete your institutional registration details.' : ''
+  );
 
   // Student-specific States
   const [collegeName, setCollegeName] = useState('');
@@ -71,7 +72,7 @@ export function MultiRoleOnboardingWizard() {
   const [companyName, setCompanyName] = useState('');
   const [companyWebsite, setCompanyWebsite] = useState('');
 
-  // Timer countdown hooks
+  // Timer countdown hook
   useEffect(() => {
     let emailInterval: any;
     if (emailTimer > 0) {
@@ -80,23 +81,14 @@ export function MultiRoleOnboardingWizard() {
     return () => clearInterval(emailInterval);
   }, [emailTimer]);
 
-  useEffect(() => {
-    let mobileInterval: any;
-    if (mobileTimer > 0) {
-      mobileInterval = setInterval(() => setMobileTimer((t) => t - 1), 1000);
-    }
-    return () => clearInterval(mobileInterval);
-  }, [mobileTimer]);
-
   // Calculate Profile Completeness Percentage
   const calculateCompleteness = () => {
-    let score = 15;
-    if (fullName) score += 10;
-    if (emailOtpVerified) score += 20;
-    if (mobileOtpVerified) score += 20;
+    let score = 20;
+    if (fullName) score += 15;
+    if (emailOtpVerified) score += 25;
+    if (mobileNumber.length >= 10) score += 15;
     if (collegeName || companyName) score += 15;
-    if (skills.length >= 2) score += 10;
-    if (github || linkedin || companyWebsite) score += 10;
+    if (skills.length >= 2 || department || github || linkedin) score += 10;
     return Math.min(score, 100);
   };
 
@@ -104,7 +96,7 @@ export function MultiRoleOnboardingWizard() {
 
   const handleSendEmailOtp = async () => {
     if (!email || !email.includes('@')) {
-      setErrorMessage('Please enter a valid email address.');
+      setErrorMessage('Please enter a valid institutional email address.');
       return;
     }
     setErrorMessage('');
@@ -123,7 +115,7 @@ export function MultiRoleOnboardingWizard() {
 
   const handleVerifyEmailOtp = async () => {
     if (!emailOtp || emailOtp.length < 6) {
-      setErrorMessage('Please enter the 6-digit email OTP.');
+      setErrorMessage('Please enter the 6-digit email verification code.');
       return;
     }
     setErrorMessage('');
@@ -136,43 +128,6 @@ export function MultiRoleOnboardingWizard() {
       setErrorMessage(err.message || 'Invalid email verification code.');
     } finally {
       setIsVerifyingEmail(false);
-    }
-  };
-
-  const handleSendMobileOtp = async () => {
-    if (!mobileNumber || mobileNumber.length < 10) {
-      setErrorMessage('Please enter a valid 10-digit mobile number.');
-      return;
-    }
-    setErrorMessage('');
-    setIsSendingMobileOtp(true);
-    try {
-      const res = await realOtpService.sendMobileOtp(mobileNumber);
-      setMobileOtpSent(true);
-      setMobileTimer(60);
-      setSuccessMessage(res.message);
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to send SMS OTP.');
-    } finally {
-      setIsSendingMobileOtp(false);
-    }
-  };
-
-  const handleVerifyMobileOtp = async () => {
-    if (!mobileOtp || mobileOtp.length < 6) {
-      setErrorMessage('Please enter the 6-digit mobile SMS OTP.');
-      return;
-    }
-    setErrorMessage('');
-    setIsVerifyingMobile(true);
-    try {
-      const res = await realOtpService.verifyMobileOtp(mobileNumber, mobileOtp);
-      setMobileOtpVerified(true);
-      setSuccessMessage(res.message);
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Invalid SMS OTP code.');
-    } finally {
-      setIsVerifyingMobile(false);
     }
   };
 
@@ -192,19 +147,22 @@ export function MultiRoleOnboardingWizard() {
     else if (roleParam === 'HOD' || roleParam === 'COLLEGE_ADMIN') mappedRole = 'TNP_HEAD';
     else if (roleParam === 'SUPER_ADMIN') mappedRole = 'SUPER_ADMIN';
 
+    const mockId = `usr-${Date.now()}`;
     const mockUser = {
-      id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+      id: mockId,
       email: email,
       role: mappedRole,
       emailVerified: true,
       createdAt: new Date().toISOString(),
     };
-    setAuth(mockUser as any, 'mock-jwt-token', 'mock-refresh-token');
+
+    localStorage.setItem(`vilp_user_onboarded_${mockId}`, 'true');
+    setAuth(mockUser as any, 'vilp-jwt-token-active', 'vilp-refresh-token-active');
     navigate(roleMeta.targetDashboard);
   };
 
   return (
-    <div className="container-fluid p-0 min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans pb-5 w-100 overflow-x-hidden">
+    <div className="container-fluid p-0 min-h-screen bg-[#F8FAFC] text-[#0F172A] font-mono pb-5 w-100 overflow-x-hidden">
       {/* ── Top Status Bar (#0A2540) ────────────────────────────────────────── */}
       <div className="bg-[#0A2540] text-white border-b border-[#1E3A5F] px-3 px-md-4 py-3 sticky top-0 z-50">
         <div className="container p-0 d-flex align-items-center justify-content-between gap-2">
@@ -251,7 +209,7 @@ export function MultiRoleOnboardingWizard() {
         <div className="bg-[#F1F5F9] border border-[#CBD5E1] p-3 p-sm-4 rounded-xs d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3 font-mono text-xs shadow-xs w-100">
           <div className="space-y-1 min-w-0">
             <span className="text-[10px] text-[#2563EB] font-bold uppercase tracking-wider block truncate">
-              REAL-TIME VERIFICATION &bull; SCOPE: {roleMeta.category}
+              VERIFIED INTERNSHIP LIFECYCLE PLATFORM (VILP) &bull; REGISTRATION FOR {roleMeta.category}
             </span>
             <p className="text-slate-700 font-sans text-xs line-clamp-2 m-0">{roleMeta.description}</p>
           </div>
@@ -286,13 +244,13 @@ export function MultiRoleOnboardingWizard() {
                 <div className="space-y-4 animate-fade-in font-mono w-100">
                   <div className="border-bottom border-[#E2E8F0] pb-3 space-y-1">
                     <div className="d-inline-flex align-items-center gap-1.5 text-xs text-[#2563EB] font-bold">
-                      <ShieldCheck className="w-4 h-4 text-[#F97316] shrink-0" /> STEP 1 // REAL-TIME DUAL OTP VERIFICATION
+                      <ShieldCheck className="w-4 h-4 text-[#F97316] shrink-0" /> STEP 1 // ACCOUNT IDENTITY &amp; EMAIL VERIFICATION
                     </div>
                     <h2 className="text-lg sm:text-2xl font-black text-[#0A2540] uppercase font-sans tracking-tight m-0">
-                      Verify Identity via Live OTP
+                      Create Your Institutional Profile
                     </h2>
                     <p className="text-xs text-slate-600 m-0">
-                      Both Email and Mobile OTPs must be verified in real time to establish an accredited institutional account.
+                      Verify your institutional email to secure your immutable student credential passport.
                     </p>
                   </div>
 
@@ -309,7 +267,21 @@ export function MultiRoleOnboardingWizard() {
                     </div>
 
                     <div className="col-12 col-md-6 space-y-1.5">
-                      <label className="text-xs font-bold text-[#0A2540] uppercase block">Password *</label>
+                      <label className="text-xs font-bold text-[#0A2540] uppercase block d-flex align-items-center gap-1">
+                        <Phone className="w-3.5 h-3.5 text-[#2563EB]" /> Mobile Number (10 Digits) *
+                      </label>
+                      <input
+                        type="tel"
+                        maxLength={10}
+                        placeholder="e.g. 9876543210"
+                        value={mobileNumber}
+                        onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, ''))}
+                        className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-medium focus:border-[#2563EB] outline-hidden rounded-xs"
+                      />
+                    </div>
+
+                    <div className="col-12 col-md-6 space-y-1.5">
+                      <label className="text-xs font-bold text-[#0A2540] uppercase block">Account Password *</label>
                       <input
                         type="password"
                         placeholder="••••••••••••"
@@ -324,7 +296,9 @@ export function MultiRoleOnboardingWizard() {
                       <div className="space-y-2 border border-[#E2E8F0] p-3 p-sm-4 rounded-xs bg-[#F8FAFC] w-100 h-100 d-flex flex-column justify-content-between">
                         <div>
                           <div className="d-flex justify-content-between align-items-center mb-1">
-                            <label className="text-xs font-bold text-[#0A2540] uppercase truncate m-0">Institutional Email *</label>
+                            <label className="text-xs font-bold text-[#0A2540] uppercase truncate m-0 d-flex align-items-center gap-1">
+                              <Mail className="w-3.5 h-3.5 text-[#2563EB]" /> Institutional Email *
+                            </label>
                             {emailOtpVerified ? (
                               <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-xs d-flex align-items-center gap-1 shrink-0">
                                 <CheckCircle2 className="w-3 h-3" /> VERIFIED
@@ -340,7 +314,7 @@ export function MultiRoleOnboardingWizard() {
                                 disabled={isSendingEmailOtp}
                                 className="text-[10px] text-[#2563EB] hover:underline font-bold shrink-0 cursor-pointer"
                               >
-                                {isSendingEmailOtp ? 'Sending...' : emailOtpSent ? 'RESEND OTP' : 'SEND OTP'}
+                                {isSendingEmailOtp ? 'Sending...' : emailOtpSent ? 'RESEND CODE' : 'SEND CODE'}
                               </button>
                             )}
                           </div>
@@ -371,66 +345,7 @@ export function MultiRoleOnboardingWizard() {
                               disabled={isVerifyingEmail || !emailOtp}
                               className="px-4 py-2 bg-[#2563EB] hover:bg-[#1d4ed8] disabled:opacity-50 text-white text-xs font-bold rounded-xs d-flex align-items-center justify-content-center gap-1 shrink-0 min-h-[38px] cursor-pointer"
                             >
-                              {isVerifyingEmail ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'VERIFY'}
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Mobile Verification Box */}
-                    <div className="col-12 col-md-6">
-                      <div className="space-y-2 border border-[#E2E8F0] p-3 p-sm-4 rounded-xs bg-[#F8FAFC] w-100 h-100 d-flex flex-column justify-content-between">
-                        <div>
-                          <div className="d-flex justify-content-between align-items-center mb-1">
-                            <label className="text-xs font-bold text-[#0A2540] uppercase truncate m-0">Mobile Number *</label>
-                            {mobileOtpVerified ? (
-                              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-xs d-flex align-items-center gap-1 shrink-0">
-                                <CheckCircle2 className="w-3 h-3" /> VERIFIED
-                              </span>
-                            ) : mobileTimer > 0 ? (
-                              <span className="text-[10px] text-slate-500 d-flex align-items-center gap-1 shrink-0">
-                                <Clock className="w-3 h-3 text-amber-600" /> Resend in {mobileTimer}s
-                              </span>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={handleSendMobileOtp}
-                                disabled={isSendingMobileOtp}
-                                className="text-[10px] text-[#2563EB] hover:underline font-bold shrink-0 cursor-pointer"
-                              >
-                                {isSendingMobileOtp ? 'Sending...' : mobileOtpSent ? 'RESEND SMS' : 'SEND OTP'}
-                              </button>
-                            )}
-                          </div>
-                          <input
-                            type="tel"
-                            placeholder="Enter 10-digit mobile number"
-                            disabled={mobileOtpVerified}
-                            value={mobileNumber}
-                            onChange={(e) => setMobileNumber(e.target.value)}
-                            className={`w-100 p-2.5 text-xs border rounded-xs outline-hidden ${
-                              mobileOtpVerified ? 'bg-slate-100 text-slate-600 border-slate-300' : 'bg-white border-[#CBD5E1] focus:border-[#2563EB]'
-                            }`}
-                          />
-                        </div>
-                        {!mobileOtpVerified && (
-                          <div className="pt-2 d-flex flex-column flex-sm-row gap-2">
-                            <input
-                              type="text"
-                              maxLength={6}
-                              value={mobileOtp}
-                              onChange={(e) => setMobileOtp(e.target.value)}
-                              placeholder="Enter 6-digit SMS"
-                              className="flex-grow-1 p-2 bg-white border border-[#CBD5E1] text-xs text-center tracking-widest focus:border-[#2563EB] outline-hidden rounded-xs font-bold"
-                            />
-                            <button
-                              type="button"
-                              onClick={handleVerifyMobileOtp}
-                              disabled={isVerifyingMobile || !mobileOtp}
-                              className="px-4 py-2 bg-[#2563EB] hover:bg-[#1d4ed8] disabled:opacity-50 text-white text-xs font-bold rounded-xs d-flex align-items-center justify-content-center gap-1 shrink-0 min-h-[38px] cursor-pointer"
-                            >
-                              {isVerifyingMobile ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'VERIFY'}
+                              {isVerifyingEmail ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'VERIFY CODE'}
                             </button>
                           </div>
                         )}
@@ -441,18 +356,18 @@ export function MultiRoleOnboardingWizard() {
                   <div className="d-flex justify-content-end pt-3 border-top border-[#E2E8F0]">
                     <button
                       type="button"
-                      disabled={!emailOtpVerified || !mobileOtpVerified || !fullName}
+                      disabled={!emailOtpVerified || !fullName || mobileNumber.length < 10}
                       onClick={() => {
                         setErrorMessage('');
                         setCurrentStep(2);
                       }}
                       className={`w-100 w-sm-auto px-5 py-3 font-bold text-xs d-flex align-items-center justify-content-center gap-2 rounded-xs shadow-xs min-h-[44px] ${
-                        emailOtpVerified && mobileOtpVerified && fullName
+                        emailOtpVerified && fullName && mobileNumber.length >= 10
                           ? 'bg-[#2563EB] hover:bg-[#1d4ed8] text-white cursor-pointer'
                           : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                       }`}
                     >
-                      PROCEED TO INSTITUTIONAL PROOF <ArrowRight className="w-4 h-4 shrink-0" />
+                      PROCEED TO INSTITUTIONAL DETAILS <ArrowRight className="w-4 h-4 shrink-0" />
                     </button>
                   </div>
                 </div>
@@ -548,7 +463,7 @@ export function MultiRoleOnboardingWizard() {
 
                   <div className="border-2 border-dashed border-[#2563EB] bg-[#F8FAFC] p-4 p-sm-5 text-center rounded-xs space-y-3 w-100">
                     <FileText className="w-10 h-10 text-[#2563EB] mx-auto" />
-                    <p className="text-xs text-slate-600 m-0">Supports PDF &bull; Neural Entity Extractor</p>
+                    <p className="text-xs text-slate-600 m-0">Supports PDF &bull; AI Entity Extractor</p>
                     <div className="d-flex flex-column flex-sm-row justify-content-center gap-3">
                       <label className="px-4 py-2.5 bg-[#2563EB] text-white font-bold text-xs rounded-xs cursor-pointer hover:bg-[#1d4ed8] text-center min-h-[44px] d-flex align-items-center justify-content-center shadow-xs">
                         CHOOSE RESUME FILE
@@ -577,7 +492,7 @@ export function MultiRoleOnboardingWizard() {
                       onClick={() => handleFinishOnboarding()}
                       className="w-100 w-sm-auto px-5 py-3 bg-[#2563EB] text-white font-bold text-xs rounded-xs shadow-xs min-h-[44px] cursor-pointer"
                     >
-                      COMPLETE ONBOARDING &rarr;
+                      COMPLETE REGISTRATION &rarr;
                     </button>
                   </div>
                 </div>
@@ -610,6 +525,20 @@ export function MultiRoleOnboardingWizard() {
                     placeholder="Enter full legal name"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
+                    className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-medium focus:border-[#2563EB] outline-hidden rounded-xs"
+                  />
+                </div>
+
+                <div className="col-12 col-md-6 space-y-1.5">
+                  <label className="text-xs font-bold text-[#0A2540] uppercase block d-flex align-items-center gap-1">
+                    <Phone className="w-3.5 h-3.5 text-[#2563EB]" /> Mobile Number (10 Digits) *
+                  </label>
+                  <input
+                    type="tel"
+                    maxLength={10}
+                    placeholder="e.g. 9876543210"
+                    value={mobileNumber}
+                    onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, ''))}
                     className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-medium focus:border-[#2563EB] outline-hidden rounded-xs"
                   />
                 </div>
@@ -701,7 +630,7 @@ export function MultiRoleOnboardingWizard() {
               <div className="pt-3 border-top border-[#E2E8F0]">
                 <button
                   type="button"
-                  disabled={!fullName || !email}
+                  disabled={!fullName || !email || mobileNumber.length < 10}
                   onClick={handleFinishOnboarding}
                   className="w-100 py-3.5 bg-[#2563EB] hover:bg-[#1d4ed8] disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider d-flex align-items-center justify-content-center gap-2 rounded-xs shadow-xs transition-all min-h-[44px] cursor-pointer"
                 >

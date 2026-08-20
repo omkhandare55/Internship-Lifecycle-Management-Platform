@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import {
   ShieldCheck,
   Sparkles,
@@ -18,8 +18,13 @@ import { GodlyGrid, GodlyGridCell, EditorialTicker } from '@/components/ui';
 
 export function RoleSelectionPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [hoveredRoleId, setHoveredRoleId] = useState<string | null>(null);
+
+  const paramEmail = searchParams.get('email') || '';
+  const paramName = searchParams.get('name') || '';
+  const isGoogleAuth = searchParams.get('googleAuth') === 'true';
 
   const filteredRoles =
     selectedCategory === 'ALL'
@@ -27,7 +32,13 @@ export function RoleSelectionPage() {
       : PLATFORM_ROLES.filter((r) => r.category === selectedCategory);
 
   const handleSelectRole = (roleId: UserRoleType) => {
-    navigate(`/onboarding?role=${roleId}`);
+    const params = new URLSearchParams();
+    params.set('role', roleId);
+    if (paramEmail) params.set('email', paramEmail);
+    if (paramName) params.set('name', paramName);
+    if (isGoogleAuth) params.set('googleAuth', 'true');
+
+    navigate(`/onboarding?${params.toString()}`);
   };
 
   const getRoleIcon = (roleId: UserRoleType) => {
@@ -59,13 +70,17 @@ export function RoleSelectionPage() {
           <div className="space-y-1 min-w-0">
             <div className="d-inline-flex align-items-center gap-2 px-2.5 py-1 bg-[#2563EB] text-white text-[11px] font-mono font-bold uppercase rounded-xs">
               <Sparkles className="w-3.5 h-3.5 text-[#F97316] shrink-0" />
-              <span className="truncate">ENTERPRISE ACCESS // RBAC SUITE</span>
+              <span className="truncate">
+                {isGoogleAuth ? 'GOOGLE AUTHENTICATED // SELECT YOUR ROLE' : 'ENTERPRISE ACCESS // RBAC SUITE'}
+              </span>
             </div>
             <h1 className="text-xl sm:text-3xl font-black uppercase tracking-tight font-sans m-0">
               Select Your Platform Role
             </h1>
             <p className="text-xs text-slate-300 font-mono max-w-2xl leading-relaxed m-0">
-              Choose your institutional role to launch customized multi-factor verification and AI-powered profile onboarding.
+              {isGoogleAuth
+                ? `Welcome ${paramName || paramEmail}! Select your role to finalize your institutional profile.`
+                : 'Choose your institutional role to launch customized multi-factor verification and AI-powered profile onboarding.'}
             </p>
           </div>
 

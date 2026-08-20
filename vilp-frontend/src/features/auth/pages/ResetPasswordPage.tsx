@@ -1,71 +1,173 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Loader2, CheckCircle } from 'lucide-react';
-import { resetPasswordSchema, type ResetPasswordFormData } from '../schemas/authSchemas';
-import { authApi } from '../api/authApi';
+import { Loader2, CheckCircle2, AlertCircle, ShieldCheck, Lock, Key } from 'lucide-react';
+import { realOtpService } from '@/features/onboarding/services/onboardingApi';
 
 export function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const token = searchParams.get('token') || '';
+  const initialEmail = searchParams.get('email') || '';
+  const initialToken = searchParams.get('token') || '';
+
+  const [email, setEmail] = useState(initialEmail);
+  const [token, setToken] = useState(initialToken);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } =
-    useForm<ResetPasswordFormData>({ resolver: zodResolver(resetPasswordSchema) });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !email.includes('@')) {
+      setServerError('Please enter your account email address.');
+      return;
+    }
+    if (!token || token.length < 6) {
+      setServerError('Please enter the 6-digit recovery code or token.');
+      return;
+    }
+    if (newPassword.length < 8) {
+      setServerError('Password must be at least 8 characters in length.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setServerError('Passwords do not match. Please verify and re-type.');
+      return;
+    }
 
-  const onSubmit = async (data: ResetPasswordFormData) => {
     setServerError('');
+    setIsSubmitting(true);
     try {
-      await authApi.resetPassword({ token, newPassword: data.newPassword });
+      await realOtpService.resetPassword(email, token, newPassword);
       setSuccess(true);
-    } catch (err: unknown) {
-      const error = err as { response?: { data?: { error?: { message?: string } } } };
-      setServerError(error.response?.data?.error?.message || 'Failed to reset password.');
+      setTimeout(() => navigate('/auth/login'), 2000);
+    } catch (err: any) {
+      setServerError(err.message || 'Failed to reset password. Token may be expired.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  if (!token) return (
-    <div className="text-center">
-      <p className="text-red-600">Invalid reset link. Please request a new one.</p>
-      <Link to="/auth/forgot-password" className="text-primary-600 text-sm mt-2 block">Request new link</Link>
-    </div>
-  );
-
-  if (success) return (
-    <div className="text-center">
-      <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
-      <h2 className="text-xl font-bold text-gray-900 mb-2">Password reset!</h2>
-      <p className="text-sm text-gray-500 mb-6">You can now log in with your new password.</p>
-      <button onClick={() => navigate('/auth/login')} className="btn-primary w-full">Go to Login</button>
-    </div>
-  );
+  if (success) {
+    return (
+      <div className="text-center space-y-4 font-mono">
+        <div className="w-12 h-12 bg-emerald-50 border border-emerald-300 text-emerald-700 rounded-xs d-flex align-items-center justify-center mx-auto">
+          <CheckCircle2 className="w-6 h-6" />
+        </div>
+        <h2 className="text-lg sm:text-xl font-black uppercase text-[#0A2540] font-sans m-0">
+          Password Updated!
+        </h2>
+        <p className="text-xs text-slate-600 m-0">
+          Your credentials have been securely updated. Redirecting to login...
+        </p>
+        <button
+          type="button"
+          onClick={() => navigate('/auth/login')}
+          className="btn-primary w-100 py-2.5 text-xs font-bold uppercase"
+        >
+          GO TO LOGIN NOW &rarr;
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <h2 className="text-xl font-bold text-gray-900 mb-1">Reset password</h2>
-      <p className="text-sm text-gray-500 mb-6">Enter your new password.</p>
-
-      {serverError && <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3 mb-4">{serverError}</div>}
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label className="label">New password</label>
-          <input {...register('newPassword')} type="password" className={`input-field ${errors.newPassword ? 'input-error' : ''}`} placeholder="Min. 8 characters" />
-          {errors.newPassword && <p className="error-text">{errors.newPassword.message}</p>}
+    <div className="space-y-4 font-mono">
+      <div className="space-y-1 border-bottom border-[#E2E8F0] pb-3">
+        <div className="d-inline-flex align-items-center gap-1.5 text-xs text-[#2563EB] font-bold">
+          <ShieldCheck className="w-3.5 h-3.5 text-[#F97316]" /> VILP SECURITY // SET NEW PASSWORD
         </div>
-        <div>
-          <label className="label">Confirm new password</label>
-          <input {...register('confirmPassword')} type="password" className={`input-field ${errors.confirmPassword ? 'input-error' : ''}`} placeholder="••••••••" />
-          {errors.confirmPassword && <p className="error-text">{errors.confirmPassword.message}</p>}
+        <h2 className="text-lg sm:text-xl font-black text-[#0A2540] uppercase font-sans tracking-tight m-0">
+          Choose New Password
+        </h2>
+        <p className="text-xs text-slate-600 m-0">
+          Enter your recovery code and create a secure new password for your account.
+        </p>
+      </div>
+
+      {serverError && (
+        <div className="p-3 bg-red-50 border border-red-300 text-red-800 text-xs font-mono font-medium d-flex align-items-center gap-2 rounded-xs">
+          <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+          <span>{serverError}</span>
         </div>
-        <button type="submit" disabled={isSubmitting} className="btn-primary w-full flex items-center justify-center gap-2">
-          {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-          Reset password
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-[#0A2540] uppercase block">Account Email *</label>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-medium focus:border-[#2563EB] outline-hidden rounded-xs"
+            placeholder="user@institution.edu"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-[#0A2540] uppercase block d-flex align-items-center gap-1">
+            <Key className="w-3.5 h-3.5 text-[#2563EB]" /> 6-Digit Recovery Token / Code *
+          </label>
+          <input
+            type="text"
+            required
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-mono font-bold tracking-widest focus:border-[#2563EB] outline-hidden rounded-xs"
+            placeholder="Enter 6-digit Code"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-[#0A2540] uppercase block d-flex align-items-center gap-1">
+            <Lock className="w-3.5 h-3.5 text-[#2563EB]" /> New Password (Min 8 Characters) *
+          </label>
+          <input
+            type="password"
+            required
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs focus:border-[#2563EB] outline-hidden rounded-xs"
+            placeholder="••••••••••••"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-[#0A2540] uppercase block">Confirm New Password *</label>
+          <input
+            type="password"
+            required
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="w-100 p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] text-xs focus:border-[#2563EB] outline-hidden rounded-xs"
+            placeholder="••••••••••••"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="btn-primary w-100 py-3 text-xs font-bold uppercase tracking-wider d-flex align-items-center justify-content-center gap-2 min-h-[44px] cursor-pointer"
+        >
+          {isSubmitting ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            'CONFIRM & UPDATE PASSWORD'
+          )}
         </button>
       </form>
+
+      <div className="pt-2 text-center">
+        <Link
+          to="/auth/login"
+          className="text-xs text-[#2563EB] hover:underline font-bold"
+        >
+          &larr; Return to Sign In
+        </Link>
+      </div>
     </div>
   );
 }
