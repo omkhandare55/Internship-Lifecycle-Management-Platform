@@ -20,6 +20,7 @@ import { parseResumeWithAi } from '../services/aiResumeParserService';
 import { realOtpService } from '../services/onboardingApi';
 import { CommandPaletteHUD } from '@/components/CommandPaletteHUD';
 import { useAuthStore } from '@/stores/authStore';
+import { tokenUtils } from '@/utils/tokenUtils';
 
 export function MultiRoleOnboardingWizard() {
   const [searchParams] = useSearchParams();
