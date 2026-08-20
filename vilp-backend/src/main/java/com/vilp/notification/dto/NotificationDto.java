@@ -25,6 +25,9 @@ public class NotificationDto {
     }
 
     @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class CreateNotificationRequest {
         private UUID userId;
         private String title;
