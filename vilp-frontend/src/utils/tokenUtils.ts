@@ -24,10 +24,15 @@ export const tokenUtils = {
   isTokenExpired: (token: string | null): boolean => {
     if (!token) return true;
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.exp * 1000 < Date.now();
+      const parts = token.split('.');
+      if (parts.length !== 3) return false;
+      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+      if (typeof payload.exp === 'number') {
+        return payload.exp * 1000 < Date.now();
+      }
+      return false;
     } catch {
-      return true;
+      return false;
     }
   },
 };

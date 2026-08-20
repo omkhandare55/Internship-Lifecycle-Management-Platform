@@ -191,7 +191,18 @@ export function MultiRoleOnboardingWizard() {
     };
 
     localStorage.setItem(`vilp_user_onboarded_${mockId}`, 'true');
-    setAuth(mockUser as any, 'vilp-jwt-token-active', 'vilp-refresh-token-active');
+
+    const existingToken = tokenUtils.getAccessToken();
+    const existingRefresh = tokenUtils.getRefreshToken();
+    const safePayload = btoa(JSON.stringify({
+      sub: mockId,
+      email: email,
+      role: mappedRole,
+      exp: Math.floor(Date.now() / 1000) + (86400 * 30),
+    }));
+    const validToken = existingToken || `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${safePayload}.signed`;
+
+    setAuth(mockUser as any, validToken, existingRefresh || 'vilp-refresh-token-active');
     navigate(roleMeta.targetDashboard);
   };
 
