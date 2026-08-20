@@ -1,22 +1,36 @@
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
 import { getFirestore, type Firestore } from 'firebase/firestore';
+import { getAnalytics, isSupported, type Analytics } from 'firebase/analytics';
 
 /**
- * Firebase Configuration for VILP Realtime Services & Push Notifications
- * Replace these environment variables in your .env / Vercel dashboard with your Firebase project keys.
+ * Official Firebase Configuration for VILP Platform
+ * Project: internship-life-cycle
  */
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyDemoKeyVILP2026AcademicPlatform',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'vilp-ghr-ecosystem.firebaseapp.com',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'vilp-ghr-ecosystem',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'vilp-ghr-ecosystem.appspot.com',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '104857629384',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:104857629384:web:a78b9c0d1e2f3a4b',
+export const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyAP-jCOTEFeybpobTeB5ZbwnFjurR3FgqA",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "internship-life-cycle.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "internship-life-cycle",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "internship-life-cycle.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "1017179263392",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:1017179263392:web:00fc18be6db2f488d1d4c5",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-6NLHL5NHTE",
 };
 
-// Initialize Firebase safely (prevent duplicate instance warnings during HMR)
+// Initialize Firebase App safely (prevent duplicate instance warnings during HMR)
 export const firebaseApp: FirebaseApp = getApps().length === 0
   ? initializeApp(firebaseConfig)
   : getApps()[0];
 
 export const firestoreDb: Firestore = getFirestore(firebaseApp);
+
+// Initialize Firebase Analytics safely (only in supported browser environments)
+export let analytics: Analytics | null = null;
+if (typeof window !== 'undefined') {
+  isSupported().then((supported) => {
+    if (supported) {
+      analytics = getAnalytics(firebaseApp);
+    }
+  }).catch(() => {
+    // Non-blocking fallback
+  });
+}
