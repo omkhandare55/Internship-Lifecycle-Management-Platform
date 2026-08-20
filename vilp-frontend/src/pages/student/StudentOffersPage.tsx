@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { offerApi } from '@/services/vilpApi';
 import { MOCK_STUDENT_PROFILE } from '@/services/mockData';
+import { sendFirebaseNotification } from '@/services/firebaseNotificationService';
 import type { Offer } from '@/types/vilp.types';
 
 export function StudentOffersPage() {
@@ -40,6 +41,18 @@ export function StudentOffersPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myOffers'] });
+
+      // Realtime Event Dispatch
+      sendFirebaseNotification({
+        userId: 'usr-1',
+        title: responseAction === 'ACCEPT' ? 'Offer Accepted // Single-Offer Lock Engaged' : 'Offer Declined',
+        message: responseAction === 'ACCEPT'
+          ? `Accepted ${selectedOffer?.internshipTitle || 'Cloud Engineering'} offer. Autonomous NOC-2026-004821 stamped!`
+          : `Declined offer for ${selectedOffer?.internshipTitle || 'Position'}.`,
+        type: 'OFFER',
+        isRead: false,
+      });
+
       setSelectedOffer(null);
       setResponseNotes('');
       setMsg({

@@ -12,21 +12,24 @@ import { playNotificationChime } from './realtimeNotificationService';
 import type { NotificationItem } from '@/types/vilp.types';
 
 /**
- * Subscribes to real-time Firestore notification events for a specific user
+ * Subscribes to real-time Firestore notification events for a specific user or role broadcast
  */
 export function subscribeToFirebaseNotifications(
   userId: string | undefined,
   onNotificationReceived: (notification: NotificationItem) => void
 ): Unsubscribe {
-  if (!userId || !firestoreDb) {
+  if (!firestoreDb) {
     return () => {};
   }
 
   try {
     const notificationsRef = collection(firestoreDb, 'notifications');
+    const effectiveUserId = userId || 'usr-1';
+
+    // Query for targeted user notifications OR global broadcasts
     const userQuery = query(
       notificationsRef,
-      where('userId', '==', userId)
+      where('userId', 'in', [effectiveUserId, 'usr-1', 'all', 'global'])
     );
 
     const unsubscribe = onSnapshot(
@@ -37,7 +40,7 @@ export function subscribeToFirebaseNotifications(
             const data = change.doc.data();
             const notificationItem: NotificationItem = {
               id: change.doc.id,
-              userId: data.userId || userId,
+              userId: data.userId || effectiveUserId,
               title: data.title || 'Institutional Event Alert',
               message: data.message || 'A new update is available on your dashboard.',
               type: data.type || 'SYSTEM',
@@ -59,7 +62,6 @@ export function subscribeToFirebaseNotifications(
         });
       },
       (error) => {
-        // Fallback gracefully without blocking offline demo
         console.warn('[Firebase Realtime] Listener standby:', error.message);
       }
     );

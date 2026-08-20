@@ -8,6 +8,7 @@ import {
   X,
 } from 'lucide-react';
 import { logbookApi, offerApi } from '@/services/vilpApi';
+import { sendFirebaseNotification } from '@/services/firebaseNotificationService';
 import type { SubmitWeeklyReportInput } from '@/types/vilp.types';
 
 export function StudentProgressPage() {
@@ -53,6 +54,16 @@ export function StudentProgressPage() {
     mutationFn: () => logbookApi.submitReport(formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myLogbooks'] });
+
+      // Realtime Event Dispatch
+      sendFirebaseNotification({
+        userId: 'usr-1',
+        title: `Week ${formData.weekNumber} Logbook Submitted`,
+        message: `Submitted ${formData.hoursWorked} hours summary to Faculty Mentor for AICTE accreditation sign-off.`,
+        type: 'LOGBOOK',
+        isRead: false,
+      });
+
       setIsSubmitModalOpen(false);
       setFormData({
         internshipId: activeOffer?.internshipId || 'int-001',
