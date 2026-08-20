@@ -52,27 +52,27 @@ export function RoleSelectionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans pb-16 w-full max-w-full overflow-x-hidden">
+    <div className="container-fluid p-0 min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans pb-5 w-100 overflow-x-hidden">
       {/* ── Top Bar (#0A2540 Stripe Marine) ───────────────────────────── */}
-      <div className="bg-[#0A2540] text-white border-b border-[#1E3A5F] px-4 py-5 sm:py-7">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1.5 min-w-0">
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-[#2563EB] text-white text-[11px] font-mono font-bold uppercase rounded-xs">
+      <div className="bg-[#0A2540] text-white border-b border-[#1E3A5F] px-3 px-md-4 py-4 py-md-5">
+        <div className="container p-0 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+          <div className="space-y-1 min-w-0">
+            <div className="d-inline-flex align-items-center gap-2 px-2.5 py-1 bg-[#2563EB] text-white text-[11px] font-mono font-bold uppercase rounded-xs">
               <Sparkles className="w-3.5 h-3.5 text-[#F97316] shrink-0" />
               <span className="truncate">ENTERPRISE ACCESS // RBAC SUITE</span>
             </div>
-            <h1 className="text-xl sm:text-3xl font-black uppercase tracking-tight font-sans">
+            <h1 className="text-xl sm:text-3xl font-black uppercase tracking-tight font-sans m-0">
               Select Your Platform Role
             </h1>
-            <p className="text-xs text-slate-300 font-mono max-w-2xl leading-relaxed">
+            <p className="text-xs text-slate-300 font-mono max-w-2xl leading-relaxed m-0">
               Choose your institutional role to launch customized multi-factor verification and AI-powered profile onboarding.
             </p>
           </div>
 
-          <div className="shrink-0 flex items-center gap-3 self-start sm:self-center">
+          <div className="shrink-0 d-flex align-items-center gap-3">
             <Link
               to="/auth/login"
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-mono text-xs font-bold rounded-sm transition-colors uppercase whitespace-nowrap"
+              className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-mono text-xs font-bold rounded-xs transition-colors uppercase text-nowrap"
             >
               Sign In Instead
             </Link>
@@ -91,9 +91,9 @@ export function RoleSelectionPage() {
         ]}
       />
 
-      <div className="max-w-6xl mx-auto px-3 sm:px-4 pt-6 space-y-6 min-w-0">
+      <div className="container px-3 px-sm-4 pt-4 space-y-4">
         {/* ── Category Filter Bar ─────────────────────────────────────────── */}
-        <div className="bg-white border border-[#E2E8F0] p-2 rounded-xs flex items-center gap-1.5 overflow-x-auto font-mono text-xs shadow-xs scrollbar-none w-full max-w-full">
+        <div className="bg-white border border-[#E2E8F0] p-2 rounded-xs d-flex align-items-center gap-2 overflow-x-auto font-mono text-xs shadow-xs w-100">
           {[
             { id: 'ALL', label: 'ALL ROLES (9)' },
             { id: 'STUDENT', label: 'STUDENTS' },
@@ -106,7 +106,7 @@ export function RoleSelectionPage() {
               key={cat.id}
               type="button"
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-3 py-2 rounded-xs font-bold uppercase whitespace-nowrap transition-colors text-[11px] sm:text-xs shrink-0 cursor-pointer ${
+              className={`px-3 py-2 rounded-xs font-bold uppercase text-nowrap transition-colors text-[11px] sm:text-xs shrink-0 cursor-pointer ${
                 selectedCategory === cat.id
                   ? 'bg-[#2563EB] text-white shadow-xs'
                   : 'bg-[#F8FAFC] text-slate-700 border border-[#E2E8F0] hover:bg-[#F1F5F9]'
@@ -117,13 +117,14 @@ export function RoleSelectionPage() {
           ))}
         </div>
 
-        {/* ── Continuous 1px Border Grid ──────────────────────────────────── */}
+        {/* ── Bootstrap 5 Responsive Grid (col-12 col-sm-6 col-lg-4) ──────── */}
         <GodlyGrid columns={3}>
           {filteredRoles.map((role) => {
             const isHovered = hoveredRoleId === role.id;
             return (
               <GodlyGridCell
                 key={role.id}
+                columns={3}
                 onClick={() => handleSelectRole(role.id)}
                 className={`space-y-4 cursor-pointer transition-all ${
                   isHovered ? 'bg-[#F8FAFC]' : 'bg-white'
@@ -135,8 +136,8 @@ export function RoleSelectionPage() {
                   className="space-y-3 min-w-0"
                 >
                   {/* Top Bar: Icon + Trust Badge */}
-                  <div className="flex items-start justify-between gap-2 min-w-0">
-                    <div className="w-10 h-10 bg-[#F1F5F9] border border-[#E2E8F0] rounded-xs flex items-center justify-center shrink-0">
+                  <div className="d-flex align-items-start justify-content-between gap-2 min-w-0">
+                    <div className="w-10 h-10 bg-[#F1F5F9] border border-[#E2E8F0] rounded-xs d-flex align-items-center justify-content-center shrink-0">
                       {getRoleIcon(role.id)}
                     </div>
                     <span
@@ -154,7 +155,7 @@ export function RoleSelectionPage() {
 
                   {/* Title & Tagline */}
                   <div className="min-w-0">
-                    <h3 className="font-bold text-sm sm:text-base uppercase text-[#0A2540] font-sans truncate">
+                    <h3 className="font-bold text-sm sm:text-base uppercase text-[#0A2540] font-sans truncate m-0">
                       {role.title}
                     </h3>
                     <p className="text-[11px] sm:text-xs text-[#2563EB] font-mono font-medium leading-snug mt-0.5 line-clamp-2">
@@ -162,17 +163,17 @@ export function RoleSelectionPage() {
                     </p>
                   </div>
 
-                  <p className="text-xs text-slate-600 leading-relaxed font-sans line-clamp-3">
+                  <p className="text-xs text-slate-600 leading-relaxed font-sans line-clamp-3 m-0">
                     {role.description}
                   </p>
 
                   {/* Verification Requirements */}
-                  <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xs space-y-1.5 font-mono text-[11px] min-w-0 max-w-full overflow-hidden">
+                  <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xs space-y-1.5 font-mono text-[11px] min-w-0 w-100 overflow-hidden">
                     <span className="text-[10px] text-[#0A2540] font-bold uppercase block truncate">
                       REQUIRED PROOFS:
                     </span>
                     {role.verificationRequirements.map((req, i) => (
-                      <div key={i} className="flex items-center gap-1.5 text-slate-700 text-[10px] sm:text-[11px] min-w-0">
+                      <div key={i} className="d-flex align-items-center gap-1.5 text-slate-700 text-[10px] sm:text-[11px] min-w-0">
                         <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
                         <span className="truncate">{req}</span>
                       </div>
@@ -184,7 +185,7 @@ export function RoleSelectionPage() {
                     <span className="text-[10px] text-[#F97316] font-bold uppercase block truncate">
                       AUTOMATION ENGINES:
                     </span>
-                    <ul className="list-disc list-inside text-slate-600 space-y-0.5 text-[10px] sm:text-[11px] min-w-0">
+                    <ul className="list-disc list-inside text-slate-600 space-y-0.5 text-[10px] sm:text-[11px] min-w-0 m-0 p-0">
                       {role.aiCapabilities.slice(0, 2).map((ai, i) => (
                         <li key={i} className="truncate">
                           {ai}
@@ -195,14 +196,14 @@ export function RoleSelectionPage() {
                 </div>
 
                 {/* Launch Action */}
-                <div className="pt-3 border-t border-[#E2E8F0]">
+                <div className="pt-3 border-top border-[#E2E8F0]">
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleSelectRole(role.id);
                     }}
-                    className="w-full py-3 sm:py-2.5 px-4 bg-[#2563EB] hover:bg-[#1d4ed8] text-white font-mono font-bold text-xs flex items-center justify-center gap-2 rounded-xs shadow-xs transition-colors uppercase tracking-wider min-h-[44px] cursor-pointer"
+                    className="w-100 py-2.5 px-3 bg-[#2563EB] hover:bg-[#1d4ed8] text-white font-mono font-bold text-xs d-flex align-items-center justify-content-center gap-2 rounded-xs shadow-xs transition-colors uppercase tracking-wider min-h-[44px] cursor-pointer"
                   >
                     ONBOARD AS {role.id.replace('_', ' ')} <ArrowRight className="w-3.5 h-3.5 shrink-0" />
                   </button>
@@ -213,8 +214,8 @@ export function RoleSelectionPage() {
         </GodlyGrid>
 
         {/* ── Footer Security Callout ───────────────────────────────────────── */}
-        <div className="bg-white border border-[#E2E8F0] p-4 rounded-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-slate-600 text-center sm:text-left min-w-0">
-          <div className="flex items-center gap-2 min-w-0">
+        <div className="bg-white border border-[#E2E8F0] p-3 p-sm-4 rounded-xs d-flex flex-column flex-md-row align-items-center justify-content-between gap-2 text-xs font-mono text-slate-600 text-center text-md-start w-100">
+          <div className="d-flex align-items-center gap-2 min-w-0">
             <Lock className="w-4 h-4 text-[#2563EB] shrink-0" />
             <span className="truncate">
               All accounts undergo cryptographic domain authentication and immutable audit trail logging.

@@ -6,17 +6,10 @@ interface GodlyGridProps {
   className?: string;
 }
 
-export function GodlyGrid({ children, columns = 3, className = '' }: GodlyGridProps) {
-  const colClasses = {
-    1: 'grid-cols-1',
-    2: 'grid-cols-1 md:grid-cols-2',
-    3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
-    4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
-  }[columns];
-
+export function GodlyGrid({ children, className = '' }: GodlyGridProps) {
   return (
     <div
-      className={`grid ${colClasses} gap-0 border-l border-t border-[#E2E8F0] w-full max-w-full overflow-hidden ${className}`}
+      className={`row g-0 border-start border-top border-[#E2E8F0] w-100 m-0 overflow-hidden ${className}`}
     >
       {children}
     </div>
@@ -25,15 +18,28 @@ export function GodlyGrid({ children, columns = 3, className = '' }: GodlyGridPr
 
 interface GodlyGridCellProps {
   children: React.ReactNode;
+  columns?: 1 | 2 | 3 | 4;
   className?: string;
   onClick?: () => void;
 }
 
-export function GodlyGridCell({ children, className = '', onClick }: GodlyGridCellProps) {
+export function GodlyGridCell({
+  children,
+  columns = 3,
+  className = '',
+  onClick,
+}: GodlyGridCellProps) {
+  const bootstrapCol = {
+    1: 'col-12',
+    2: 'col-12 col-md-6',
+    3: 'col-12 col-sm-6 col-lg-4',
+    4: 'col-12 col-sm-6 col-lg-4 col-xl-3',
+  }[columns];
+
   return (
     <div
       onClick={onClick}
-      className={`border-r border-b border-[#E2E8F0] bg-white hover:bg-[#F8FAFC] p-5 sm:p-6 transition-all duration-200 flex flex-col justify-between min-w-0 ${className}`}
+      className={`${bootstrapCol} border-end border-bottom border-[#E2E8F0] bg-white hover:bg-[#F8FAFC] p-4 p-md-5 transition-all d-flex flex-column justify-content-between min-w-0 ${className}`}
     >
       {children}
     </div>
