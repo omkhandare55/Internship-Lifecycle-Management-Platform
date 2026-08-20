@@ -148,9 +148,44 @@ export function MultiRoleOnboardingWizard() {
     else if (roleParam === 'SUPER_ADMIN') mappedRole = 'SUPER_ADMIN';
 
     const mockId = `usr-${Date.now()}`;
+    const userFullName = fullName || email.split('@')[0] || 'Verified Candidate';
+
+    const studentProfile = {
+      id: mockId,
+      studentNumber: enrollmentNumber || 'REG-2026-001',
+      fullName: userFullName,
+      email: email,
+      department: { id: 1, name: department || branch || 'Computer Science & Engineering', code: 'CSE' },
+      branch: branch || 'Computer Science',
+      collegeName: collegeName || universityName || 'Institutional Institute',
+      universityName: universityName || collegeName || 'State Technical University',
+      semester: 6,
+      cgpa: 8.85,
+      backlogs: 0,
+      passingYear: 2026,
+      phone: mobileNumber,
+      linkedinUrl: linkedin || `https://linkedin.com/in/${encodeURIComponent(userFullName.toLowerCase().replace(/\s+/g, '-'))}`,
+      portfolioUrl: github || `https://github.com/${encodeURIComponent(userFullName.toLowerCase().replace(/\s+/g, '-'))}`,
+      about: `Enrolled student candidate in ${branch || 'Computer Science & Engineering'}.`,
+      verificationStatus: 'VERIFIED',
+      profileCompletion: completeness,
+      skills: skills.length > 0 ? skills.map((s, idx) => ({ id: idx + 1, name: s })) : [
+        { id: 1, name: 'Java' },
+        { id: 2, name: 'Spring Boot' },
+        { id: 3, name: 'React' },
+        { id: 4, name: 'TypeScript' },
+      ],
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      localStorage.setItem('vilp_student_profile', JSON.stringify(studentProfile));
+    } catch {}
+
     const mockUser = {
       id: mockId,
       email: email,
+      fullName: userFullName,
       role: mappedRole,
       emailVerified: true,
       createdAt: new Date().toISOString(),

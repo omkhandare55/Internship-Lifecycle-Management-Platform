@@ -9,6 +9,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { nocApi } from '@/services/vilpApi';
+import { MOCK_STUDENT_PROFILE } from '@/services/mockData';
 
 export function TnpNocQueuePage() {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
@@ -122,8 +123,8 @@ export function TnpNocQueuePage() {
               <tbody className="divide-y divide-zinc-100">
                 <tr className="hover:bg-zinc-50/60 transition-colors">
                   <td className="px-6 py-4">
-                    <p className="font-bold text-zinc-900">Aarav Sharma</p>
-                    <p className="text-[11px] text-zinc-500 font-mono">2022CS1045 · CSE (8.85 CGPA)</p>
+                    <p className="font-bold text-zinc-900">{MOCK_STUDENT_PROFILE.fullName || 'Verified Candidate'}</p>
+                    <p className="text-[11px] text-zinc-500 font-mono">{MOCK_STUDENT_PROFILE.studentNumber || 'REG-2026-001'} · CSE (8.85 CGPA)</p>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1.5">

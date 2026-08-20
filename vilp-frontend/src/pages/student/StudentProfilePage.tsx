@@ -287,7 +287,7 @@ export function StudentProfilePage() {
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                     className="input-field"
-                    placeholder="e.g. Aditi Sharma"
+                    placeholder="Enter full legal name"
                   />
                 </div>
                 <div>

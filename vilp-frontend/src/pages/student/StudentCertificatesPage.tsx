@@ -8,6 +8,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { certificateApi } from '@/services/vilpApi';
+import { MOCK_STUDENT_PROFILE } from '@/services/mockData';
 
 export function StudentCertificatesPage() {
   const { data: certsData, isLoading } = useQuery({
@@ -19,8 +20,8 @@ export function StudentCertificatesPage() {
     {
       id: 'cert-001',
       studentId: 'stu-001',
-      studentName: 'Aarav Sharma',
-      studentNumber: '2022CS1045',
+      studentName: MOCK_STUDENT_PROFILE.fullName || 'Verified Candidate',
+      studentNumber: MOCK_STUDENT_PROFILE.studentNumber || 'REG-2026-001',
       departmentName: 'Computer Science & Engineering',
       internshipId: 'int-001',
       internshipTitle: 'Cloud Engineering & Microservices Intern',

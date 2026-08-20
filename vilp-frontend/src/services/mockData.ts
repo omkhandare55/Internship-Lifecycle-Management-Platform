@@ -34,10 +34,10 @@ export const MOCK_USERS: Record<string, any> = {
   },
 };
 
-export const MOCK_STUDENT_PROFILE = {
+const BASE_STUDENT_PROFILE = {
   id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-  studentNumber: '2022CS1045',
-  fullName: 'Aarav Sharma',
+  studentNumber: 'REG-2026-001',
+  fullName: 'Verified Candidate',
   email: 'student@vilp.edu',
   department: { id: 1, name: 'Computer Science & Engineering', code: 'CSE' },
   branch: 'Computer Science',
@@ -46,8 +46,8 @@ export const MOCK_STUDENT_PROFILE = {
   backlogs: 0,
   passingYear: 2026,
   phone: '+91 98765 43210',
-  linkedinUrl: 'https://linkedin.com/in/aarav-sharma',
-  portfolioUrl: 'https://github.com/aarav-sharma',
+  linkedinUrl: 'https://linkedin.com/in/candidate',
+  portfolioUrl: 'https://github.com/candidate',
   about: 'Passionate software engineering undergraduate with solid foundations in Spring Boot, React, and distributed cloud systems.',
   verificationStatus: 'VERIFIED',
   profileCompletion: 95,
@@ -60,6 +60,28 @@ export const MOCK_STUDENT_PROFILE = {
   ],
   createdAt: '2026-01-10T10:00:00Z',
 };
+
+export const MOCK_STUDENT_PROFILE = new Proxy(BASE_STUDENT_PROFILE, {
+  get(target: any, prop: string) {
+    try {
+      if (typeof window !== 'undefined') {
+        const raw = localStorage.getItem('vilp_student_profile');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed[prop] !== undefined) return parsed[prop];
+        }
+        const authRaw = localStorage.getItem('vilp-auth');
+        if (authRaw) {
+          const parsedAuth = JSON.parse(authRaw);
+          const user = parsedAuth?.state?.user;
+          if (prop === 'fullName' && user?.fullName) return user.fullName;
+          if (prop === 'email' && user?.email) return user.email;
+        }
+      }
+    } catch {}
+    return target[prop];
+  },
+});
 
 export const MOCK_COMPANY_PROFILE = {
   id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',

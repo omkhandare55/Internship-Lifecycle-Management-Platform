@@ -15,6 +15,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { offerApi } from '@/services/vilpApi';
+import { MOCK_STUDENT_PROFILE } from '@/services/mockData';
 import type { Offer } from '@/types/vilp.types';
 
 export function StudentOffersPage() {
@@ -305,7 +306,7 @@ export function StudentOffersPage() {
             {/* Certificate Body */}
             <div className="space-y-4 text-xs text-zinc-800 leading-relaxed font-mono">
               <p>
-                This is to certify that <strong>Aarav Sharma</strong> (Student No: <strong>2022CS1045</strong>), an enrolled candidate in the Department of Computer Science &amp; Engineering, has been granted institutional clearance to undertake the accredited corporate internship with <strong>Google Cloud India</strong>.
+                This is to certify that <strong>{MOCK_STUDENT_PROFILE.fullName || 'Verified Candidate'}</strong> (Student No: <strong>{MOCK_STUDENT_PROFILE.studentNumber || 'REG-2026-001'}</strong>), an enrolled candidate in the Department of {MOCK_STUDENT_PROFILE.department?.name || 'Computer Science & Engineering'}, has been granted institutional clearance to undertake the accredited corporate internship with <strong>Google Cloud India</strong>.
               </p>
               <p>
                 The student has satisfied all academic prerequisites (CGPA: <strong>8.85</strong>, Active Backlogs: <strong>0</strong>) and is permitted to log up to 240 hours towards mandatory degree credit completion.
