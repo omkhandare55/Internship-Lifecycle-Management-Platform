@@ -25,7 +25,67 @@ function getMockResponse(url: string, method: string, data?: any): { success: bo
   }
 
   // Student Profile & Skills
+  if (cleanUrl.includes('/students/me/skills/')) {
+    const skillIdStr = cleanUrl.split('/skills/')[1];
+    const skillId = Number(skillIdStr);
+    let currentProfile: any = null;
+    try {
+      const raw = localStorage.getItem('vilp_student_profile');
+      if (raw) currentProfile = JSON.parse(raw);
+    } catch {}
+    const base = currentProfile || mock.MOCK_STUDENT_PROFILE;
+    let currentSkills = Array.isArray(base.skills) ? [...base.skills] : [];
+
+    if (method.toLowerCase() === 'post') {
+      const allSkills = [
+        { id: 1, name: 'Java' },
+        { id: 2, name: 'Spring Boot' },
+        { id: 3, name: 'React' },
+        { id: 4, name: 'TypeScript' },
+        { id: 5, name: 'PostgreSQL' },
+        { id: 6, name: 'Docker' },
+        { id: 7, name: 'Microservices' },
+      ];
+      const match = allSkills.find((s) => s.id === skillId) || { id: skillId, name: `Skill #${skillId}` };
+      if (!currentSkills.some((s) => s.id === skillId)) {
+        currentSkills.push(match);
+      }
+    } else if (method.toLowerCase() === 'delete') {
+      currentSkills = currentSkills.filter((s) => s.id !== skillId);
+    }
+    const updatedProfile = { ...base, skills: currentSkills };
+    try {
+      localStorage.setItem('vilp_student_profile', JSON.stringify(updatedProfile));
+    } catch {}
+    return { success: true, data: updatedProfile };
+  }
+
   if (cleanUrl.includes('/students/me')) {
+    if (method.toLowerCase() === 'put' || method.toLowerCase() === 'post') {
+      try {
+        const payload = typeof data === 'string' ? JSON.parse(data) : data;
+        let currentProfile: any = null;
+        try {
+          const raw = localStorage.getItem('vilp_student_profile');
+          if (raw) currentProfile = JSON.parse(raw);
+        } catch {}
+        const merged = { ...(currentProfile || mock.MOCK_STUDENT_PROFILE), ...payload };
+        try {
+          localStorage.setItem('vilp_student_profile', JSON.stringify(merged));
+          const authRaw = localStorage.getItem('vilp-auth');
+          if (authRaw && payload?.fullName) {
+            const parsedAuth = JSON.parse(authRaw);
+            if (parsedAuth?.state?.user) {
+              parsedAuth.state.user.fullName = payload.fullName;
+              localStorage.setItem('vilp-auth', JSON.stringify(parsedAuth));
+            }
+          }
+        } catch {}
+        return { success: true, data: merged };
+      } catch (e) {
+        console.error('Error updating student profile:', e);
+      }
+    }
     return { success: true, data: mock.MOCK_STUDENT_PROFILE };
   }
   if (cleanUrl === '/students' || cleanUrl.startsWith('/students?')) {
@@ -34,6 +94,21 @@ function getMockResponse(url: string, method: string, data?: any): { success: bo
 
   // Company Profile
   if (cleanUrl.includes('/companies/me')) {
+    if (method.toLowerCase() === 'put' || method.toLowerCase() === 'post') {
+      try {
+        const payload = typeof data === 'string' ? JSON.parse(data) : data;
+        let currentProfile: any = null;
+        try {
+          const raw = localStorage.getItem('vilp_company_profile');
+          if (raw) currentProfile = JSON.parse(raw);
+        } catch {}
+        const merged = { ...(currentProfile || mock.MOCK_COMPANY_PROFILE), ...payload };
+        try {
+          localStorage.setItem('vilp_company_profile', JSON.stringify(merged));
+        } catch {}
+        return { success: true, data: merged };
+      } catch (e) {}
+    }
     return { success: true, data: mock.MOCK_COMPANY_PROFILE };
   }
   if (cleanUrl === '/companies' || cleanUrl.startsWith('/companies?')) {

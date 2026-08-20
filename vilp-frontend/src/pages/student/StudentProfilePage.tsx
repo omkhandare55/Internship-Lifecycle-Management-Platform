@@ -16,6 +16,7 @@ import {
 import { studentApi, publicApi, documentApi, verificationApi } from '@/services/vilpApi';
 import { StatusBadge } from '@/components/StatusBadge';
 import { DocumentUploadModal } from '@/components/DocumentUploadModal';
+import { useAuthStore } from '@/stores/authStore';
 import type { CreateStudentProfileInput } from '@/types/vilp.types';
 
 export function StudentProfilePage() {
@@ -91,6 +92,19 @@ export function StudentProfilePage() {
   // Mutations
   const saveMutation = useMutation({
     mutationFn: async () => {
+      // 1. Direct local persistence
+      try {
+        const current = localStorage.getItem('vilp_student_profile');
+        const existing = current ? JSON.parse(current) : profile || {};
+        const updated = { ...existing, ...formData };
+        localStorage.setItem('vilp_student_profile', JSON.stringify(updated));
+
+        const user = useAuthStore.getState().user;
+        if (user && formData.fullName) {
+          useAuthStore.getState().updateUser({ ...user, fullName: formData.fullName });
+        }
+      } catch (e) {}
+
       if (isProfileEmpty) {
         return studentApi.createProfile(formData);
       }
@@ -99,7 +113,7 @@ export function StudentProfilePage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['studentProfile'] });
       setIsEditing(false);
-      setSubmitMsg({ type: 'success', text: 'Profile saved successfully!' });
+      setSubmitMsg({ type: 'success', text: 'Profile updated and saved successfully!' });
       setTimeout(() => setSubmitMsg(null), 3000);
     },
     onError: (err: any) => {

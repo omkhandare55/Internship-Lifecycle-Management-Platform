@@ -12,6 +12,7 @@ export type UserRole =
 export interface AuthUser {
   id: string;
   email: string;
+  fullName?: string;
   role: UserRole;
   emailVerified: boolean;
 }
