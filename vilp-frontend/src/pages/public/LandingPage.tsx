@@ -18,16 +18,16 @@ export function LandingPage() {
       {/* ── Status Ribbon (#0A2540 Stripe Marine) ─────────────────────────── */}
       <div className="bg-[#0A2540] border-b border-[#1E3A5F] text-[11px] text-white px-4 sm:px-8 py-2 flex flex-wrap items-center justify-between gap-3 select-none">
         <div className="flex items-center gap-3">
-          <span className="font-extrabold tracking-widest text-[#2563EB]">[ VILP // OS ]</span>
+          <span className="font-extrabold tracking-widest text-[#2563EB]">[ VILP // GHR ECOSYSTEM ]</span>
           <span className="text-slate-600">|</span>
-          <span className="font-semibold text-slate-200">ISSUE NO. 26 · AICTE/UGC GOVERNANCE SPECIFICATION</span>
+          <span className="font-semibold text-slate-200">G H RAISONI COLLEGE OF ENGINEERING & MANAGEMENT · AICTE §7.2 SPEC</span>
           <span className="hidden md:inline text-slate-600">|</span>
           <span className="hidden md:inline text-[#F97316] font-bold">● ZERO-TOUCH AUTO-PILOT ACTIVE</span>
         </div>
         <div className="flex items-center gap-4 text-slate-400 text-[10px]">
           <span>TELEMETRY: LIVE</span>
           <span className="text-slate-600">|</span>
-          <span className="font-bold text-slate-200">PUNE, INDIA (18.5204° N)</span>
+          <span className="font-bold text-slate-200">JALGAON, MH (20.9980° N, 75.5667° E)</span>
         </div>
       </div>
 

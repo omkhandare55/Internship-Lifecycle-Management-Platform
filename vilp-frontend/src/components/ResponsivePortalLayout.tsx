@@ -171,21 +171,46 @@ export function ResponsivePortalLayout({
       )}
 
       {/* ── Top Status Ribbon (#0A2540 Stripe Marine) ───────────────────────── */}
-      <div className="bg-[#0A2540] border-b border-[#1E3A5F] text-[10px] text-white px-4 sm:px-6 py-1.5 flex items-center justify-between select-none">
-        <div className="flex items-center gap-3">
-          <span className="font-bold text-[#2563EB]">[ VILP // OS ]</span>
-          <span className="text-slate-600">|</span>
+      <div className="bg-[#0A2540] border-b border-[#1E3A5F] text-[10px] text-white px-3 sm:px-6 py-1.5 flex flex-wrap items-center justify-between gap-2 select-none">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <span className="font-bold text-[#2563EB]">[ VILP // GHR JALGAON ]</span>
+          <span className="text-slate-600 hidden sm:inline">|</span>
           <span className="font-bold text-slate-200">PORTAL: {portalTitle.toUpperCase()}</span>
-          <span className="hidden md:inline text-slate-600">|</span>
-          <span className="hidden md:inline text-[#10B981] font-bold flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
-            SUPABASE REALTIME ACTIVE
-          </span>
+          <span className="text-slate-600 hidden md:inline">|</span>
+          
+          {/* Fast Jury Demo Switcher Pills */}
+          <div className="hidden lg:flex items-center gap-1 bg-[#1E3A5F] px-2 py-0.5 rounded-xs text-[10px]">
+            <span className="text-amber-300 font-bold mr-1">DEMO JUMP:</span>
+            {[
+              { label: 'Student', role: 'STUDENT', path: '/student/dashboard' },
+              { label: 'Recruiter', role: 'COMPANY', path: '/company/dashboard' },
+              { label: 'Mentor', role: 'MENTOR', path: '/mentor/dashboard' },
+              { label: 'T&P Head', role: 'TNP_HEAD', path: '/tnp/dashboard' },
+              { label: 'Admin', role: 'SUPER_ADMIN', path: '/admin/dashboard' },
+            ].map((p) => (
+              <button
+                key={p.role}
+                type="button"
+                onClick={() => {
+                  if (user) {
+                    useAuthStore.getState().updateUser({ ...user, role: p.role as any });
+                  }
+                  navigate(p.path);
+                }}
+                className={`px-1.5 py-0.5 rounded-xs font-bold transition-colors cursor-pointer ${
+                  user?.role === p.role ? 'bg-[#2563EB] text-white shadow-xs' : 'text-slate-300 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-slate-400 font-mono">AUTH: {user?.email || 'OFFLINE'}</span>
-          <span className="text-slate-600">|</span>
-          <span className="text-[#2563EB] font-bold">[CTRL+B COLLAPSE]</span>
+
+        <div className="flex items-center gap-3 text-slate-400 font-mono">
+          <span className="truncate max-w-[140px] sm:max-w-none">AUTH: {user?.email || 'OFFLINE'}</span>
+          <span className="text-slate-600 hidden sm:inline">|</span>
+          <span className="text-[#2563EB] font-bold hidden sm:inline">[CTRL+B COLLAPSE]</span>
         </div>
       </div>
 
