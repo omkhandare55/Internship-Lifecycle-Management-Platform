@@ -6,6 +6,8 @@ import {
   FileCheck,
   ArrowRight,
   ShieldCheck,
+  Building2,
+  TrendingUp,
 } from 'lucide-react';
 import { analyticsApi } from '@/services/vilpApi';
 
@@ -18,118 +20,162 @@ export function TnpDashboard() {
   const stats = data?.data;
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-12 animate-in fade-in duration-300">
-      {/* T&P Hero */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-orange-950 via-slate-900 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl border border-orange-800/30">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs font-semibold text-orange-300 border border-white/15">
-              <ShieldCheck className="w-3.5 h-3.5 text-orange-400" />
-              <span>Training & Placement Cell · Institutional Governance</span>
+    <div className="container-fluid p-0 space-y-4 space-y-md-5 pb-5 animate-fade-in font-mono">
+      {/* ── Top T&P Masthead (#0A2540) ──────────────────────────────────────── */}
+      <div className="bg-[#0A2540] border border-[#1E3A5F] p-4 p-sm-5 p-md-6 rounded-xs text-white shadow-xs space-y-4">
+        <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-4">
+          <div className="space-y-1.5">
+            <div className="d-inline-flex align-items-center gap-2 px-2.5 py-1 bg-[#2563EB] text-white text-[11px] font-bold uppercase rounded-xs">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#F97316]" />
+              <span>TRAINING &amp; PLACEMENT HEADQUARTERS // AICTE §7.2 GOVERNANCE</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            <h1 className="text-xl sm:text-3xl font-black uppercase tracking-tight font-sans m-0">
               Institutional Placement Headquarters
             </h1>
-            <p className="text-sm text-slate-300 max-w-xl">
-              Verify credentials, manage corporate recruiter partnerships, issue institutional NOCs, and track campus placements.
+            <p className="text-xs text-slate-300 font-mono max-w-2xl leading-relaxed m-0">
+              Verify credentials, manage corporate recruiter partnerships, issue auto-stamped institutional NOCs, and audit placement metrics.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="d-flex flex-wrap gap-2 gap-sm-3">
             <Link
               to="/tnp/verification"
-              className="px-4 py-2.5 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-md"
+              className="btn-primary text-xs d-flex align-items-center gap-1.5"
             >
-              <UserCheck className="w-4 h-4" /> Verification Queue
+              <UserCheck className="w-4 h-4" /> VERIFICATION QUEUE
             </Link>
             <Link
               to="/tnp/analytics"
-              className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-colors border border-white/15"
+              className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-mono text-xs font-bold rounded-xs transition-colors uppercase text-nowrap"
             >
-              Executive Analytics
+              EXECUTIVE AUDIT
             </Link>
           </div>
         </div>
       </div>
 
-      {/* KPI Highlight Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <div className="bg-white p-5 rounded-3xl border shadow-xs">
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Placement Rate</span>
-          <p className="text-2xl font-extrabold text-emerald-600 font-mono mt-2">
+      {/* ── KPI Highlight Grid (Bootstrap row g-0) ──────────────────────────── */}
+      <div className="row g-0 border border-[#E2E8F0] bg-white rounded-xs overflow-hidden">
+        <div className="col-12 col-sm-6 col-lg-3 p-4 border-end-md border-bottom border-bottom-lg-0 space-y-2">
+          <div className="d-flex align-items-center justify-content-between text-xs text-slate-500">
+            <span className="font-bold">PLACEMENT_RATE</span>
+            <TrendingUp className="w-4 h-4 text-[#2563EB]" />
+          </div>
+          <p className="text-2xl font-black text-[#2563EB] font-mono m-0">
             {stats ? `${((stats.totalOffers / (stats.totalStudents || 1)) * 100).toFixed(1)}%` : '95.2%'}
           </p>
-          <span className="text-xs text-gray-500 mt-1 inline-block">Of verified student pool</span>
+          <span className="text-[10px] text-slate-500 font-bold block">
+            Of verified student pool
+          </span>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border shadow-xs">
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Average Package (CTC)</span>
-          <p className="text-2xl font-extrabold text-indigo-600 font-mono mt-2">
+        <div className="col-12 col-sm-6 col-lg-3 p-4 border-end-lg border-bottom border-bottom-lg-0 space-y-2">
+          <div className="d-flex align-items-center justify-content-between text-xs text-slate-500">
+            <span className="font-bold">AVERAGE_CTC</span>
+            <Award className="w-4 h-4 text-[#0A2540]" />
+          </div>
+          <p className="text-2xl font-bold text-[#0A2540] font-mono m-0">
             {stats?.averageCtcLpa || 9.85} LPA
           </p>
-          <span className="text-xs text-emerald-600 font-semibold mt-1 inline-block">+18% vs last year</span>
+          <span className="text-[10px] text-emerald-700 font-bold block">
+            +18% YoY growth
+          </span>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border shadow-xs">
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Verified Recruiters</span>
-          <p className="text-2xl font-extrabold text-gray-900 font-mono mt-2">
+        <div className="col-12 col-sm-6 col-lg-3 p-4 border-end-md border-bottom border-bottom-sm-0 space-y-2">
+          <div className="d-flex align-items-center justify-content-between text-xs text-slate-500">
+            <span className="font-bold">VERIFIED_RECRUITERS</span>
+            <Building2 className="w-4 h-4 text-[#2563EB]" />
+          </div>
+          <p className="text-2xl font-bold text-[#0A2540] font-mono m-0">
             {stats?.verifiedCompanies || 78}
           </p>
-          <span className="text-xs text-blue-600 font-semibold mt-1 inline-block">Google, Microsoft & more</span>
+          <span className="text-[10px] text-[#2563EB] font-bold block">
+            Accredited Tier-1 Partners
+          </span>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border shadow-xs">
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">PPO Conversion</span>
-          <p className="text-2xl font-extrabold text-amber-600 font-mono mt-2">
+        <div className="col-12 col-sm-6 col-lg-3 p-4 space-y-2">
+          <div className="d-flex align-items-center justify-content-between text-xs text-slate-500">
+            <span className="font-bold">PPO_CONVERSION</span>
+            <ShieldCheck className="w-4 h-4 text-[#F97316]" />
+          </div>
+          <p className="text-2xl font-bold text-[#F97316] font-mono m-0">
             {stats?.ppoConversionRate || 29.2}%
           </p>
-          <span className="text-xs text-amber-600 font-semibold mt-1 inline-block">245 Full-time offers</span>
+          <span className="text-[10px] text-slate-500 font-bold block">
+            245 Pre-Placement Offers
+          </span>
         </div>
       </div>
 
-      {/* Governance & Action Hubs */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Link
-          to="/tnp/verification"
-          className="bg-white p-6 rounded-3xl border shadow-xs hover:shadow-md transition-all group block"
-        >
-          <div className="p-3 bg-orange-50 text-orange-700 rounded-2xl w-fit mb-4 group-hover:bg-orange-600 group-hover:text-white transition-colors">
-            <UserCheck className="w-6 h-6" />
-          </div>
-          <h3 className="font-bold text-gray-900 text-base">Universal Verification Queue</h3>
-          <p className="text-xs text-gray-500 mt-1">Review student KYC, academic credentials, and company onboarding.</p>
-          <span className="text-xs font-bold text-orange-600 flex items-center gap-1 mt-4">
-            Open Queue <ArrowRight className="w-3.5 h-3.5" />
-          </span>
-        </Link>
+      {/* ── Governance & Action Hubs (Bootstrap row g-3 g-md-4) ─────────────── */}
+      <div className="row g-3 g-md-4">
+        <div className="col-12 col-md-4">
+          <Link
+            to="/tnp/verification"
+            className="border border-[#E2E8F0] bg-white p-4 p-sm-5 rounded-xs space-y-3 shadow-xs hover:border-[#2563EB] transition-all d-flex flex-column justify-content-between h-100 group block"
+          >
+            <div className="space-y-2">
+              <div className="w-9 h-9 bg-[#F1F5F9] border border-[#CBD5E1] text-[#2563EB] group-hover:bg-[#2563EB] group-hover:text-white rounded-xs d-flex align-items-center justify-content-center transition-colors">
+                <UserCheck className="w-5 h-5" />
+              </div>
+              <h3 className="font-bold text-sm sm:text-base uppercase text-[#0A2540] font-sans m-0">
+                Universal Verification Queue
+              </h3>
+              <p className="text-xs text-slate-600 font-sans leading-relaxed m-0">
+                Review student KYC, institutional credentials, and corporate partner onboarding audits.
+              </p>
+            </div>
+            <span className="text-xs font-bold text-[#2563EB] d-flex align-items-center gap-1 pt-2 font-mono uppercase">
+              Open Queue <ArrowRight className="w-3.5 h-3.5" />
+            </span>
+          </Link>
+        </div>
 
-        <Link
-          to="/tnp/noc"
-          className="bg-white p-6 rounded-3xl border shadow-xs hover:shadow-md transition-all group block"
-        >
-          <div className="p-3 bg-emerald-50 text-emerald-700 rounded-2xl w-fit mb-4 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-            <FileCheck className="w-6 h-6" />
-          </div>
-          <h3 className="font-bold text-gray-900 text-base">Institutional NOC Clearances</h3>
-          <p className="text-xs text-gray-500 mt-1">Approve No Objection Certificates with unique institutional verification seals.</p>
-          <span className="text-xs font-bold text-emerald-600 flex items-center gap-1 mt-4">
-            Manage NOCs <ArrowRight className="w-3.5 h-3.5" />
-          </span>
-        </Link>
+        <div className="col-12 col-md-4">
+          <Link
+            to="/tnp/noc"
+            className="border border-[#E2E8F0] bg-white p-4 p-sm-5 rounded-xs space-y-3 shadow-xs hover:border-[#2563EB] transition-all d-flex flex-column justify-content-between h-100 group block"
+          >
+            <div className="space-y-2">
+              <div className="w-9 h-9 bg-[#F1F5F9] border border-[#CBD5E1] text-emerald-700 group-hover:bg-emerald-700 group-hover:text-white rounded-xs d-flex align-items-center justify-content-center transition-colors">
+                <FileCheck className="w-5 h-5" />
+              </div>
+              <h3 className="font-bold text-sm sm:text-base uppercase text-[#0A2540] font-sans m-0">
+                Institutional NOC Clearances
+              </h3>
+              <p className="text-xs text-slate-600 font-sans leading-relaxed m-0">
+                Approve and stamp No Objection Certificates with SHA-256 tamper-proof institutional seals.
+              </p>
+            </div>
+            <span className="text-xs font-bold text-emerald-700 d-flex align-items-center gap-1 pt-2 font-mono uppercase">
+              Manage NOCs <ArrowRight className="w-3.5 h-3.5" />
+            </span>
+          </Link>
+        </div>
 
-        <Link
-          to="/tnp/ppo"
-          className="bg-white p-6 rounded-3xl border shadow-xs hover:shadow-md transition-all group block"
-        >
-          <div className="p-3 bg-purple-50 text-purple-700 rounded-2xl w-fit mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
-            <Award className="w-6 h-6" />
-          </div>
-          <h3 className="font-bold text-gray-900 text-base">Placement & PPO Registry</h3>
-          <p className="text-xs text-gray-500 mt-1">Central corporate offer tracker with annual CTC metrics and 1-click CSV export.</p>
-          <span className="text-xs font-bold text-purple-600 flex items-center gap-1 mt-4">
-            View Registry <ArrowRight className="w-3.5 h-3.5" />
-          </span>
-        </Link>
+        <div className="col-12 col-md-4">
+          <Link
+            to="/tnp/ppo"
+            className="border border-[#E2E8F0] bg-white p-4 p-sm-5 rounded-xs space-y-3 shadow-xs hover:border-[#2563EB] transition-all d-flex flex-column justify-content-between h-100 group block"
+          >
+            <div className="space-y-2">
+              <div className="w-9 h-9 bg-[#F1F5F9] border border-[#CBD5E1] text-[#0A2540] group-hover:bg-[#0A2540] group-hover:text-white rounded-xs d-flex align-items-center justify-content-center transition-colors">
+                <Award className="w-5 h-5" />
+              </div>
+              <h3 className="font-bold text-sm sm:text-base uppercase text-[#0A2540] font-sans m-0">
+                Placement &amp; PPO Registry
+              </h3>
+              <p className="text-xs text-slate-600 font-sans leading-relaxed m-0">
+                Central corporate offer tracker with annual CTC metrics and 1-click accreditation exports.
+              </p>
+            </div>
+            <span className="text-xs font-bold text-[#0A2540] d-flex align-items-center gap-1 pt-2 font-mono uppercase">
+              View Registry <ArrowRight className="w-3.5 h-3.5" />
+            </span>
+          </Link>
+        </div>
       </div>
     </div>
   );

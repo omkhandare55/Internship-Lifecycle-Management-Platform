@@ -4,6 +4,10 @@ import {
   Plus,
   ArrowRight,
   ShieldCheck,
+  Building2,
+  Users,
+  Award,
+  Briefcase,
 } from 'lucide-react';
 import { companyApi, internshipApi, applicationApi } from '@/services/vilpApi';
 
@@ -28,109 +32,121 @@ export function CompanyDashboard() {
   const applicants = applicantsData?.data?.content || [];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-12 animate-in fade-in duration-300">
-      {/* Recruiter Header Hero */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-950 via-slate-900 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl border border-emerald-800/30">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs font-semibold text-emerald-300 border border-white/15">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Accredited Corporate Partner · {company?.industry || 'Information Technology'}</span>
+    <div className="container-fluid p-0 space-y-4 space-y-md-5 pb-5 animate-fade-in font-mono">
+      {/* ── Recruiter Header Hero (#0A2540) ─────────────────────────────────── */}
+      <div className="bg-[#0A2540] border border-[#1E3A5F] p-4 p-sm-5 p-md-6 rounded-xs text-white shadow-xs space-y-4">
+        <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-4">
+          <div className="space-y-1.5">
+            <div className="d-inline-flex align-items-center gap-2 px-2.5 py-1 bg-[#2563EB] text-white text-[11px] font-bold uppercase rounded-xs">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#F97316]" />
+              <span>ACCREDITED CORPORATE PARTNER // {company?.industry || 'INFORMATION TECHNOLOGY'}</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            <h1 className="text-xl sm:text-3xl font-black uppercase tracking-tight font-sans m-0">
               {company?.name || 'Enterprise Partner Portal'}
             </h1>
-            <p className="text-sm text-slate-300 max-w-xl">
+            <p className="text-xs text-slate-300 font-mono max-w-xl m-0">
               {company?.headquarters || 'Bangalore, Karnataka, India'} · Enterprise Size: {company?.size || '10,000+'}
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="d-flex flex-wrap gap-2 gap-sm-3">
             <Link
               to="/company/internships"
-              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-md"
+              className="btn-primary text-xs d-flex align-items-center gap-1.5"
             >
-              <Plus className="w-4 h-4" /> Post New Internship
+              <Plus className="w-4 h-4" /> POST NEW INTERNSHIP
             </Link>
             <Link
               to="/company/profile"
-              className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-colors border border-white/15"
+              className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-mono text-xs font-bold rounded-xs transition-colors uppercase text-nowrap"
             >
-              Company Profile
+              COMPANY PROFILE
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Recruiter KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <div className="bg-white p-5 rounded-3xl border shadow-xs">
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Active Postings</span>
-          <p className="text-2xl font-extrabold text-gray-900 font-mono mt-2">{internships.length || 2}</p>
-          <span className="text-xs text-emerald-600 font-semibold mt-1 inline-block">Accepting Applications</span>
+      {/* ── Recruiter KPI Cards (Bootstrap row g-0) ─────────────────────────── */}
+      <div className="row g-0 border border-[#E2E8F0] bg-white rounded-xs overflow-hidden">
+        <div className="col-12 col-sm-6 col-lg-3 p-4 border-end-md border-bottom border-bottom-lg-0 space-y-2">
+          <div className="d-flex align-items-center justify-content-between text-xs text-slate-500">
+            <span className="font-bold">ACTIVE_POSTINGS</span>
+            <Briefcase className="w-4 h-4 text-[#2563EB]" />
+          </div>
+          <p className="text-2xl font-black text-[#2563EB] font-mono m-0">{internships.length || 2}</p>
+          <span className="text-[10px] text-[#2563EB] font-bold block">Accepting Applications</span>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border shadow-xs">
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Total Candidates</span>
-          <p className="text-2xl font-extrabold text-gray-900 font-mono mt-2">{applicants.length || 1}</p>
-          <span className="text-xs text-blue-600 font-semibold mt-1 inline-block">1 Selected for Offer</span>
+        <div className="col-12 col-sm-6 col-lg-3 p-4 border-end-lg border-bottom border-bottom-lg-0 space-y-2">
+          <div className="d-flex align-items-center justify-content-between text-xs text-slate-500">
+            <span className="font-bold">TOTAL_CANDIDATES</span>
+            <Users className="w-4 h-4 text-[#0A2540]" />
+          </div>
+          <p className="text-2xl font-bold text-[#0A2540] font-mono m-0">{applicants.length || 1}</p>
+          <span className="text-[10px] text-emerald-700 font-bold block">1 Selected for Offer</span>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border shadow-xs">
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Offers Extended</span>
-          <p className="text-2xl font-extrabold text-gray-900 font-mono mt-2">1</p>
-          <span className="text-xs text-purple-600 font-semibold mt-1 inline-block">NOC Approved</span>
+        <div className="col-12 col-sm-6 col-lg-3 p-4 border-end-md border-bottom border-bottom-sm-0 space-y-2">
+          <div className="d-flex align-items-center justify-content-between text-xs text-slate-500">
+            <span className="font-bold">OFFERS_EXTENDED</span>
+            <Building2 className="w-4 h-4 text-[#2563EB]" />
+          </div>
+          <p className="text-2xl font-bold text-[#0A2540] font-mono m-0">1</p>
+          <span className="text-[10px] text-[#2563EB] font-bold block">NOC Auto-Issued</span>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border shadow-xs">
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Pre-Placement Offers (PPO)</span>
-          <p className="text-2xl font-extrabold text-gray-900 font-mono mt-2">1</p>
-          <span className="text-xs text-amber-600 font-semibold mt-1 inline-block">CTC: 14.5 LPA</span>
+        <div className="col-12 col-sm-6 col-lg-3 p-4 space-y-2">
+          <div className="d-flex align-items-center justify-content-between text-xs text-slate-500">
+            <span className="font-bold">PPO_CONVERSIONS</span>
+            <Award className="w-4 h-4 text-[#F97316]" />
+          </div>
+          <p className="text-2xl font-bold text-[#F97316] font-mono m-0">1</p>
+          <span className="text-[10px] text-slate-500 font-bold block">CTC: 14.5 LPA Extended</span>
         </div>
       </div>
 
-      {/* Talent Pipeline Section */}
-      <div className="bg-white rounded-3xl border shadow-xs p-6 sm:p-7 space-y-6">
-        <div className="flex items-center justify-between">
+      {/* ── Talent Pipeline Section ─────────────────────────────────────────── */}
+      <div className="bg-white rounded-xs border border-[#E2E8F0] shadow-xs p-4 p-sm-5 space-y-4">
+        <div className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2 pb-3 border-bottom border-[#E2E8F0]">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">Active Talent Pipeline</h3>
-            <p className="text-xs text-gray-500">Candidates applying for your open roles</p>
+            <h3 className="text-base sm:text-lg font-black text-[#0A2540] uppercase font-sans m-0">Active Talent Pipeline</h3>
+            <p className="text-xs text-slate-600 font-mono m-0">Candidates applying for your open roles</p>
           </div>
-          <Link to="/company/applicants" className="btn-secondary text-xs flex items-center gap-1">
-            View All Pipeline <ArrowRight className="w-3.5 h-3.5" />
+          <Link to="/company/applicants" className="btn-secondary text-xs d-flex align-items-center gap-1">
+            VIEW ALL PIPELINE <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-gray-50 border-b text-gray-500 font-semibold uppercase">
+          <table className="w-100 text-start text-xs font-mono">
+            <thead className="bg-[#F8FAFC] border-bottom border-[#E2E8F0] text-slate-600 font-bold uppercase">
               <tr>
-                <th className="px-6 py-4">Applicant</th>
-                <th className="px-6 py-4">Role Applied</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Action</th>
+                <th className="px-4 py-3">Applicant</th>
+                <th className="px-4 py-3">Role Applied</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
-              <tr className="hover:bg-gray-50/60 transition-colors">
-                <td className="px-6 py-4">
-                  <p className="font-bold text-gray-900 text-sm">Verified Candidate</p>
-                  <p className="text-[11px] text-gray-500 font-mono">REG-2026-001 · CSE (CGPA 8.85)</p>
+            <tbody className="divide-y divide-slate-100">
+              <tr className="hover:bg-[#F8FAFC] transition-colors">
+                <td className="px-4 py-3">
+                  <p className="font-bold text-[#0A2540] text-sm m-0">Verified Candidate</p>
+                  <p className="text-[11px] text-slate-500 font-mono m-0">REG-2026-001 · CSE (CGPA 8.85)</p>
                 </td>
-                <td className="px-6 py-4 font-medium text-gray-800">
-                  Cloud Engineering & Microservices Intern
+                <td className="px-4 py-3 font-medium text-slate-800">
+                  Cloud Engineering &amp; Microservices Intern
                 </td>
-                <td className="px-6 py-4">
-                  <span className="px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full text-xs font-bold">
+                <td className="px-4 py-3">
+                  <span className="px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-xs text-[11px] font-bold">
                     SELECTED (Offer Extended)
                   </span>
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-4 py-3">
                   <Link
                     to="/company/applicants"
-                    className="btn-primary text-xs px-3 py-1.5 inline-flex items-center gap-1"
+                    className="btn-primary text-xs px-3 py-1.5 d-inline-flex align-items-center gap-1"
                   >
-                    Manage Offer <ArrowRight className="w-3.5 h-3.5" />
+                    MANAGE OFFER <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </td>
               </tr>

@@ -59,40 +59,40 @@ export function StudentDashboard() {
   const aiRecommendations = aiRecsData?.data || [];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-12 animate-fade-in font-mono">
-      {/* ── Top Hero & Academic Credentials Seal (#FEF8E7) ──────────────────── */}
-      <div className="bg-[#FEF8E7] border border-[#E0D3E8] p-6 sm:p-8 space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white text-xs text-[#723ECF] border border-[#E0D3E8] font-bold">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#ED4B86]" />
-              <span>VERIFIED ACADEMIC PROFILE · {student?.studentNumber || '2022CS1045'}</span>
+    <div className="container-fluid p-0 space-y-4 space-y-md-5 pb-5 animate-fade-in font-mono">
+      {/* ── Top Hero & Academic Credentials Seal (#F1F5F9) ──────────────────── */}
+      <div className="bg-[#F1F5F9] border border-[#CBD5E1] p-4 p-sm-5 p-md-6 rounded-xs space-y-4">
+        <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-4">
+          <div className="space-y-1.5">
+            <div className="d-inline-flex align-items-center gap-2 px-2.5 py-1 bg-white text-xs text-[#2563EB] border border-[#CBD5E1] font-bold rounded-xs">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#F97316]" />
+              <span>VERIFIED ACADEMIC PROFILE · {student?.studentNumber || 'REG-2026-001'}</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black uppercase text-[#171024] font-sans tracking-tight">
-              STUDENT COMMAND // {student?.fullName || user?.email?.split('@')[0] || 'Aarav Sharma'}
+            <h1 className="text-xl sm:text-3xl font-black uppercase text-[#0A2540] font-sans tracking-tight m-0">
+              STUDENT COMMAND // {student?.fullName || user?.email?.split('@')[0] || 'Verified Candidate'}
             </h1>
-            <p className="text-xs text-zinc-600 font-mono">
+            <p className="text-xs text-slate-600 font-mono m-0">
               {student?.department?.name || 'Computer Science & Engineering'} · Semester {student?.semester || 6} (Batch of {student?.passingYear || 2026})
             </p>
           </div>
 
           {/* Academic Vitals Ledger */}
-          <div className="flex flex-wrap gap-3">
-            <div className="border border-[#E0D3E8] bg-white p-3 min-w-[110px] text-center">
-              <span className="text-[10px] text-zinc-500 uppercase font-bold block">CGPA</span>
-              <p className="text-xl font-mono font-bold text-[#723ECF] mt-0.5">
+          <div className="d-flex flex-wrap gap-2 gap-sm-3">
+            <div className="border border-[#CBD5E1] bg-white p-2.5 p-sm-3 min-w-[100px] text-center rounded-xs">
+              <span className="text-[10px] text-slate-500 uppercase font-bold block">CGPA</span>
+              <p className="text-lg sm:text-xl font-mono font-bold text-[#2563EB] mt-0.5 m-0">
                 {student?.cgpa?.toFixed(2) || '8.85'}
               </p>
             </div>
-            <div className="border border-[#E0D3E8] bg-white p-3 min-w-[110px] text-center">
-              <span className="text-[10px] text-zinc-500 uppercase font-bold block">BACKLOGS</span>
-              <p className="text-xl font-mono font-bold text-[#171024] mt-0.5">
+            <div className="border border-[#CBD5E1] bg-white p-2.5 p-sm-3 min-w-[100px] text-center rounded-xs">
+              <span className="text-[10px] text-slate-500 uppercase font-bold block">BACKLOGS</span>
+              <p className="text-lg sm:text-xl font-mono font-bold text-[#0A2540] mt-0.5 m-0">
                 {student?.backlogs ?? 0} Active
               </p>
             </div>
-            <div className="border border-[#E0D3E8] bg-white p-3 min-w-[120px] text-center">
-              <span className="text-[10px] text-zinc-500 uppercase font-bold block">KYC STATUS</span>
-              <p className="text-xs font-bold text-[#ED4B86] font-mono mt-1.5 uppercase">
+            <div className="border border-[#CBD5E1] bg-white p-2.5 p-sm-3 min-w-[110px] text-center rounded-xs">
+              <span className="text-[10px] text-slate-500 uppercase font-bold block">KYC STATUS</span>
+              <p className="text-xs font-bold text-emerald-700 font-mono mt-1.5 uppercase m-0">
                 ACCREDITED
               </p>
             </div>
@@ -101,98 +101,98 @@ export function StudentDashboard() {
       </div>
 
       {/* ── Metric Highlights Grid ──────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border border-[#E0D3E8] divide-y sm:divide-y-0 sm:divide-x divide-[#E0D3E8] bg-white">
-        <div className="p-6 space-y-2">
-          <div className="flex items-center justify-between text-xs text-zinc-500">
+      <div className="row g-0 border border-[#E2E8F0] bg-white rounded-xs overflow-hidden">
+        <div className="col-12 col-sm-6 col-lg-3 p-4 border-end-md border-bottom border-bottom-lg-0 space-y-2">
+          <div className="d-flex align-items-center justify-content-between text-xs text-slate-500">
             <span className="font-bold">ACTIVE_INTERNSHIP</span>
-            <Building2 className="w-4 h-4 text-[#723ECF]" />
+            <Building2 className="w-4 h-4 text-[#2563EB]" />
           </div>
-          <p className="text-base font-black text-[#171024] truncate font-sans">
-            {offers.length > 0 ? offers[0].companyName : 'Google Cloud India'}
+          <p className="text-sm sm:text-base font-black text-[#0A2540] truncate font-sans m-0">
+            {offers.length > 0 ? offers[0].companyName : 'Accredited Host Partner'}
           </p>
-          <span className="text-[10px] text-[#723ECF] font-bold block">
+          <span className="text-[10px] text-[#2563EB] font-bold block">
             ● IN PROGRESS (OFFER LOCKED)
           </span>
         </div>
 
-        <div className="p-6 space-y-2">
-          <div className="flex items-center justify-between text-xs text-zinc-500">
+        <div className="col-12 col-sm-6 col-lg-3 p-4 border-end-lg border-bottom border-bottom-lg-0 space-y-2">
+          <div className="d-flex align-items-center justify-content-between text-xs text-slate-500">
             <span className="font-bold">APPROVED_HOURS</span>
-            <TrendingUp className="w-4 h-4 text-[#723ECF]" />
+            <TrendingUp className="w-4 h-4 text-[#2563EB]" />
           </div>
-          <p className="text-2xl font-bold text-[#171024] font-mono">
-            {approvedHours} <span className="text-xs text-zinc-500 font-normal">/ {targetHours} hrs</span>
+          <p className="text-xl sm:text-2xl font-bold text-[#0A2540] font-mono m-0">
+            {approvedHours} <span className="text-xs text-slate-500 font-normal">/ {targetHours} hrs</span>
           </p>
-          <div className="w-full bg-[#F4EEF7] h-1.5 border border-[#E0D3E8] overflow-hidden">
-            <div className="bg-[#723ECF] h-full" style={{ width: `${progressPercent}%` }}></div>
+          <div className="w-100 bg-[#F1F5F9] h-1.5 border border-[#CBD5E1] overflow-hidden rounded-full">
+            <div className="bg-[#2563EB] h-100" style={{ width: `${progressPercent}%` }}></div>
           </div>
         </div>
 
-        <div className="p-6 space-y-2">
-          <div className="flex items-center justify-between text-xs text-zinc-500">
+        <div className="col-12 col-sm-6 col-lg-3 p-4 border-end-md border-bottom border-bottom-sm-0 space-y-2">
+          <div className="d-flex align-items-center justify-content-between text-xs text-slate-500">
             <span className="font-bold">APPLICATIONS</span>
-            <Briefcase className="w-4 h-4 text-[#723ECF]" />
+            <Briefcase className="w-4 h-4 text-[#2563EB]" />
           </div>
-          <p className="text-2xl font-bold text-[#171024] font-mono">
+          <p className="text-xl sm:text-2xl font-bold text-[#0A2540] font-mono m-0">
             {applications.length || 1}
           </p>
-          <span className="text-[10px] text-[#723ECF] font-bold block">
+          <span className="text-[10px] text-[#2563EB] font-bold block">
             {applications.length > 0 ? applications[0].status : 'Selected for Offer'}
           </span>
         </div>
 
-        <div className="p-6 space-y-2">
-          <div className="flex items-center justify-between text-xs text-zinc-500">
+        <div className="col-12 col-sm-6 col-lg-3 p-4 space-y-2">
+          <div className="d-flex align-items-center justify-content-between text-xs text-slate-500">
             <span className="font-bold">OFFERS_&amp;_NOC</span>
-            <Award className="w-4 h-4 text-[#ED4B86]" />
+            <Award className="w-4 h-4 text-[#F97316]" />
           </div>
-          <p className="text-2xl font-bold text-[#171024] font-mono">
+          <p className="text-xl sm:text-2xl font-bold text-[#0A2540] font-mono m-0">
             {offers.length || 1}
           </p>
-          <span className="text-[10px] text-[#ED4B86] font-bold block">
+          <span className="text-[10px] text-[#F97316] font-bold block">
             NOC-2026-004821 ISSUED
           </span>
         </div>
       </div>
 
-      {/* ── Main Two-Column Layout ─────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* ── Main Two-Column Bootstrap Grid Layout ───────────────────────────── */}
+      <div className="row g-4">
         {/* Left 2 Cols: Active Placement & AI Radar */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Active Internship Live Tracking Wireframe */}
-          <div className="border border-[#E0D3E8] bg-white p-6 space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E0D3E8]">
+        <div className="col-12 col-lg-8 space-y-4">
+          {/* Active Internship Live Tracking Card */}
+          <div className="border border-[#E2E8F0] bg-white p-4 p-sm-5 rounded-xs space-y-4 shadow-xs">
+            <div className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3 pb-3 border-bottom border-[#E2E8F0]">
               <div>
-                <span className="text-[10px] text-[#723ECF] uppercase font-bold tracking-wider block">CURRENT PLACEMENT</span>
-                <h3 className="text-lg font-black text-[#171024] uppercase font-sans mt-0.5">
-                  Cloud Engineering &amp; Microservices Intern
+                <span className="text-[10px] text-[#2563EB] uppercase font-bold tracking-wider block">CURRENT PLACEMENT</span>
+                <h3 className="text-base sm:text-lg font-black text-[#0A2540] uppercase font-sans mt-0.5 m-0">
+                  Cloud Engineering &amp; Distributed Systems
                 </h3>
-                <p className="text-xs text-zinc-600 font-mono mt-1">
-                  Google Cloud India · Bangalore / Hybrid
+                <p className="text-xs text-slate-600 font-mono mt-1 m-0">
+                  Accredited Enterprise Partner · Bangalore / Hybrid
                 </p>
               </div>
 
               <Link
                 to="/student/progress"
-                className="btn-primary text-xs self-start sm:self-auto flex items-center gap-1.5"
+                className="btn-primary text-xs d-flex align-items-center gap-1.5"
               >
                 <BookOpen className="w-3.5 h-3.5" /> SUBMIT LOGBOOK
               </Link>
             </div>
 
             {/* Live Progress Gauge */}
-            <div className="p-4 bg-[#FEF8E7] border border-[#E0D3E8] space-y-3">
-              <div className="flex items-center justify-between text-xs text-[#171024]">
+            <div className="p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xs space-y-2.5">
+              <div className="d-flex align-items-center justify-content-between text-xs text-[#0A2540]">
                 <span className="font-bold">INTERNSHIP COMPLETION PROGRESS</span>
-                <span className="font-bold text-[#723ECF] font-mono">{progressPercent}% COMPLETED</span>
+                <span className="font-bold text-[#2563EB] font-mono">{progressPercent}% COMPLETED</span>
               </div>
-              <div className="w-full bg-white h-2.5 border border-[#E0D3E8] overflow-hidden">
+              <div className="w-100 bg-white h-2.5 border border-[#CBD5E1] overflow-hidden rounded-full">
                 <div
-                  className="bg-[#723ECF] h-full transition-all"
+                  className="bg-[#2563EB] h-100 transition-all"
                   style={{ width: `${progressPercent}%` }}
                 ></div>
               </div>
-              <div className="flex justify-between text-[10px] text-zinc-500 font-mono">
+              <div className="d-flex justify-content-between text-[10px] text-slate-500 font-mono">
                 <span>0 hrs</span>
                 <span>{approvedHours} hrs Approved</span>
                 <span>{targetHours} hrs Goal</span>
@@ -200,43 +200,49 @@ export function StudentDashboard() {
             </div>
 
             {/* Academic Evaluation Ledger */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-              <div className="border border-[#E0D3E8] p-3 bg-[#F4EEF7]">
-                <span className="text-[10px] text-zinc-500 font-bold block">FACULTY_MENTOR</span>
-                <p className="font-bold text-[#171024]">Dr. Vikram Patil</p>
+            <div className="row g-2 text-xs">
+              <div className="col-12 col-sm-4">
+                <div className="border border-[#E2E8F0] p-2.5 bg-[#F8FAFC] rounded-xs h-100">
+                  <span className="text-[10px] text-slate-500 font-bold block">FACULTY_MENTOR</span>
+                  <p className="font-bold text-[#0A2540] m-0">Assigned Faculty Advisor</p>
+                </div>
               </div>
-              <div className="border border-[#E0D3E8] p-3 bg-[#F4EEF7]">
-                <span className="text-[10px] text-zinc-500 font-bold block">MENTOR_RATING</span>
-                <p className="font-bold text-[#723ECF]">★★★★★ 5.0 Rating</p>
+              <div className="col-12 col-sm-4">
+                <div className="border border-[#E2E8F0] p-2.5 bg-[#F8FAFC] rounded-xs h-100">
+                  <span className="text-[10px] text-slate-500 font-bold block">MENTOR_RATING</span>
+                  <p className="font-bold text-[#2563EB] m-0">★★★★★ 5.0 Rating</p>
+                </div>
               </div>
-              <div className="border border-[#E0D3E8] p-3 bg-[#F4EEF7]">
-                <span className="text-[10px] text-zinc-500 font-bold block">NOC_REFERENCE</span>
-                <p className="font-bold text-[#ED4B86]">NOC-2026-004821</p>
+              <div className="col-12 col-sm-4">
+                <div className="border border-[#E2E8F0] p-2.5 bg-[#F8FAFC] rounded-xs h-100">
+                  <span className="text-[10px] text-slate-500 font-bold block">NOC_REFERENCE</span>
+                  <p className="font-bold text-[#F97316] m-0">NOC-2026-004821</p>
+                </div>
               </div>
             </div>
           </div>
 
           {/* AI Skill Radar & Opportunity Feed */}
-          <div className="border border-[#E0D3E8] bg-white p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-[#E0D3E8] pb-3">
+          <div className="border border-[#E2E8F0] bg-white p-4 p-sm-5 rounded-xs space-y-3 shadow-xs">
+            <div className="d-flex align-items-center justify-content-between border-bottom border-[#E2E8F0] pb-3">
               <div>
-                <span className="text-[10px] text-[#723ECF] font-bold uppercase block">SKILL MATCH RADAR</span>
-                <h3 className="text-base font-black text-[#171024] uppercase font-sans">
+                <span className="text-[10px] text-[#2563EB] font-bold uppercase block">SKILL MATCH RADAR</span>
+                <h3 className="text-sm sm:text-base font-black text-[#0A2540] uppercase font-sans m-0">
                   Accredited Internship Openings
                 </h3>
               </div>
-              <Link to="/student/internships" className="text-xs font-bold text-[#723ECF] hover:underline">
+              <Link to="/student/internships" className="text-xs font-bold text-[#2563EB] hover:underline">
                 [ VIEW ALL ]
               </Link>
             </div>
 
-            <div className="divide-y divide-[#E0D3E8] text-xs">
+            <div className="divide-y divide-[#E2E8F0] text-xs">
               {aiRecommendations.length > 0 ? (
                 aiRecommendations.slice(0, 3).map((rec: any, idx: number) => (
-                  <div key={rec.id || rec.title || idx} className="py-3 flex items-center justify-between gap-4">
+                  <div key={rec.id || rec.title || idx} className="py-3 d-flex align-items-center justify-content-between gap-3">
                     <div>
-                      <p className="font-bold text-[#171024]">{rec.title}</p>
-                      <p className="text-[11px] text-zinc-500">{rec.companyName} · {rec.location}</p>
+                      <p className="font-bold text-[#0A2540] m-0">{rec.title}</p>
+                      <p className="text-[11px] text-slate-500 m-0">{rec.companyName} · {rec.location}</p>
                     </div>
                     <button
                       onClick={() => setSelectedInternship({ id: rec.id, title: rec.title })}
@@ -247,13 +253,13 @@ export function StudentDashboard() {
                   </div>
                 ))
               ) : (
-                <div className="py-3 flex items-center justify-between gap-4">
+                <div className="py-3 d-flex align-items-center justify-content-between gap-3">
                   <div>
-                    <p className="font-bold text-[#171024]">Full Stack Engineering Intern</p>
-                    <p className="text-[11px] text-zinc-500">Microsoft India · Hyderabad</p>
+                    <p className="font-bold text-[#0A2540] m-0">Full Stack Engineering Intern</p>
+                    <p className="text-[11px] text-slate-500 m-0">Accredited Enterprise Partner · Remote / Hybrid</p>
                   </div>
                   <button
-                    onClick={() => setSelectedInternship({ id: 'mock-msft', title: 'Full Stack Engineering Intern' })}
+                    onClick={() => setSelectedInternship({ id: 'mock-opp', title: 'Full Stack Engineering Intern' })}
                     className="btn-secondary text-[11px] px-3 py-1"
                   >
                     EVALUATE ELIGIBILITY
@@ -265,31 +271,31 @@ export function StudentDashboard() {
         </div>
 
         {/* Right 1 Col: Quick Actions & Verification Vault */}
-        <div className="space-y-8">
-          <div className="border border-[#E0D3E8] bg-white p-6 space-y-4">
-            <span className="text-[10px] text-zinc-500 font-bold uppercase block">QUICK ACTIONS</span>
+        <div className="col-12 col-lg-4 space-y-4">
+          <div className="border border-[#E2E8F0] bg-white p-4 p-sm-5 rounded-xs space-y-3 shadow-xs">
+            <span className="text-[10px] text-slate-500 font-bold uppercase block">QUICK ACTIONS</span>
             <div className="space-y-2">
-              <Link to="/student/progress" className="btn-secondary w-full justify-between">
-                <span>WEEKLY LOGBOOKS</span> <ArrowRight className="w-3.5 h-3.5 text-[#723ECF]" />
+              <Link to="/student/progress" className="btn-secondary w-100 justify-content-between">
+                <span>WEEKLY LOGBOOKS</span> <ArrowRight className="w-3.5 h-3.5 text-[#2563EB]" />
               </Link>
-              <Link to="/student/offers" className="btn-secondary w-full justify-between">
-                <span>OFFERS &amp; NOC CLEARANCE</span> <ArrowRight className="w-3.5 h-3.5 text-[#723ECF]" />
+              <Link to="/student/offers" className="btn-secondary w-100 justify-content-between">
+                <span>OFFERS &amp; NOC CLEARANCE</span> <ArrowRight className="w-3.5 h-3.5 text-[#2563EB]" />
               </Link>
-              <Link to="/student/certificate" className="btn-secondary w-full justify-between">
-                <span>SHA-256 E-CERTIFICATE</span> <ArrowRight className="w-3.5 h-3.5 text-[#723ECF]" />
+              <Link to="/student/certificate" className="btn-secondary w-100 justify-content-between">
+                <span>SHA-256 E-CERTIFICATE</span> <ArrowRight className="w-3.5 h-3.5 text-[#2563EB]" />
               </Link>
             </div>
           </div>
 
           {/* SHA-256 Public Verification Ledger Box */}
-          <div className="border border-[#E0D3E8] bg-[#FEF8E7] p-6 space-y-3 font-mono text-xs">
-            <span className="text-[10px] text-[#ED4B86] uppercase font-bold block">
+          <div className="border border-[#E2E8F0] bg-[#F1F5F9] p-4 p-sm-5 rounded-xs space-y-2.5 font-mono text-xs shadow-xs">
+            <span className="text-[10px] text-[#F97316] uppercase font-bold block">
               CRYPTOGRAPHIC TAMPER-PROOF SEAL
             </span>
-            <p className="text-zinc-700 text-[11px] leading-relaxed">
+            <p className="text-slate-700 text-[11px] leading-relaxed m-0">
               Your institutional completion credentials will be stamped with a lifelong SHA-256 hash valid for accreditation audits.
             </p>
-            <div className="border border-[#E0D3E8] p-2 bg-white text-[10px] text-[#723ECF] truncate font-bold">
+            <div className="border border-[#CBD5E1] p-2 bg-white text-[10px] text-[#2563EB] truncate font-bold rounded-xs">
               HASH: e3b0c44298fc1c149afbf4c8996fb92427ae41e4
             </div>
           </div>

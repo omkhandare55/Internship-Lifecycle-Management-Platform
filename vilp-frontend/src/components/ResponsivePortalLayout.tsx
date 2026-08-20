@@ -97,14 +97,13 @@ export function ResponsivePortalLayout({
       setUnreadCount((prev) => prev + 1);
       setActiveToast(newNotif);
 
-      // Auto dismiss live toast after 6 seconds
       setTimeout(() => {
         setActiveToast((current) => (current?.id === newNotif.id ? null : current));
       }, 6000);
     });
 
     return () => {
-      unsubscribe();
+      if (unsubscribe) unsubscribe();
     };
   }, [user?.id]);
 
@@ -114,7 +113,8 @@ export function ResponsivePortalLayout({
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadCount(0);
     } catch {
-      // safe fallback
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      setUnreadCount(0);
     }
   };
 
@@ -123,8 +123,8 @@ export function ResponsivePortalLayout({
     const testNotif: NotificationItem = {
       id: `test-${Date.now()}`,
       userId: user?.id || 'system',
-      title: 'Realtime Alert: Offer Confirmed',
-      message: 'Google Cloud India verified your 240-hour institutional clearance.',
+      title: 'Realtime Alert: Clearance Approved',
+      message: 'Institutional mentor verified your 240-hour compliance logbook.',
       type: 'OFFER',
       isRead: false,
       createdAt: new Date().toISOString(),
@@ -143,75 +143,75 @@ export function ResponsivePortalLayout({
   const roleName = user?.role ? user.role.replace('_', ' ') : 'USER';
 
   return (
-    <div className="min-h-screen bg-[#F4EEF7] text-[#171024] flex flex-col font-mono selection:bg-[#723ECF] selection:text-white antialiased relative">
+    <div className="container-fluid p-0 min-h-screen bg-[#F8FAFC] text-[#0F172A] d-flex flex-column font-mono selection:bg-[#2563EB] selection:text-white antialiased position-relative">
       {/* ── Live Toast Notification Banner (Top Right) ────────────────────────── */}
       {activeToast && (
-        <div className="fixed top-4 right-4 z-50 max-w-sm w-full bg-white border-2 border-[#723ECF] shadow-2xl p-4 rounded-sm animate-bounce-short">
+        <div className="fixed top-4 right-4 z-50 max-w-sm w-full bg-white border border-[#2563EB] shadow-2xl p-4 rounded-xs animate-bounce-short">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#ED4B86] animate-ping" />
-              <span className="text-[10px] font-bold text-[#ED4B86] uppercase tracking-wider">
-                ● LIVE SUPABASE EVENT
+              <div className="w-2 h-2 rounded-full bg-[#F97316] animate-ping" />
+              <span className="text-[10px] font-bold text-[#F97316] uppercase tracking-wider">
+                ● LIVE SYSTEM EVENT
               </span>
             </div>
             <button
               onClick={() => setActiveToast(null)}
-              className="text-zinc-400 hover:text-zinc-700 p-0.5"
+              className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
-          <p className="font-bold text-xs text-[#171024] mt-1.5">{activeToast.title}</p>
-          <p className="text-[11px] text-zinc-600 mt-0.5 leading-snug">{activeToast.message}</p>
-          <div className="mt-2 pt-2 border-t border-[#E0D3E8] flex justify-between items-center text-[10px] text-zinc-500">
-            <span className="text-[#723ECF] font-bold">{activeToast.type}</span>
+          <p className="font-bold text-xs text-[#0A2540] mt-1.5">{activeToast.title}</p>
+          <p className="text-[11px] text-slate-600 mt-0.5 leading-snug">{activeToast.message}</p>
+          <div className="mt-2 pt-2 border-t border-[#E2E8F0] flex justify-between items-center text-[10px] text-slate-500">
+            <span className="text-[#2563EB] font-bold">{activeToast.type}</span>
             <span>Just now</span>
           </div>
         </div>
       )}
 
-      {/* ── Top Editorial Status Ribbon (Off Yellow #FEF8E7) ───────────────── */}
-      <div className="bg-[#FEF8E7] border-b border-[#E0D3E8] text-[10px] text-[#171024] px-4 sm:px-6 py-1.5 flex items-center justify-between select-none">
+      {/* ── Top Status Ribbon (#0A2540 Stripe Marine) ───────────────────────── */}
+      <div className="bg-[#0A2540] border-b border-[#1E3A5F] text-[10px] text-white px-4 sm:px-6 py-1.5 flex items-center justify-between select-none">
         <div className="flex items-center gap-3">
-          <span className="font-bold text-[#723ECF]">[ VILP // OS ]</span>
-          <span className="text-[#E0D3E8]">|</span>
-          <span className="font-bold">PORTAL: {portalTitle.toUpperCase()}</span>
-          <span className="hidden md:inline text-[#E0D3E8]">|</span>
-          <span className="hidden md:inline text-[#059669] font-bold flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#059669] animate-pulse" />
+          <span className="font-bold text-[#2563EB]">[ VILP // OS ]</span>
+          <span className="text-slate-600">|</span>
+          <span className="font-bold text-slate-200">PORTAL: {portalTitle.toUpperCase()}</span>
+          <span className="hidden md:inline text-slate-600">|</span>
+          <span className="hidden md:inline text-[#10B981] font-bold flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
             SUPABASE REALTIME ACTIVE
           </span>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-zinc-600 font-mono">AUTH: {user?.email || 'OFFLINE'}</span>
-          <span className="text-[#E0D3E8]">|</span>
-          <span className="text-[#723ECF] font-bold">[CTRL+B COLLAPSE]</span>
+          <span className="text-slate-400 font-mono">AUTH: {user?.email || 'OFFLINE'}</span>
+          <span className="text-slate-600">|</span>
+          <span className="text-[#2563EB] font-bold">[CTRL+B COLLAPSE]</span>
         </div>
       </div>
 
       <div className="flex flex-1 relative overflow-hidden">
-        {/* ── Desktop Editorial Sidebar (#FEF8E7) ─────────────────────────── */}
+        {/* ── Desktop Sidebar (#F1F5F9) ────────────────────────────────────── */}
         <aside
-          className={`hidden md:flex flex-col bg-[#FEF8E7] border-r border-[#E0D3E8] transition-all duration-150 select-none z-30 ${
+          className={`hidden md:flex flex-col bg-[#F1F5F9] border-r border-[#CBD5E1] transition-all duration-150 select-none z-30 ${
             sidebarCollapsed ? 'w-[72px]' : 'w-64'
           }`}
         >
           {/* Brand Header */}
-          <div className="h-16 px-4 flex items-center justify-between border-b border-[#E0D3E8]">
+          <div className="h-16 px-4 flex items-center justify-between border-b border-[#CBD5E1]">
             <div className="flex items-center gap-2.5 overflow-hidden">
-              <div className="w-8 h-8 bg-[#723ECF] text-white flex items-center justify-center font-bold text-xs shrink-0">
+              <div className="w-8 h-8 bg-[#0A2540] text-white flex items-center justify-center font-bold text-xs shrink-0 rounded-xs shadow-xs">
                 V
               </div>
               {!sidebarCollapsed && (
                 <div className="truncate">
-                  <p className="text-xs font-bold text-[#171024] tracking-wider">VILP OS</p>
-                  <p className="text-[10px] text-[#723ECF] font-bold tracking-tight">{roleName}</p>
+                  <p className="text-xs font-bold text-[#0A2540] tracking-wider">VILP OS</p>
+                  <p className="text-[10px] text-[#2563EB] font-bold tracking-tight">{roleName}</p>
                 </div>
               )}
             </div>
             <button
               onClick={toggleSidebar}
-              className="p-1.5 text-zinc-600 hover:text-[#723ECF] hover:bg-[#faefcb] transition-colors"
+              className="p-1.5 text-slate-600 hover:text-[#2563EB] hover:bg-[#E2E8F0] transition-colors rounded-xs cursor-pointer"
               title={sidebarCollapsed ? 'Expand Sidebar (Ctrl+B)' : 'Collapse Sidebar (Ctrl+B)'}
             >
               {sidebarCollapsed ? <PanelLeft className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
@@ -227,10 +227,10 @@ export function ResponsivePortalLayout({
                   key={item.to}
                   to={item.to}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2.5 text-xs font-medium transition-all ${
+                    `flex items-center gap-3 px-3 py-2.5 text-xs font-medium rounded-xs transition-all ${
                       isActive
-                        ? 'bg-[#723ECF] text-white font-bold'
-                        : 'text-zinc-700 hover:bg-[#faefcb] hover:text-[#171024]'
+                        ? 'bg-[#2563EB] text-white font-bold shadow-xs'
+                        : 'text-slate-700 hover:bg-[#E2E8F0] hover:text-[#0A2540]'
                     }`
                   }
                   title={sidebarCollapsed ? item.label : undefined}
@@ -238,7 +238,7 @@ export function ResponsivePortalLayout({
                   <Icon className="w-4 h-4 shrink-0" />
                   {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
                   {!sidebarCollapsed && item.badge && (
-                    <span className="ml-auto text-[10px] font-bold bg-[#ED4B86] text-white px-1.5 py-0.2">
+                    <span className="ml-auto text-[10px] font-bold bg-[#F97316] text-white px-1.5 py-0.2 rounded-xs">
                       {item.badge}
                     </span>
                   )}
@@ -248,21 +248,21 @@ export function ResponsivePortalLayout({
           </div>
 
           {/* User Profile / Logout Footer */}
-          <div className="p-3 border-t border-[#E0D3E8] bg-[#faefcb]/50">
+          <div className="p-3 border-t border-[#CBD5E1] bg-[#E2E8F0]/50">
             {!sidebarCollapsed ? (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 overflow-hidden">
-                  <div className="w-6 h-6 rounded-full bg-[#723ECF] text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                  <div className="w-6 h-6 rounded-full bg-[#0A2540] text-white flex items-center justify-center text-[10px] font-bold shrink-0">
                     {user?.email?.charAt(0).toUpperCase() || 'U'}
                   </div>
                   <div className="truncate text-[11px]">
-                    <p className="font-bold text-[#171024] truncate">{user?.email || 'Guest User'}</p>
-                    <p className="text-[10px] text-zinc-500">{roleName}</p>
+                    <p className="font-bold text-[#0A2540] truncate">{user?.email || 'Guest User'}</p>
+                    <p className="text-[10px] text-slate-500">{roleName}</p>
                   </div>
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center justify-center gap-1.5 py-1.5 border border-[#E0D3E8] bg-white hover:border-[#ED4B86] hover:text-[#ED4B86] text-[10px] font-bold text-zinc-700 transition-colors"
+                  className="w-full flex items-center justify-center gap-1.5 py-1.5 border border-[#CBD5E1] bg-white hover:border-red-400 hover:text-red-600 text-[10px] font-bold text-slate-700 transition-colors rounded-xs cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5" /> [ EXIT PORTAL ]
                 </button>
@@ -270,7 +270,7 @@ export function ResponsivePortalLayout({
             ) : (
               <button
                 onClick={handleLogout}
-                className="w-full p-2 flex items-center justify-center text-zinc-700 hover:text-[#ED4B86] transition-colors"
+                className="w-full p-2 flex items-center justify-center text-slate-700 hover:text-red-600 transition-colors rounded-xs cursor-pointer"
                 title="Logout"
               >
                 <LogOut className="w-4 h-4" />
@@ -286,20 +286,20 @@ export function ResponsivePortalLayout({
               className="fixed inset-0 bg-black/40 backdrop-blur-sm"
               onClick={() => setDrawerOpen(false)}
             />
-            <div className="relative w-4/5 max-w-xs bg-[#FEF8E7] flex flex-col h-full z-10 border-r border-[#E0D3E8] shadow-2xl">
-              <div className="h-16 px-4 flex items-center justify-between border-b border-[#E0D3E8]">
+            <div className="relative w-4/5 max-w-xs bg-[#F1F5F9] flex flex-col h-full z-10 border-r border-[#CBD5E1] shadow-2xl">
+              <div className="h-16 px-4 flex items-center justify-between border-b border-[#CBD5E1]">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-[#723ECF] text-white flex items-center justify-center font-bold text-xs">
+                  <div className="w-8 h-8 bg-[#0A2540] text-white flex items-center justify-center font-bold text-xs rounded-xs">
                     V
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-[#171024]">VILP OS</p>
-                    <p className="text-[10px] text-[#723ECF] font-bold">{roleName}</p>
+                    <p className="text-xs font-bold text-[#0A2540]">VILP OS</p>
+                    <p className="text-[10px] text-[#2563EB] font-bold">{roleName}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setDrawerOpen(false)}
-                  className="p-1.5 text-zinc-600 hover:text-[#171024]"
+                  className="p-1.5 text-slate-600 hover:text-[#0A2540] cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -314,10 +314,10 @@ export function ResponsivePortalLayout({
                       to={item.to}
                       onClick={() => setDrawerOpen(false)}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 px-3 py-2.5 text-xs font-medium transition-all ${
+                        `flex items-center gap-3 px-3 py-2.5 text-xs font-medium rounded-xs transition-all ${
                           isActive
-                            ? 'bg-[#723ECF] text-white font-bold'
-                            : 'text-zinc-700 hover:bg-[#faefcb]'
+                            ? 'bg-[#2563EB] text-white font-bold shadow-xs'
+                            : 'text-slate-700 hover:bg-[#E2E8F0]'
                         }`
                       }
                     >
@@ -328,10 +328,10 @@ export function ResponsivePortalLayout({
                 })}
               </div>
 
-              <div className="p-4 border-t border-[#E0D3E8]">
+              <div className="p-4 border-t border-[#CBD5E1]">
                 <button
                   onClick={handleLogout}
-                  className="w-full btn-secondary text-[#ED4B86] border-[#ED4B86] justify-center font-bold"
+                  className="w-full btn-secondary text-red-600 border-red-300 justify-center font-bold"
                 >
                   <LogOut className="w-4 h-4" /> TERMINATE SESSION
                 </button>
@@ -340,18 +340,18 @@ export function ResponsivePortalLayout({
           </div>
         )}
 
-        {/* ── Main Application Viewport (#F4EEF7) ────────────────────────── */}
-        <div className="flex-1 flex flex-col min-w-0 bg-[#F4EEF7]">
+        {/* ── Main Application Viewport (#F8FAFC) ────────────────────────── */}
+        <div className="flex-1 flex flex-col min-w-0 bg-[#F8FAFC]">
           {/* Top Operational Bar */}
-          <header className="h-16 border-b border-[#E0D3E8] bg-[#F4EEF7] px-4 sm:px-8 flex items-center justify-between sticky top-0 z-20">
+          <header className="h-16 border-b border-[#E2E8F0] bg-white px-4 sm:px-8 flex items-center justify-between sticky top-0 z-20">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setDrawerOpen(true)}
-                className="md:hidden p-2 text-[#171024] hover:text-[#723ECF] border border-[#E0D3E8] bg-[#FEF8E7]"
+                className="md:hidden p-2 text-[#0A2540] hover:text-[#2563EB] border border-[#CBD5E1] bg-[#F8FAFC] rounded-xs cursor-pointer"
               >
                 <Menu className="w-5 h-5" />
               </button>
-              <h2 className="text-sm font-bold text-[#171024] uppercase tracking-wider">
+              <h2 className="text-sm font-bold text-[#0A2540] uppercase tracking-wider">
                 {portalTitle}
               </h2>
             </div>
@@ -360,62 +360,62 @@ export function ResponsivePortalLayout({
             <div className="flex items-center gap-3 relative">
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
-                className="p-2 border border-[#E0D3E8] bg-[#FEF8E7] hover:border-[#723ECF] text-[#171024] hover:text-[#723ECF] relative transition-colors flex items-center gap-1.5"
+                className="p-2 border border-[#CBD5E1] bg-[#F8FAFC] hover:border-[#2563EB] text-[#0A2540] hover:text-[#2563EB] relative transition-colors flex items-center gap-1.5 rounded-xs cursor-pointer"
                 title="System Notifications"
               >
                 <Bell className="w-4 h-4" />
                 {unreadCount > 0 && (
-                  <span className="text-[10px] font-bold bg-[#ED4B86] text-white px-1.5 py-0.2 animate-pulse">
+                  <span className="text-[10px] font-bold bg-[#F97316] text-white px-1.5 py-0.2 rounded-xs animate-pulse">
                     {unreadCount}
                   </span>
                 )}
               </button>
 
-              {/* Notification Popover Ledger */}
+              {/* Notification Popover */}
               {notificationsOpen && (
-                <div className="absolute right-0 top-12 w-80 sm:w-96 bg-white border border-[#E0D3E8] shadow-2xl z-50 animate-slide-down">
-                  <div className="p-3 border-b border-[#E0D3E8] bg-[#FEF8E7] flex items-center justify-between text-xs">
-                    <span className="font-bold text-[#171024]">SYSTEM NOTIFICATIONS ({unreadCount})</span>
+                <div className="absolute right-0 top-12 w-80 sm:w-96 bg-white border border-[#CBD5E1] shadow-2xl z-50 animate-slide-down rounded-xs">
+                  <div className="p-3 border-b border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-between text-xs">
+                    <span className="font-bold text-[#0A2540]">SYSTEM NOTIFICATIONS ({unreadCount})</span>
                     <button
                       onClick={handleMarkAllAsRead}
-                      className="text-[10px] text-[#723ECF] hover:underline font-bold"
+                      className="text-[10px] text-[#2563EB] hover:underline font-bold cursor-pointer"
                     >
                       [ MARK ALL READ ]
                     </button>
                   </div>
 
-                  <div className="max-h-80 overflow-y-auto divide-y divide-[#E0D3E8] text-xs">
+                  <div className="max-h-80 overflow-y-auto divide-y divide-[#E2E8F0] text-xs">
                     {notifications.length === 0 ? (
-                      <div className="p-6 text-center text-zinc-500">Zero unread event dispatches.</div>
+                      <div className="p-6 text-center text-slate-500">Zero unread event dispatches.</div>
                     ) : (
                       notifications.map((n) => (
                         <div
                           key={n.id}
                           className={`p-3 space-y-1 transition-colors ${
-                            n.isRead ? 'bg-white' : 'bg-[#FEF8E7]/70'
+                            n.isRead ? 'bg-white' : 'bg-[#F8FAFC]'
                           }`}
                         >
-                          <div className="flex items-center justify-between text-[10px] text-zinc-500">
-                            <span className="text-[#723ECF] font-bold font-mono">
+                          <div className="flex items-center justify-between text-[10px] text-slate-500">
+                            <span className="text-[#2563EB] font-bold font-mono">
                               {n.type || 'SYSTEM'}
                             </span>
                             <span>{new Date(n.createdAt).toLocaleTimeString()}</span>
                           </div>
-                          <p className="font-bold text-[#171024] text-xs">{n.title}</p>
-                          <p className="text-[11px] text-zinc-600">{n.message}</p>
+                          <p className="font-bold text-[#0A2540] text-xs">{n.title}</p>
+                          <p className="text-[11px] text-slate-600">{n.message}</p>
                         </div>
                       ))
                     )}
                   </div>
 
                   {/* Test Realtime Sound Trigger Button */}
-                  <div className="p-2.5 bg-[#FEF8E7] border-t border-[#E0D3E8] flex justify-between items-center text-[10px]">
-                    <span className="text-zinc-500 font-medium">Supabase Realtime Feed</span>
+                  <div className="p-2.5 bg-[#F8FAFC] border-t border-[#E2E8F0] flex justify-between items-center text-[10px]">
+                    <span className="text-slate-500 font-medium">Supabase Realtime Feed</span>
                     <button
                       onClick={handleTriggerTestChime}
-                      className="inline-flex items-center gap-1 px-2 py-1 bg-white border border-[#E0D3E8] hover:border-[#723ECF] text-[#723ECF] font-bold hover:bg-[#723ECF] hover:text-white transition-colors"
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-white border border-[#CBD5E1] hover:border-[#2563EB] text-[#2563EB] font-bold hover:bg-[#2563EB] hover:text-white transition-colors rounded-xs cursor-pointer"
                     >
-                      <Volume2 className="w-3 h-3" /> Test Chime & Alert
+                      <Volume2 className="w-3 h-3" /> Test Chime &amp; Alert
                     </button>
                   </div>
                 </div>
@@ -430,9 +430,9 @@ export function ResponsivePortalLayout({
         </div>
       </div>
 
-      {/* ── Mobile Editorial Bottom Navigation Bar ─────────────────────────── */}
+      {/* ── Mobile Bottom Navigation Bar ──────────────────────────────────── */}
       {mobileBottomNavItems && (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FEF8E7] border-t border-[#E0D3E8] flex justify-around items-center h-14">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#F1F5F9] border-t border-[#CBD5E1] flex justify-around items-center h-14">
           {mobileBottomNavItems.slice(0, 5).map((item) => {
             const Icon = item.icon;
             return (
@@ -441,7 +441,7 @@ export function ResponsivePortalLayout({
                 to={item.to}
                 className={({ isActive }) =>
                   `flex flex-col items-center justify-center flex-1 h-full text-[10px] ${
-                    isActive ? 'text-white font-bold bg-[#723ECF]' : 'text-zinc-600'
+                    isActive ? 'text-white font-bold bg-[#2563EB]' : 'text-slate-600'
                   }`
                 }
               >
