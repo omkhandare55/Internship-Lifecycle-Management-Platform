@@ -13,6 +13,8 @@ import com.vilp.offer.repository.NocRequestRepository;
 import com.vilp.offer.repository.OfferRepository;
 import com.vilp.student.entity.Student;
 import com.vilp.student.repository.StudentRepository;
+import com.vilp.user.entity.User;
+import com.vilp.user.repository.UserRepository;
 import com.vilp.notification.dto.NotificationDto;
 import com.vilp.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +40,7 @@ public class OfferService {
     private final ApplicationRepository applicationRepository;
     private final CompanyRepository companyRepository;
     private final StudentRepository studentRepository;
+    private final UserRepository userRepository;
     private final NotificationService notificationService;
 
     public OfferDto.OfferResponse createOffer(UUID companyUserId, OfferDto.CreateOfferRequest req) {
