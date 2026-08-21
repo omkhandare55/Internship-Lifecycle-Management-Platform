@@ -383,6 +383,7 @@ export function MultiRoleOnboardingWizard() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="input-field"
+                        autoComplete="new-password"
                       />
                     </div>
 
@@ -643,6 +644,7 @@ export function MultiRoleOnboardingWizard() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="input-field"
+                    autoComplete="new-password"
                   />
                 </div>
 

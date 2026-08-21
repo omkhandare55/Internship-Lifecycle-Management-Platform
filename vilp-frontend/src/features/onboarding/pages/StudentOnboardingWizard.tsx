@@ -419,6 +419,7 @@ export function StudentOnboardingWizard() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full p-2.5 sm:p-3 bg-[#FEF8E7]/40 border border-[#E0D3E8] text-xs font-mono focus:border-[#723ECF] outline-hidden rounded-sm"
                     placeholder="••••••••••••"
+                    autoComplete="new-password"
                   />
                 </div>
 

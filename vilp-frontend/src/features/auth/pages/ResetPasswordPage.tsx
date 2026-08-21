@@ -135,6 +135,7 @@ export function ResetPasswordPage() {
             onChange={(e) => setNewPassword(e.target.value)}
             className="input-field"
             placeholder="••••••••••••"
+            autoComplete="new-password"
           />
         </div>
 
@@ -147,6 +148,7 @@ export function ResetPasswordPage() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             className="input-field"
             placeholder="••••••••••••"
+            autoComplete="new-password"
           />
         </div>
 

@@ -177,6 +177,7 @@ export function LoginPage() {
               {...register('password')}
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••••••"
+              autoComplete="current-password"
               className="input-field pr-10"
             />
             <button
