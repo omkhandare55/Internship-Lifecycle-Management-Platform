@@ -359,7 +359,8 @@ public class AuthService {
     // ─── Private helpers ───────────────────────────────────────────────────
 
     private TokenResponse buildTokenResponse(User user) {
-        String accessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getRoleName());
+        UserRole userRole = user.getRoleName() != null ? user.getRoleName() : UserRole.STUDENT;
+        String accessToken = jwtTokenProvider.generateAccessToken(user.getId(), userRole);
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
 
         return TokenResponse.builder()
@@ -370,14 +371,15 @@ public class AuthService {
                 .user(TokenResponse.AuthUserDto.builder()
                         .id(user.getId())
                         .email(user.getEmail())
-                        .role(user.getRoleName())
+                        .role(userRole)
                         .emailVerified(user.getEmailVerified())
                         .build())
                 .build();
     }
 
     private TokenResponse buildTokenResponseWithRotation(User user) {
-        String newAccessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getRoleName());
+        UserRole userRole = user.getRoleName() != null ? user.getRoleName() : UserRole.STUDENT;
+        String newAccessToken = jwtTokenProvider.generateAccessToken(user.getId(), userRole);
         String newRefreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
 
         return TokenResponse.builder()
@@ -388,7 +390,7 @@ public class AuthService {
                 .user(TokenResponse.AuthUserDto.builder()
                         .id(user.getId())
                         .email(user.getEmail())
-                        .role(user.getRoleName())
+                        .role(userRole)
                         .emailVerified(user.getEmailVerified())
                         .build())
                 .build();

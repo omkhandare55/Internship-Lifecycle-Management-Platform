@@ -70,10 +70,11 @@ public class JwtTokenProvider {
     public String generateAccessToken(UUID userId, UserRole role) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + accessTokenExpiryMs);
+        String roleStr = (role != null) ? role.name() : "STUDENT";
 
         return Jwts.builder()
                 .subject(userId.toString())
-                .claim("role", role.name())
+                .claim("role", roleStr)
                 .claim("type", "ACCESS")
                 .issuer(issuer)
                 .issuedAt(now)
