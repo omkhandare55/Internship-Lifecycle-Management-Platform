@@ -240,10 +240,9 @@ public class AuthService {
         String cleanEmail = request.getEmail().trim().toLowerCase();
 
         User user = userRepository.findByEmail(cleanEmail).orElseGet(() -> {
-            UserRole targetRole = request.getRole() != null ? request.getRole() : UserRole.STUDENT;
-            if (targetRole == UserRole.SUPER_ADMIN) {
-                targetRole = UserRole.STUDENT;
-            }
+            final UserRole targetRole = (request.getRole() != null && request.getRole() != UserRole.SUPER_ADMIN)
+                    ? request.getRole()
+                    : UserRole.STUDENT;
 
             Role role = roleRepository.findByName(targetRole)
                     .orElseThrow(() -> new AuthException("INVALID_ROLE", "Role not found: " + targetRole));
