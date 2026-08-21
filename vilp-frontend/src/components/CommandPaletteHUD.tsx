@@ -100,7 +100,7 @@ export function CommandPaletteHUD() {
       id: 'act-onboarding',
       category: 'ACTIONS',
       title: 'Launch Multi-Role Onboarding Wizard',
-      subtitle: '8-Step AI Profile extraction, dual OTP & career radar',
+      subtitle: '8-Step AI Profile extraction & career radar',
       shortcut: '⌘ O',
       icon: Sparkles,
       action: () => navigate('/onboarding/roles'),

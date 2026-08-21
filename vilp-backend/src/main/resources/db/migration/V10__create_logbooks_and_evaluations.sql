@@ -1,7 +1,7 @@
 -- V10: Create weekly_reports (logbooks) and evaluations tables
 -- Source: PRD §14, §15, TRD §17, §26, Blueprint §32
 
-CREATE TABLE weekly_reports (
+CREATE TABLE IF NOT EXISTS weekly_reports (
     id                  UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id          UUID         NOT NULL REFERENCES students(id) ON DELETE CASCADE,
     internship_id       UUID         NOT NULL REFERENCES internships(id),
@@ -25,7 +25,7 @@ CREATE TABLE weekly_reports (
     UNIQUE (student_id, internship_id, week_number)
 );
 
-CREATE TABLE evaluations (
+CREATE TABLE IF NOT EXISTS evaluations (
     id                          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     internship_id               UUID         NOT NULL REFERENCES internships(id),
     student_id                  UUID         NOT NULL REFERENCES students(id),
@@ -48,10 +48,10 @@ CREATE TABLE evaluations (
 );
 
 -- Indexes
-CREATE INDEX idx_weekly_reports_student     ON weekly_reports(student_id);
-CREATE INDEX idx_weekly_reports_internship  ON weekly_reports(internship_id);
-CREATE INDEX idx_weekly_reports_status      ON weekly_reports(status);
+CREATE INDEX IF NOT EXISTS idx_weekly_reports_student     ON weekly_reports(student_id);
+CREATE INDEX IF NOT EXISTS idx_weekly_reports_internship  ON weekly_reports(internship_id);
+CREATE INDEX IF NOT EXISTS idx_weekly_reports_status      ON weekly_reports(status);
 
-CREATE INDEX idx_evaluations_student        ON evaluations(student_id);
-CREATE INDEX idx_evaluations_internship     ON evaluations(internship_id);
-CREATE INDEX idx_evaluations_type           ON evaluations(evaluation_type);
+CREATE INDEX IF NOT EXISTS idx_evaluations_student        ON evaluations(student_id);
+CREATE INDEX IF NOT EXISTS idx_evaluations_internship     ON evaluations(internship_id);
+CREATE INDEX IF NOT EXISTS idx_evaluations_type           ON evaluations(evaluation_type);

@@ -1,7 +1,7 @@
 -- V11: Create certificates and ppo_records tables
 -- Source: PRD §15, §16, TRD §25, §26, §30, Blueprint §33
 
-CREATE TABLE certificates (
+CREATE TABLE IF NOT EXISTS certificates (
     id                      UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id              UUID         NOT NULL REFERENCES students(id) ON DELETE CASCADE,
     internship_id           UUID         NOT NULL REFERENCES internships(id),
@@ -19,7 +19,7 @@ CREATE TABLE certificates (
     UNIQUE (student_id, internship_id)
 );
 
-CREATE TABLE ppo_records (
+CREATE TABLE IF NOT EXISTS ppo_records (
     id                      UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id              UUID         NOT NULL REFERENCES students(id) ON DELETE CASCADE,
     company_id              UUID         NOT NULL REFERENCES companies(id),
@@ -39,10 +39,10 @@ CREATE TABLE ppo_records (
 );
 
 -- Indexes
-CREATE INDEX idx_certificates_student_id           ON certificates(student_id);
-CREATE INDEX idx_certificates_internship_id        ON certificates(internship_id);
-CREATE INDEX idx_certificates_certificate_number   ON certificates(certificate_number);
+CREATE INDEX IF NOT EXISTS idx_certificates_student_id           ON certificates(student_id);
+CREATE INDEX IF NOT EXISTS idx_certificates_internship_id        ON certificates(internship_id);
+CREATE INDEX IF NOT EXISTS idx_certificates_certificate_number   ON certificates(certificate_number);
 
-CREATE INDEX idx_ppo_student_id                    ON ppo_records(student_id);
-CREATE INDEX idx_ppo_company_id                    ON ppo_records(company_id);
-CREATE INDEX idx_ppo_status                        ON ppo_records(status);
+CREATE INDEX IF NOT EXISTS idx_ppo_student_id                    ON ppo_records(student_id);
+CREATE INDEX IF NOT EXISTS idx_ppo_company_id                    ON ppo_records(company_id);
+CREATE INDEX IF NOT EXISTS idx_ppo_status                        ON ppo_records(status);

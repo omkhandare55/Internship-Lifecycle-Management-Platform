@@ -1,7 +1,7 @@
 -- V8: Create verifications table
 -- Source: TRD §15, Blueprint §33
 
-CREATE TABLE verifications (
+CREATE TABLE IF NOT EXISTS verifications (
     id                  UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     -- Polymorphic: what is being verified?
     entity_type         VARCHAR(50)  NOT NULL,   -- STUDENT | COMPANY | INTERNSHIP | DOCUMENT | OFFER | CERTIFICATE
@@ -17,6 +17,6 @@ CREATE TABLE verifications (
     verified_at         TIMESTAMP WITH TIME ZONE
 );
 
-CREATE INDEX idx_verifications_entity  ON verifications(entity_type, entity_id);
-CREATE INDEX idx_verifications_status  ON verifications(status);
-CREATE INDEX idx_verifications_sub_by  ON verifications(submitted_by);
+CREATE INDEX IF NOT EXISTS idx_verifications_entity  ON verifications(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_verifications_status  ON verifications(status);
+CREATE INDEX IF NOT EXISTS idx_verifications_sub_by  ON verifications(submitted_by);

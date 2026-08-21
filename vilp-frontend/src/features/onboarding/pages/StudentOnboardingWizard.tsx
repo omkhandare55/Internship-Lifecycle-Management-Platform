@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ShieldCheck,
@@ -16,15 +16,13 @@ import {
   Trash2,
   Edit3,
   AlertCircle,
-  Clock,
 } from 'lucide-react';
 import { auditStudentRegistration } from '../services/fraudDetectionService';
 import { parseResumeWithAi, type ParsedResumeProfile } from '../services/aiResumeParserService';
-import { realOtpService } from '../services/onboardingApi';
 import { useAuthStore } from '@/stores/authStore';
 
 const STEPS = [
-  { id: 1, name: 'Identity & OTP', desc: 'Account & Dual OTP' },
+  { id: 1, name: 'Identity & Account', desc: 'Institutional Profile' },
   { id: 2, name: 'Verification', desc: 'Institutional Proof' },
   { id: 3, name: 'Resume Drop', desc: 'Optional AI Ingestion' },
   { id: 4, name: 'AI Extraction', desc: 'Confidence Calibration' },
@@ -61,29 +59,14 @@ export function StudentOnboardingWizard() {
 
   const [currentStep, setCurrentStep] = useState(1);
 
-  // Step 1: Basic Identity & Dual OTP
+  // Step 1: Basic Identity
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
   const [password, setPassword] = useState('');
-  
-  const [emailOtp, setEmailOtp] = useState('');
-  const [emailOtpVerified, setEmailOtpVerified] = useState(false);
-  const [emailOtpSent, setEmailOtpSent] = useState(false);
-  const [emailTimer, setEmailTimer] = useState(0);
-
-  const [mobileOtp, setMobileOtp] = useState('');
-  const [mobileOtpVerified, setMobileOtpVerified] = useState(false);
-  const [mobileOtpSent, setMobileOtpSent] = useState(false);
-  const [mobileTimer, setMobileTimer] = useState(0);
-
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
-  const [isSendingMobile, setIsSendingMobile] = useState(false);
-  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
-  const [isVerifyingMobile, setIsVerifyingMobile] = useState(false);
 
   const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [successMessage] = useState('');
 
   // Step 2: Student Institutional Verification
   const [collegeName, setCollegeName] = useState('');
@@ -116,29 +99,12 @@ export function StudentOnboardingWizard() {
   // Fraud Audit Evaluation
   const fraudAudit = auditStudentRegistration(email, mobileNumber, enrollmentNumber);
 
-  // Timers
-  useEffect(() => {
-    let interval: any;
-    if (emailTimer > 0) {
-      interval = setInterval(() => setEmailTimer((t) => t - 1), 1000);
-    }
-    return () => clearInterval(interval);
-  }, [emailTimer]);
-
-  useEffect(() => {
-    let interval: any;
-    if (mobileTimer > 0) {
-      interval = setInterval(() => setMobileTimer((t) => t - 1), 1000);
-    }
-    return () => clearInterval(interval);
-  }, [mobileTimer]);
-
   // Calculate Profile Completeness Percentage
   const calculateCompleteness = () => {
-    let score = 15;
-    if (fullName) score += 10;
-    if (emailOtpVerified) score += 20;
-    if (mobileOtpVerified) score += 20;
+    let score = 20;
+    if (fullName) score += 20;
+    if (email) score += 20;
+    if (mobileNumber.length >= 10) score += 15;
     if (enrollmentNumber && collegeName) score += 15;
     if (parsedData || resumeFile) score += 10;
     if (skills.length >= 3) score += 10;
@@ -146,80 +112,6 @@ export function StudentOnboardingWizard() {
   };
 
   const completeness = calculateCompleteness();
-
-  const handleSendEmailOtp = async () => {
-    if (!email || !email.includes('@')) {
-      setErrorMessage('Please enter a valid institutional email address.');
-      return;
-    }
-    setErrorMessage('');
-    setIsSendingEmail(true);
-    try {
-      const res = await realOtpService.sendEmailOtp(email);
-      setEmailOtpSent(true);
-      setEmailTimer(60);
-      setSuccessMessage(res.message);
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to dispatch email verification code.');
-    } finally {
-      setIsSendingEmail(false);
-    }
-  };
-
-  const handleVerifyEmailOtp = async () => {
-    if (!emailOtp || emailOtp.length < 6) {
-      setErrorMessage('Please enter the 6-digit email OTP.');
-      return;
-    }
-    setErrorMessage('');
-    setIsVerifyingEmail(true);
-    try {
-      const res = await realOtpService.verifyEmailOtp(email, emailOtp);
-      setEmailOtpVerified(true);
-      setSuccessMessage(res.message);
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Invalid email verification code. Please check your inbox.');
-    } finally {
-      setIsVerifyingEmail(false);
-    }
-  };
-
-  const handleSendMobileOtp = async () => {
-    if (!mobileNumber || mobileNumber.length < 10) {
-      setErrorMessage('Please enter a valid 10-digit mobile number.');
-      return;
-    }
-    setErrorMessage('');
-    setIsSendingMobile(true);
-    try {
-      const res = await realOtpService.sendMobileOtp(mobileNumber);
-      setMobileOtpSent(true);
-      setMobileTimer(60);
-      setSuccessMessage(res.message);
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to dispatch SMS OTP.');
-    } finally {
-      setIsSendingMobile(false);
-    }
-  };
-
-  const handleVerifyMobileOtp = async () => {
-    if (!mobileOtp || mobileOtp.length < 6) {
-      setErrorMessage('Please enter the 6-digit mobile SMS OTP.');
-      return;
-    }
-    setErrorMessage('');
-    setIsVerifyingMobile(true);
-    try {
-      const res = await realOtpService.verifyMobileOtp(mobileNumber, mobileOtp);
-      setMobileOtpVerified(true);
-      setSuccessMessage(res.message);
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Invalid SMS OTP code. Please check your messages.');
-    } finally {
-      setIsVerifyingMobile(false);
-    }
-  };
 
   const handleResumeUpload = async (file: File) => {
     setResumeFile(file);
@@ -423,131 +315,43 @@ export function StudentOnboardingWizard() {
                   />
                 </div>
 
-                {/* Email Verification Box */}
-                <div className="space-y-2 border border-[#E0D3E8] p-3.5 sm:p-4 rounded-sm bg-[#F4EEF7]/50">
-                  <div className="flex justify-between items-center">
-                    <label className="text-xs font-bold font-mono text-[#171024] uppercase">
-                      Institutional Email *
-                    </label>
-                    {emailOtpVerified ? (
-                      <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-xs flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" /> VERIFIED
-                      </span>
-                    ) : emailTimer > 0 ? (
-                      <span className="text-[10px] font-mono text-zinc-500 flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-amber-600" /> Resend in {emailTimer}s
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleSendEmailOtp}
-                        disabled={isSendingEmail}
-                        className="text-[10px] font-mono text-[#723ECF] hover:underline font-bold"
-                      >
-                        {isSendingEmail ? 'Dispatching...' : emailOtpSent ? 'RESEND OTP' : 'SEND OTP'}
-                      </button>
-                    )}
-                  </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold font-mono text-[#171024] uppercase">
+                    Institutional Email *
+                  </label>
                   <input
                     type="email"
                     value={email}
-                    disabled={emailOtpVerified}
                     onChange={(e) => setEmail(e.target.value)}
-                    className={`w-full p-2.5 text-xs font-medium border rounded-sm outline-hidden ${
-                      emailOtpVerified ? 'bg-zinc-100 text-zinc-600 border-zinc-300' : 'bg-white border-[#E0D3E8] focus:border-[#723ECF]'
-                    }`}
+                    className="w-full p-2.5 sm:p-3 bg-[#FEF8E7]/40 border border-[#E0D3E8] text-xs font-medium focus:border-[#723ECF] outline-hidden rounded-sm"
                     placeholder="student@vilp.edu"
                   />
-                  {!emailOtpVerified && (
-                    <div className="pt-1.5 flex gap-2">
-                      <input
-                        type="text"
-                        maxLength={6}
-                        value={emailOtp}
-                        onChange={(e) => setEmailOtp(e.target.value)}
-                        placeholder="Enter 6-digit Code"
-                        className="flex-1 p-2 bg-white border border-[#E0D3E8] text-xs font-mono text-center tracking-widest focus:border-[#723ECF] outline-hidden rounded-sm font-bold"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleVerifyEmailOtp}
-                        disabled={isVerifyingEmail || !emailOtp}
-                        className="px-4 py-2 bg-[#723ECF] hover:bg-[#5f33ad] disabled:opacity-50 text-white text-xs font-mono font-bold rounded-sm flex items-center gap-1"
-                      >
-                        {isVerifyingEmail ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'VERIFY'}
-                      </button>
-                    </div>
-                  )}
                 </div>
 
-                {/* Mobile Verification Box */}
-                <div className="space-y-2 border border-[#E0D3E8] p-3.5 sm:p-4 rounded-sm bg-[#F4EEF7]/50">
-                  <div className="flex justify-between items-center">
-                    <label className="text-xs font-bold font-mono text-[#171024] uppercase">
-                      Mobile Number (+91) *
-                    </label>
-                    {mobileOtpVerified ? (
-                      <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-xs flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" /> VERIFIED
-                      </span>
-                    ) : mobileTimer > 0 ? (
-                      <span className="text-[10px] font-mono text-zinc-500 flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-amber-600" /> Resend in {mobileTimer}s
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleSendMobileOtp}
-                        disabled={isSendingMobile}
-                        className="text-[10px] font-mono text-[#723ECF] hover:underline font-bold"
-                      >
-                        {isSendingMobile ? 'Dispatching...' : mobileOtpSent ? 'RESEND SMS' : 'SEND OTP'}
-                      </button>
-                    )}
-                  </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold font-mono text-[#171024] uppercase">
+                    Mobile Number (+91) *
+                  </label>
                   <input
                     type="tel"
                     value={mobileNumber}
-                    disabled={mobileOtpVerified}
                     onChange={(e) => setMobileNumber(e.target.value)}
-                    className={`w-full p-2.5 text-xs font-mono border rounded-sm outline-hidden ${
-                      mobileOtpVerified ? 'bg-zinc-100 text-zinc-600 border-zinc-300' : 'bg-white border-[#E0D3E8] focus:border-[#723ECF]'
-                    }`}
+                    className="w-full p-2.5 sm:p-3 bg-[#FEF8E7]/40 border border-[#E0D3E8] text-xs font-mono focus:border-[#723ECF] outline-hidden rounded-sm"
                     placeholder="9876543210"
                   />
-                  {!mobileOtpVerified && (
-                    <div className="pt-1.5 flex gap-2">
-                      <input
-                        type="text"
-                        maxLength={6}
-                        value={mobileOtp}
-                        onChange={(e) => setMobileOtp(e.target.value)}
-                        placeholder="Enter 6-digit SMS"
-                        className="flex-1 p-2 bg-white border border-[#E0D3E8] text-xs font-mono text-center tracking-widest focus:border-[#723ECF] outline-hidden rounded-sm font-bold"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleVerifyMobileOtp}
-                        disabled={isVerifyingMobile || !mobileOtp}
-                        className="px-4 py-2 bg-[#723ECF] hover:bg-[#5f33ad] disabled:opacity-50 text-white text-xs font-mono font-bold rounded-sm flex items-center gap-1"
-                      >
-                        {isVerifyingMobile ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'VERIFY'}
-                      </button>
-                    </div>
-                  )}
                 </div>
               </div>
 
               <div className="flex justify-end pt-4 border-t border-[#E0D3E8]">
                 <button
                   type="button"
-                  disabled={!emailOtpVerified || !mobileOtpVerified || !fullName}
+                  disabled={!fullName || !email || mobileNumber.length < 10}
                   onClick={() => {
                     setErrorMessage('');
                     setCurrentStep(2);
                   }}
                   className={`w-full sm:w-auto px-6 py-3 font-mono font-bold text-xs flex items-center justify-center gap-2 rounded-sm shadow-xs min-h-[44px] ${
-                    emailOtpVerified && mobileOtpVerified && fullName
+                    fullName && email && mobileNumber.length >= 10
                       ? 'bg-[#723ECF] hover:bg-[#5f33ad] text-white cursor-pointer'
                       : 'bg-zinc-200 text-zinc-400 cursor-not-allowed'
                   }`}

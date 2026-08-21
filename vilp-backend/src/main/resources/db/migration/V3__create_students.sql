@@ -1,7 +1,7 @@
 -- V3: Create departments and students tables
 -- Source: TRD §12.3, Blueprint §33
 
-CREATE TABLE departments (
+CREATE TABLE IF NOT EXISTS departments (
     id          BIGSERIAL    PRIMARY KEY,
     name        VARCHAR(100) NOT NULL UNIQUE,
     code        VARCHAR(20)  NOT NULL UNIQUE,
@@ -19,9 +19,10 @@ INSERT INTO departments (name, code) VALUES
     ('Chemical Engineering',               'CHE'),
     ('Biotechnology',                      'BT'),
     ('Master of Computer Applications',    'MCA'),
-    ('Master of Business Administration',  'MBA');
+    ('Master of Business Administration',  'MBA')
+ON CONFLICT (name) DO NOTHING;
 
-CREATE TABLE students (
+CREATE TABLE IF NOT EXISTS students (
     id                    UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id               UUID         NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
     student_number        VARCHAR(50)  NOT NULL UNIQUE,
@@ -43,20 +44,20 @@ CREATE TABLE students (
     updated_at            TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE skills (
+CREATE TABLE IF NOT EXISTS skills (
     id          BIGSERIAL    PRIMARY KEY,
     name        VARCHAR(100) NOT NULL UNIQUE,
     category    VARCHAR(100)
 );
 
-CREATE TABLE student_skills (
+CREATE TABLE IF NOT EXISTS student_skills (
     student_id  UUID    NOT NULL REFERENCES students(id) ON DELETE CASCADE,
     skill_id    BIGINT  NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
     level       VARCHAR(50) DEFAULT 'BEGINNER',   -- BEGINNER | INTERMEDIATE | ADVANCED
     PRIMARY KEY (student_id, skill_id)
 );
 
-CREATE TABLE certifications (
+CREATE TABLE IF NOT EXISTS certifications (
     id              BIGSERIAL    PRIMARY KEY,
     student_id      UUID         NOT NULL REFERENCES students(id) ON DELETE CASCADE,
     name            VARCHAR(255) NOT NULL,
@@ -68,12 +69,12 @@ CREATE TABLE certifications (
 );
 
 -- Indexes
-CREATE INDEX idx_students_user_id          ON students(user_id);
-CREATE INDEX idx_students_student_number   ON students(student_number);
-CREATE INDEX idx_students_department_id    ON students(department_id);
-CREATE INDEX idx_students_verification     ON students(verification_status);
-CREATE INDEX idx_students_passing_year     ON students(passing_year);
-CREATE INDEX idx_students_cgpa             ON students(cgpa);
+CREATE INDEX IF NOT EXISTS idx_students_user_id          ON students(user_id);
+CREATE INDEX IF NOT EXISTS idx_students_student_number   ON students(student_number);
+CREATE INDEX IF NOT EXISTS idx_students_department_id    ON students(department_id);
+CREATE INDEX IF NOT EXISTS idx_students_verification     ON students(verification_status);
+CREATE INDEX IF NOT EXISTS idx_students_passing_year     ON students(passing_year);
+CREATE INDEX IF NOT EXISTS idx_students_cgpa             ON students(cgpa);
 
 -- Seed common skills
 INSERT INTO skills (name, category) VALUES
@@ -84,4 +85,5 @@ INSERT INTO skills (name, category) VALUES
     ('PostgreSQL', 'Database'), ('MySQL', 'Database'), ('MongoDB', 'Database'),
     ('Redis', 'Database'), ('Docker', 'DevOps'), ('Kubernetes', 'DevOps'),
     ('Git', 'Tools'), ('Linux', 'Tools'), ('AWS', 'Cloud'), ('Azure', 'Cloud'),
-    ('Machine Learning', 'AI/ML'), ('Deep Learning', 'AI/ML'), ('SQL', 'Database');
+    ('Machine Learning', 'AI/ML'), ('Deep Learning', 'AI/ML'), ('SQL', 'Database')
+ON CONFLICT (name) DO NOTHING;

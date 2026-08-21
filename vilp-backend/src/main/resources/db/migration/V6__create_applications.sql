@@ -1,7 +1,7 @@
 -- V6: Create applications table
 -- Source: TRD §14, Blueprint §33
 
-CREATE TABLE applications (
+CREATE TABLE IF NOT EXISTS applications (
     id                UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     internship_id     UUID         NOT NULL REFERENCES internships(id),
     student_id        UUID         NOT NULL REFERENCES students(id),
@@ -17,7 +17,7 @@ CREATE TABLE applications (
     UNIQUE (student_id, internship_id)
 );
 
-CREATE INDEX idx_applications_internship_id ON applications(internship_id);
-CREATE INDEX idx_applications_student_id    ON applications(student_id);
-CREATE INDEX idx_applications_status        ON applications(status);
-CREATE INDEX idx_applications_applied_at    ON applications(applied_at);
+CREATE INDEX IF NOT EXISTS idx_applications_internship_id ON applications(internship_id);
+CREATE INDEX IF NOT EXISTS idx_applications_student_id    ON applications(student_id);
+CREATE INDEX IF NOT EXISTS idx_applications_status        ON applications(status);
+CREATE INDEX IF NOT EXISTS idx_applications_applied_at    ON applications(applied_at);

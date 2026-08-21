@@ -4,7 +4,7 @@
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id                          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     email                       VARCHAR(255) NOT NULL UNIQUE,
     password_hash               VARCHAR(255),                           -- NULL for Google-only accounts
@@ -23,12 +23,16 @@ CREATE TABLE users (
 );
 
 -- Indexes for common query patterns (TRD §41)
-CREATE INDEX idx_users_email          ON users(email);
-CREATE INDEX idx_users_role_id        ON users(role_id);
-CREATE INDEX idx_users_google_subject ON users(google_subject) WHERE google_subject IS NOT NULL;
-CREATE INDEX idx_users_status         ON users(status);
-CREATE INDEX idx_users_created_at     ON users(created_at);
+CREATE INDEX IF NOT EXISTS idx_users_email          ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_role_id        ON users(role_id);
+CREATE INDEX IF NOT EXISTS idx_users_google_subject ON users(google_subject) WHERE google_subject IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_users_status         ON users(status);
+CREATE INDEX IF NOT EXISTS idx_users_created_at     ON users(created_at);
 
 -- Constraint: at least one of password_hash or google_subject must be set
-ALTER TABLE users ADD CONSTRAINT chk_users_auth_method
-    CHECK (password_hash IS NOT NULL OR google_subject IS NOT NULL);
+DO $$ BEGIN
+    ALTER TABLE users ADD CONSTRAINT chk_users_auth_method
+        CHECK (password_hash IS NOT NULL OR google_subject IS NOT NULL);
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;

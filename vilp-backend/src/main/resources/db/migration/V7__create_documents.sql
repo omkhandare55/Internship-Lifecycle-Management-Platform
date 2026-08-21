@@ -2,7 +2,7 @@
 -- Source: TRD §16, §17, Blueprint §33
 -- Note: Actual files stored in object storage (S3-compatible). DB stores metadata only.
 
-CREATE TABLE documents (
+CREATE TABLE IF NOT EXISTS documents (
     id                  UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     -- Polymorphic entity reference
     entity_type         VARCHAR(50)  NOT NULL,   -- STUDENT | COMPANY | INTERNSHIP | APPLICATION | OFFER
@@ -24,7 +24,7 @@ CREATE TABLE documents (
     updated_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_documents_entity       ON documents(entity_type, entity_id);
-CREATE INDEX idx_documents_type         ON documents(document_type);
-CREATE INDEX idx_documents_uploaded_by  ON documents(uploaded_by);
-CREATE INDEX idx_documents_status       ON documents(status);
+CREATE INDEX IF NOT EXISTS idx_documents_entity       ON documents(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_documents_type         ON documents(document_type);
+CREATE INDEX IF NOT EXISTS idx_documents_uploaded_by  ON documents(uploaded_by);
+CREATE INDEX IF NOT EXISTS idx_documents_status       ON documents(status);

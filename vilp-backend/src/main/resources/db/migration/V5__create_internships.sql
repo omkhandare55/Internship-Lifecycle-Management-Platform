@@ -1,7 +1,7 @@
 -- V5: Create internships tables
 -- Source: TRD §12.5, §13, Blueprint §33
 
-CREATE TABLE internships (
+CREATE TABLE IF NOT EXISTS internships (
     id                    UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     company_id            UUID         NOT NULL REFERENCES companies(id),
     title                 VARCHAR(255) NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE internships (
 );
 
 -- Eligibility requirements per internship (TRD §13)
-CREATE TABLE internship_requirements (
+CREATE TABLE IF NOT EXISTS internship_requirements (
     id                      BIGSERIAL    PRIMARY KEY,
     internship_id           UUID         NOT NULL UNIQUE REFERENCES internships(id) ON DELETE CASCADE,
     minimum_cgpa            NUMERIC(4,2) DEFAULT 0,
@@ -37,7 +37,7 @@ CREATE TABLE internship_requirements (
 );
 
 -- M2M: internships ↔ skills (TRD §13)
-CREATE TABLE internship_skills (
+CREATE TABLE IF NOT EXISTS internship_skills (
     internship_id   UUID    NOT NULL REFERENCES internships(id) ON DELETE CASCADE,
     skill_id        BIGINT  NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
     is_mandatory    BOOLEAN NOT NULL DEFAULT TRUE,
@@ -48,8 +48,8 @@ CREATE TABLE internship_skills (
 CREATE SEQUENCE IF NOT EXISTS internship_seq START 1;
 
 -- Indexes
-CREATE INDEX idx_internships_company_id         ON internships(company_id);
-CREATE INDEX idx_internships_status             ON internships(status);
-CREATE INDEX idx_internships_verification       ON internships(verification_status);
-CREATE INDEX idx_internships_deadline           ON internships(application_deadline);
-CREATE INDEX idx_internships_mode               ON internships(mode);
+CREATE INDEX IF NOT EXISTS idx_internships_company_id         ON internships(company_id);
+CREATE INDEX IF NOT EXISTS idx_internships_status             ON internships(status);
+CREATE INDEX IF NOT EXISTS idx_internships_verification       ON internships(verification_status);
+CREATE INDEX IF NOT EXISTS idx_internships_deadline           ON internships(application_deadline);
+CREATE INDEX IF NOT EXISTS idx_internships_mode               ON internships(mode);

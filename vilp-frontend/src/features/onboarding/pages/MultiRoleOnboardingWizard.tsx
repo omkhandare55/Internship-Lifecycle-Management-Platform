@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   ShieldCheck,
@@ -11,13 +11,11 @@ import {
   Zap,
   Loader2,
   AlertCircle,
-  Clock,
   Phone,
   Mail,
 } from 'lucide-react';
 import { PLATFORM_ROLES, type UserRoleType } from '../types/roleTypes';
 import { parseResumeWithAi } from '../services/aiResumeParserService';
-import { realOtpService } from '../services/onboardingApi';
 import { CommandPaletteHUD } from '@/components/CommandPaletteHUD';
 import { useAuthStore } from '@/stores/authStore';
 import { tokenUtils } from '@/utils/tokenUtils';
@@ -43,17 +41,8 @@ export function MultiRoleOnboardingWizard() {
   const [mobileNumber, setMobileNumber] = useState('');
   const [password, setPassword] = useState('');
 
-  // Email OTP States (Auto-verified if Google Auth)
-  const [emailOtp, setEmailOtp] = useState('');
-  const [emailOtpVerified, setEmailOtpVerified] = useState(isGoogleAuth);
-  const [emailOtpSent, setEmailOtpSent] = useState(false);
-  const [emailTimer, setEmailTimer] = useState(0);
-
-  const [isSendingEmailOtp, setIsSendingEmailOtp] = useState(false);
-  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
-
   const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState(
+  const [successMessage] = useState(
     isGoogleAuth ? '✓ Google Identity Authenticated. Complete your institutional registration details.' : ''
   );
 
@@ -74,20 +63,11 @@ export function MultiRoleOnboardingWizard() {
   const [companyName, setCompanyName] = useState('');
   const [companyWebsite, setCompanyWebsite] = useState('');
 
-  // Timer countdown hook
-  useEffect(() => {
-    let emailInterval: any;
-    if (emailTimer > 0) {
-      emailInterval = setInterval(() => setEmailTimer((t) => t - 1), 1000);
-    }
-    return () => clearInterval(emailInterval);
-  }, [emailTimer]);
-
   // Calculate Profile Completeness Percentage
   const calculateCompleteness = () => {
     let score = 20;
-    if (fullName) score += 15;
-    if (emailOtpVerified) score += 25;
+    if (fullName) score += 20;
+    if (email) score += 20;
     if (mobileNumber.length >= 10) score += 15;
     if (collegeName || companyName) score += 15;
     if (skills.length >= 2 || department || github || linkedin) score += 10;
@@ -95,43 +75,6 @@ export function MultiRoleOnboardingWizard() {
   };
 
   const completeness = calculateCompleteness();
-
-  const handleSendEmailOtp = async () => {
-    if (!email || !email.includes('@')) {
-      setErrorMessage('Please enter a valid institutional email address.');
-      return;
-    }
-    setErrorMessage('');
-    setIsSendingEmailOtp(true);
-    try {
-      const res = await realOtpService.sendEmailOtp(email);
-      setEmailOtpSent(true);
-      setEmailTimer(60);
-      setSuccessMessage(res.message);
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to send verification email.');
-    } finally {
-      setIsSendingEmailOtp(false);
-    }
-  };
-
-  const handleVerifyEmailOtp = async () => {
-    if (!emailOtp || emailOtp.length < 6) {
-      setErrorMessage('Please enter the 6-digit email verification code.');
-      return;
-    }
-    setErrorMessage('');
-    setIsVerifyingEmail(true);
-    try {
-      const res = await realOtpService.verifyEmailOtp(email, emailOtp);
-      setEmailOtpVerified(true);
-      setSuccessMessage(res.message);
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Invalid email verification code.');
-    } finally {
-      setIsVerifyingEmail(false);
-    }
-  };
 
   const handleResumeUpload = async (file: File) => {
     const result = await parseResumeWithAi(file);
@@ -387,72 +330,24 @@ export function MultiRoleOnboardingWizard() {
                       />
                     </div>
 
-                    {/* Email Verification Box */}
-                    <div className="col-12 col-md-6">
-                      <div className="space-y-2 border border-[#E2E8F0] p-3 p-sm-4 rounded-xs bg-[#F8FAFC] w-100 h-100 d-flex flex-column justify-content-between">
-                        <div>
-                          <div className="d-flex justify-content-between align-items-center mb-1">
-                            <label className="text-xs font-bold text-[#0A2540] uppercase truncate m-0 d-flex align-items-center gap-1">
-                              <Mail className="w-3.5 h-3.5 text-[#2563EB]" /> Institutional Email *
-                            </label>
-                            {emailOtpVerified ? (
-                              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-xs d-flex align-items-center gap-1 shrink-0">
-                                <CheckCircle2 className="w-3 h-3" /> VERIFIED
-                              </span>
-                            ) : emailTimer > 0 ? (
-                              <span className="text-[10px] text-slate-500 d-flex align-items-center gap-1 shrink-0">
-                                <Clock className="w-3 h-3 text-amber-600" /> Resend in {emailTimer}s
-                              </span>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={handleSendEmailOtp}
-                                disabled={isSendingEmailOtp}
-                                className="text-[10px] text-[#2563EB] hover:underline font-bold shrink-0 cursor-pointer"
-                              >
-                                {isSendingEmailOtp ? 'Sending...' : emailOtpSent ? 'RESEND CODE' : 'SEND CODE'}
-                              </button>
-                            )}
-                          </div>
-                          <input
-                            type="email"
-                            placeholder="user@institution.edu"
-                            disabled={emailOtpVerified}
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className={`w-100 p-2.5 text-xs border rounded-xs outline-hidden ${
-                              emailOtpVerified ? 'bg-slate-100 text-slate-600 border-slate-300' : 'bg-white border-[#CBD5E1] focus:border-[#2563EB]'
-                            }`}
-                          />
-                        </div>
-                        {!emailOtpVerified && (
-                          <div className="pt-2 d-flex flex-column flex-sm-row gap-2">
-                            <input
-                              type="text"
-                              maxLength={6}
-                              value={emailOtp}
-                              onChange={(e) => setEmailOtp(e.target.value)}
-                              placeholder="Enter 6-digit Code"
-                              className="flex-grow-1 p-2 bg-white border border-[#CBD5E1] text-xs text-center tracking-widest focus:border-[#2563EB] outline-hidden rounded-xs font-bold"
-                            />
-                            <button
-                              type="button"
-                              onClick={handleVerifyEmailOtp}
-                              disabled={isVerifyingEmail || !emailOtp}
-                              className="px-4 py-2 bg-[#2563EB] hover:bg-[#1d4ed8] disabled:opacity-50 text-white text-xs font-bold rounded-xs d-flex align-items-center justify-content-center gap-1 shrink-0 min-h-[38px] cursor-pointer"
-                            >
-                              {isVerifyingEmail ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'VERIFY CODE'}
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                    <div className="col-12 col-md-6 space-y-1.5">
+                      <label className="text-xs font-bold text-[#0A2540] uppercase block d-flex align-items-center gap-1">
+                        <Mail className="w-3.5 h-3.5 text-[#2563EB]" /> Institutional Email *
+                      </label>
+                      <input
+                        type="email"
+                        placeholder="user@institution.edu"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="input-field"
+                      />
                     </div>
                   </form>
 
                   <div className="d-flex justify-content-end pt-3 border-top border-[#CBD5E1]">
                     <button
                       type="button"
-                      disabled={!emailOtpVerified || !fullName || mobileNumber.length < 10}
+                      disabled={!fullName || !email || mobileNumber.length < 10}
                       onClick={() => {
                         setErrorMessage('');
                         setCurrentStep(2);
@@ -648,63 +543,17 @@ export function MultiRoleOnboardingWizard() {
                   />
                 </div>
 
-                {/* Email Verification Box for Corporate / Faculty / Admin */}
-                <div className="col-12 col-md-6">
-                  <div className="space-y-2 border border-[#E2E8F0] p-3 rounded-xs bg-[#F8FAFC] w-100">
-                    <div className="d-flex justify-content-between align-items-center mb-1">
-                      <label className="text-xs font-bold text-[#0A2540] uppercase truncate m-0 d-flex align-items-center gap-1">
-                        <Mail className="w-3.5 h-3.5 text-[#2563EB]" /> {roleParam === 'COMPANY_RECRUITER' ? 'Work Email *' : 'Official Email *'}
-                      </label>
-                      {emailOtpVerified ? (
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-xs d-flex align-items-center gap-1 shrink-0">
-                          <CheckCircle2 className="w-3 h-3" /> VERIFIED
-                        </span>
-                      ) : emailTimer > 0 ? (
-                        <span className="text-[10px] text-slate-500 d-flex align-items-center gap-1 shrink-0">
-                          <Clock className="w-3 h-3 text-amber-600" /> Resend in {emailTimer}s
-                        </span>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={handleSendEmailOtp}
-                          disabled={isSendingEmailOtp}
-                          className="text-[10px] text-[#2563EB] hover:underline font-bold shrink-0 cursor-pointer"
-                        >
-                          {isSendingEmailOtp ? 'Sending...' : emailOtpSent ? 'RESEND CODE' : 'SEND CODE'}
-                        </button>
-                      )}
-                    </div>
-                    <input
-                      type="email"
-                      placeholder={roleParam === 'COMPANY_RECRUITER' ? 'recruiter@company.com' : 'official@institution.edu'}
-                      disabled={emailOtpVerified}
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className={`w-100 p-2 text-xs border rounded-xs outline-hidden ${
-                        emailOtpVerified ? 'bg-slate-100 text-slate-600 border-slate-300' : 'bg-white border-[#CBD5E1] focus:border-[#2563EB]'
-                      }`}
-                    />
-                    {!emailOtpVerified && (
-                      <div className="d-flex gap-2 pt-1">
-                        <input
-                          type="text"
-                          maxLength={6}
-                          placeholder="Enter 6-digit code (e.g. 123456)"
-                          value={emailOtp}
-                          onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, ''))}
-                          className="w-100 p-2 text-xs border border-[#CBD5E1] rounded-xs font-mono font-bold tracking-widest text-center"
-                        />
-                        <button
-                          type="button"
-                          onClick={handleVerifyEmailOtp}
-                          disabled={isVerifyingEmail || emailOtp.length < 6}
-                          className="px-3 py-1.5 bg-[#2563EB] text-white text-xs font-bold rounded-xs shrink-0 disabled:opacity-50 cursor-pointer"
-                        >
-                          {isVerifyingEmail ? '...' : 'VERIFY'}
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                <div className="col-12 col-md-6 space-y-1.5">
+                  <label className="text-xs font-bold text-[#0A2540] uppercase block d-flex align-items-center gap-1">
+                    <Mail className="w-3.5 h-3.5 text-[#2563EB]" /> {roleParam === 'COMPANY_RECRUITER' ? 'Work Email *' : 'Official Email *'}
+                  </label>
+                  <input
+                    type="email"
+                    placeholder={roleParam === 'COMPANY_RECRUITER' ? 'recruiter@company.com' : 'official@institution.edu'}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="input-field"
+                  />
                 </div>
 
                 {roleParam === 'COMPANY_RECRUITER' ? (

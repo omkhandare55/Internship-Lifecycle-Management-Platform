@@ -1,7 +1,7 @@
 -- V4: Create companies table
 -- Source: TRD §12.4, Blueprint §33
 
-CREATE TABLE companies (
+CREATE TABLE IF NOT EXISTS companies (
     id                    UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id               UUID         NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
     name                  VARCHAR(255) NOT NULL,
@@ -21,6 +21,6 @@ CREATE TABLE companies (
     updated_at            TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_companies_user_id          ON companies(user_id);
-CREATE INDEX idx_companies_verification     ON companies(verification_status);
-CREATE INDEX idx_companies_name             ON companies(name);
+CREATE INDEX IF NOT EXISTS idx_companies_user_id          ON companies(user_id);
+CREATE INDEX IF NOT EXISTS idx_companies_verification     ON companies(verification_status);
+CREATE INDEX IF NOT EXISTS idx_companies_name             ON companies(name);

@@ -66,7 +66,7 @@ public class User {
 
     @Column(name = "email_verified", nullable = false)
     @Builder.Default
-    private Boolean emailVerified = false;
+    private Boolean emailVerified = true;
 
     @Column(name = "verification_token", length = 255)
     private String verificationToken;

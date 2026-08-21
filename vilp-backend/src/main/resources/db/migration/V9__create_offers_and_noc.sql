@@ -1,7 +1,7 @@
 -- V9: Create offers and noc_requests tables
 -- Source: PRD §12, §13, TRD §26, §27, Blueprint §30, §31
 
-CREATE TABLE offers (
+CREATE TABLE IF NOT EXISTS offers (
     id                      UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     application_id          UUID         NOT NULL UNIQUE REFERENCES applications(id) ON DELETE CASCADE,
     internship_id           UUID         NOT NULL REFERENCES internships(id),
@@ -22,7 +22,7 @@ CREATE TABLE offers (
     updated_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE noc_requests (
+CREATE TABLE IF NOT EXISTS noc_requests (
     id                  UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     offer_id            UUID         NOT NULL UNIQUE REFERENCES offers(id) ON DELETE CASCADE,
     student_id          UUID         NOT NULL REFERENCES students(id),
@@ -41,12 +41,12 @@ CREATE TABLE noc_requests (
 );
 
 -- Indexes
-CREATE INDEX idx_offers_student_id      ON offers(student_id);
-CREATE INDEX idx_offers_company_id      ON offers(company_id);
-CREATE INDEX idx_offers_internship_id   ON offers(internship_id);
-CREATE INDEX idx_offers_status          ON offers(status);
+CREATE INDEX IF NOT EXISTS idx_offers_student_id      ON offers(student_id);
+CREATE INDEX IF NOT EXISTS idx_offers_company_id      ON offers(company_id);
+CREATE INDEX IF NOT EXISTS idx_offers_internship_id   ON offers(internship_id);
+CREATE INDEX IF NOT EXISTS idx_offers_status          ON offers(status);
 
-CREATE INDEX idx_noc_student_id         ON noc_requests(student_id);
-CREATE INDEX idx_noc_department_id      ON noc_requests(department_id);
-CREATE INDEX idx_noc_status             ON noc_requests(status);
-CREATE INDEX idx_noc_verification_code  ON noc_requests(verification_code);
+CREATE INDEX IF NOT EXISTS idx_noc_student_id         ON noc_requests(student_id);
+CREATE INDEX IF NOT EXISTS idx_noc_department_id      ON noc_requests(department_id);
+CREATE INDEX IF NOT EXISTS idx_noc_status             ON noc_requests(status);
+CREATE INDEX IF NOT EXISTS idx_noc_verification_code  ON noc_requests(verification_code);
