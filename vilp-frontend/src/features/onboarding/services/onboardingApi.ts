@@ -1,5 +1,5 @@
 import axiosInstance from '@/services/axiosInstance';
-import { supabase } from '@/services/supabaseClient';
+import { firebaseSendPasswordReset } from '@/services/firebaseClient';
 
 export interface OtpResponse {
   success: boolean;
@@ -8,7 +8,7 @@ export interface OtpResponse {
 
 export const realOtpService = {
   /**
-   * Dispatches a real OTP to the user's email via Supabase Auth & Backend API with official VILP platform branding.
+   * Dispatches a real OTP to the user's email via Backend API with official VILP platform branding.
    */
   async sendEmailOtp(email: string): Promise<OtpResponse> {
     const cleanEmail = email.trim().toLowerCase();
@@ -18,7 +18,7 @@ export const realOtpService = {
 
     let dispatched = false;
 
-    // 1. Dispatch via Backend API (Primary)
+    // Dispatch via Backend API (Primary)
     try {
       await axiosInstance.post('/auth/otp/send-email', {
         email: cleanEmail,
@@ -27,21 +27,6 @@ export const realOtpService = {
       dispatched = true;
     } catch (backendErr: any) {
       console.warn('Backend OTP dispatch note:', backendErr?.message);
-    }
-
-    // 2. Optional Supabase Auth email OTP fallback
-    if (!dispatched && supabase) {
-      try {
-        const { error } = await supabase.auth.signInWithOtp({
-          email: cleanEmail,
-          options: { shouldCreateUser: true },
-        });
-        if (!error) {
-          dispatched = true;
-        }
-      } catch (sbErr: any) {
-        console.warn('Supabase OTP fallback note:', sbErr?.message);
-      }
     }
 
     if (!dispatched) {
@@ -58,7 +43,7 @@ export const realOtpService = {
   },
 
   /**
-   * Verifies the email OTP token against backend API (Primary) with Supabase fallback
+   * Verifies the email OTP token against backend API
    */
   async verifyEmailOtp(email: string, token: string): Promise<OtpResponse> {
     const cleanEmail = email.trim().toLowerCase();
@@ -68,7 +53,7 @@ export const realOtpService = {
       throw new Error('Please enter a valid 6-digit verification code.');
     }
 
-    // 1. Verify via Backend API (Primary)
+    // Verify via Backend API
     try {
       const res = await axiosInstance.post<{ success: boolean; message?: string }>('/auth/otp/verify', {
         target: cleanEmail,
@@ -78,20 +63,6 @@ export const realOtpService = {
         return { success: true, message: 'Institutional email verified successfully!' };
       }
     } catch (err: any) {
-      // 2. Fallback to Supabase verification if available
-      if (supabase) {
-        try {
-          const { error: err1 } = await supabase.auth.verifyOtp({
-            email: cleanEmail,
-            token: cleanToken,
-            type: 'email',
-          });
-          if (!err1) {
-            return { success: true, message: 'Institutional email verified successfully!' };
-          }
-        } catch {}
-      }
-
       const msg = err.response?.data?.message || err?.message || 'Invalid or expired verification code.';
       throw new Error(msg);
     }
@@ -120,7 +91,7 @@ export const realOtpService = {
   },
 
   /**
-   * Dispatches a real password reset email instructions via Supabase Auth & Backend API
+   * Dispatches a password reset email via Firebase Auth & Backend API
    */
   async sendPasswordResetEmail(email: string): Promise<OtpResponse> {
     const cleanEmail = email.trim().toLowerCase();
@@ -128,20 +99,18 @@ export const realOtpService = {
       throw new Error('Please enter a valid account email address.');
     }
 
+    // 1. Dispatch via Firebase Auth
     try {
-      if (supabase) {
-        await supabase.auth.resetPasswordForEmail(cleanEmail, {
-          redirectTo: `${window.location.origin}/auth/reset-password?email=${encodeURIComponent(cleanEmail)}`,
-        });
-      }
-    } catch {
-      // Fallback
+      await firebaseSendPasswordReset(cleanEmail);
+    } catch (fbErr: any) {
+      console.warn('Firebase password reset dispatch note:', fbErr?.message);
     }
 
+    // 2. Dispatch via Backend API
     try {
       await axiosInstance.post('/auth/forgot-password', { email: cleanEmail });
     } catch {
-      // Fallback
+      // Best-effort
     }
 
     return {
@@ -166,12 +135,6 @@ export const realOtpService = {
         token: cleanToken,
         newPassword: newPassword,
       });
-
-      if (supabase) {
-        try {
-          await supabase.auth.updateUser({ password: newPassword });
-        } catch {}
-      }
 
       return {
         success: true,

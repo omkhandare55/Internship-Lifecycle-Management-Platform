@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { AuthUser } from '@/types/auth.types';
 import { tokenUtils } from '@/utils/tokenUtils';
+import { firebaseSignOut } from '@/services/firebaseClient';
 
 interface AuthState {
   user: AuthUser | null;
@@ -23,7 +24,7 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: false,
       sessionExpired: false,
-
+      
       setAuth: (user, accessToken, refreshToken) => {
         tokenUtils.setTokens(accessToken, refreshToken);
         set({ user, isAuthenticated: true, sessionExpired: false });
@@ -41,6 +42,14 @@ export const useAuthStore = create<AuthState>()(
             headers: { Authorization: `Bearer ${token}` },
           }).catch(() => {}); // ignore errors — client clears tokens regardless
         }
+        
+        // Also sign out of Firebase Auth
+        try {
+          await firebaseSignOut();
+        } catch {
+          // Ignore
+        }
+
         tokenUtils.clearTokens();
         set({ user: null, isAuthenticated: false, sessionExpired: false });
       },

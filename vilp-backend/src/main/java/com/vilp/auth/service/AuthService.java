@@ -230,6 +230,60 @@ public class AuthService {
         log.info("User {} logged out at {}", userId, OffsetDateTime.now());
     }
 
+    // ─── 8. Firebase Authentication Synchronization ────────────────────────
+
+    /**
+     * Authenticate or auto-register user via Firebase Authentication (Google OAuth or Firebase Email).
+     * Returns standard VILP JWT access and refresh tokens.
+     */
+    public TokenResponse firebaseLogin(FirebaseLoginRequest request) {
+        String cleanEmail = request.getEmail().trim().toLowerCase();
+
+        User user = userRepository.findByEmail(cleanEmail).orElseGet(() -> {
+            UserRole targetRole = request.getRole() != null ? request.getRole() : UserRole.STUDENT;
+            if (targetRole == UserRole.SUPER_ADMIN) {
+                targetRole = UserRole.STUDENT;
+            }
+
+            Role role = roleRepository.findByName(targetRole)
+                    .orElseThrow(() -> new AuthException("INVALID_ROLE", "Role not found: " + targetRole));
+
+            String placeholderPassword = UUID.randomUUID().toString();
+
+            User newUser = User.builder()
+                    .email(cleanEmail)
+                    .passwordHash(passwordEncoder.encode(placeholderPassword))
+                    .role(role)
+                    .status("ACTIVE")
+                    .emailVerified(true)
+                    .build();
+
+            User saved = userRepository.save(newUser);
+            log.info("Auto-registered Firebase user: {} with role: {}", cleanEmail, targetRole);
+            return saved;
+        });
+
+        if (!user.isActive()) {
+            throw new AuthException("ACCOUNT_SUSPENDED", "Account is suspended");
+        }
+
+        if (user.isLocked()) {
+            throw new AuthException("ACCOUNT_LOCKED", "Account is temporarily locked");
+        }
+
+        // Reset failed login attempts on successful Firebase login
+        userRepository.resetFailedAttempts(user.getId());
+
+        // Ensure email is verified if authenticated via Firebase
+        if (!Boolean.TRUE.equals(user.getEmailVerified())) {
+            userRepository.markEmailVerified(user.getId());
+            user.setEmailVerified(true);
+        }
+
+        log.info("Firebase login successful for user: {} ({})", user.getEmail(), user.getRoleName());
+        return buildTokenResponse(user);
+    }
+
     // ─── Private helpers ───────────────────────────────────────────────────
 
     private TokenResponse buildTokenResponse(User user) {

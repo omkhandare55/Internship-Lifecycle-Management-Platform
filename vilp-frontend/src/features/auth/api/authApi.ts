@@ -26,6 +26,17 @@ export const authApi = {
     return res.data;
   },
 
+  firebaseLogin: async (data: {
+    email: string;
+    displayName?: string | null;
+    uid?: string;
+    idToken?: string;
+    role?: string;
+  }): Promise<ApiResponse<TokenResponse>> => {
+    const res = await axiosInstance.post<ApiResponse<TokenResponse>>('/auth/firebase-login', data);
+    return res.data;
+  },
+
   refresh: async (data: RefreshTokenRequest): Promise<ApiResponse<TokenResponse>> => {
     const res = await axiosInstance.post<ApiResponse<TokenResponse>>('/auth/refresh', data);
     return res.data;

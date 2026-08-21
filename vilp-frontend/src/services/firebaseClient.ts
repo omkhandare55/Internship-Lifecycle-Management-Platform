@@ -2,6 +2,17 @@ import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
 import { getFirestore, type Firestore } from 'firebase/firestore';
 import { getStorage, type FirebaseStorage } from 'firebase/storage';
 import { getAnalytics, isSupported, type Analytics } from 'firebase/analytics';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signOut,
+  type Auth,
+  type UserCredential,
+} from 'firebase/auth';
 
 /**
  * Official Firebase Configuration for VILP Platform
@@ -22,8 +33,53 @@ export const firebaseApp: FirebaseApp = getApps().length === 0
   ? initializeApp(firebaseConfig)
   : getApps()[0];
 
+// Services
 export const firestoreDb: Firestore = getFirestore(firebaseApp);
 export const firebaseStorage: FirebaseStorage = getStorage(firebaseApp);
+export const firebaseAuth: Auth = getAuth(firebaseApp);
+export const googleAuthProvider = new GoogleAuthProvider();
+
+// Configure Google Auth provider options
+googleAuthProvider.setCustomParameters({
+  prompt: 'select_account',
+});
+
+// ─── Firebase Auth Helper Functions ──────────────────────────────────────────
+
+/**
+ * Sign in with Google popup via Firebase Auth
+ */
+export async function firebaseSignInWithGoogle(): Promise<UserCredential> {
+  return await signInWithPopup(firebaseAuth, googleAuthProvider);
+}
+
+/**
+ * Sign in with Email and Password via Firebase Auth
+ */
+export async function firebaseSignInWithEmail(email: string, password: string): Promise<UserCredential> {
+  return await signInWithEmailAndPassword(firebaseAuth, email, password);
+}
+
+/**
+ * Sign up / Register with Email and Password via Firebase Auth
+ */
+export async function firebaseSignUpWithEmail(email: string, password: string): Promise<UserCredential> {
+  return await createUserWithEmailAndPassword(firebaseAuth, email, password);
+}
+
+/**
+ * Send password reset email via Firebase Auth
+ */
+export async function firebaseSendPasswordReset(email: string): Promise<void> {
+  return await sendPasswordResetEmail(firebaseAuth, email);
+}
+
+/**
+ * Sign out of Firebase Auth session
+ */
+export async function firebaseSignOut(): Promise<void> {
+  return await signOut(firebaseAuth);
+}
 
 // Initialize Firebase Analytics safely (only in supported browser environments)
 export let analytics: Analytics | null = null;

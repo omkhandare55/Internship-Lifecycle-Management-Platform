@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/services/supabaseClient';
+import { firebaseAuth } from '@/services/firebaseClient';
+import { onAuthStateChanged, getRedirectResult } from 'firebase/auth';
+import { authApi } from '@/features/auth/api/authApi';
 import { useAuthStore } from '@/stores/authStore';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
@@ -10,94 +12,108 @@ export function OAuthCallbackPage() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMsg, setErrorMsg] = useState('');
 
+  const getRolePath = (role: string) => {
+    switch (role) {
+      case 'COMPANY': return '/company/dashboard';
+      case 'MENTOR': return '/mentor/dashboard';
+      case 'TNP_OFFICER':
+      case 'TNP_HEAD': return '/tnp/dashboard';
+      case 'SUPER_ADMIN': return '/admin/dashboard';
+      default: return '/student/dashboard';
+    }
+  };
+
   useEffect(() => {
-    async function handleOAuth() {
+    let isMounted = true;
+
+    async function handleAuth() {
       try {
-        if (!supabase) {
-          throw new Error('Supabase client not initialized');
+        // First check if coming back from a redirect operation
+        const redirectResult = await getRedirectResult(firebaseAuth).catch(() => null);
+        const currentUser = redirectResult?.user || firebaseAuth.currentUser;
+
+        if (currentUser) {
+          await processFirebaseUser(currentUser);
+          return;
         }
 
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-
-        if (data.session) {
-          const sessionUser = data.session.user;
-          const email = sessionUser.email || '';
-          const fullName = sessionUser.user_metadata?.full_name || sessionUser.user_metadata?.name || '';
-          const existingRole = sessionUser.user_metadata?.role as string | undefined;
-
-          // Determine if user has previously completed onboarding
-          const isOnboarded =
-            localStorage.getItem(`vilp_user_onboarded_${sessionUser.id}`) === 'true' ||
-            !!sessionUser.user_metadata?.onboarded;
-
-          // Try to resolve the user's role from the backend using their Google token
-          let resolvedRole: string | null = existingRole || null;
-          try {
-            const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://vilp-backend.onrender.com/api';
-            const cleanBase = rawBaseUrl.replace(/\/+$/, '');
-            const meUrl = cleanBase.endsWith('/api') ? `${cleanBase}/auth/me` : `${cleanBase}/api/auth/me`;
-            const meRes = await fetch(meUrl, {
-              headers: { Authorization: `Bearer ${data.session.access_token}` },
-            });
-            if (meRes.ok) {
-              const meData = await meRes.json();
-              resolvedRole = meData?.data?.role || resolvedRole;
-              // Mark as onboarded if backend knows this user
-              if (meData?.data?.role) {
-                localStorage.setItem(`vilp_user_onboarded_${sessionUser.id}`, 'true');
-              }
-            }
-          } catch {
-            // best-effort; fall through to role metadata
-          }
-
-          // Truly new user with no role: route to role selection
-          if (!isOnboarded && !resolvedRole) {
-            setStatus('success');
-            setTimeout(() => {
-              navigate(`/onboarding/roles?email=${encodeURIComponent(email)}&name=${encodeURIComponent(fullName)}&googleAuth=true`);
-            }, 600);
-            return;
-          }
-
-          // Existing onboarded user → set auth state and route to dashboard
-          const userObj = {
-            id: sessionUser.id,
-            email: email,
-            role: resolvedRole || 'STUDENT',
-            emailVerified: true,
-            createdAt: sessionUser.created_at,
-          };
-
-          setAuth(userObj as any, data.session.access_token, data.session.refresh_token || '');
-          setStatus('success');
-
-          const role = resolvedRole || 'STUDENT';
-          setTimeout(() => {
-            if (role === 'COMPANY') navigate('/company/dashboard');
-            else if (role === 'MENTOR') navigate('/mentor/dashboard');
-            else if (role === 'TNP_OFFICER' || role === 'TNP_HEAD') navigate('/tnp/dashboard');
-            else if (role === 'SUPER_ADMIN') navigate('/admin/dashboard');
-            else navigate('/student/dashboard');
-          }, 800);
-        } else {
-          // No session — check hash for access_token (implicit flow)
-          const hash = window.location.hash;
-          if (hash && hash.includes('access_token')) {
-            setStatus('success');
-            setTimeout(() => navigate('/onboarding/roles?googleAuth=true'), 800);
+        // If not immediately available, subscribe to auth state change
+        const unsubscribe = onAuthStateChanged(firebaseAuth, async (fbUser) => {
+          if (!isMounted) return;
+          if (fbUser) {
+            await processFirebaseUser(fbUser);
           } else {
-            navigate('/auth/login');
+            // Check hash parameters for legacy callbacks
+            const hash = window.location.hash;
+            if (hash && hash.includes('access_token')) {
+              setStatus('success');
+              setTimeout(() => navigate('/onboarding/roles?googleAuth=true'), 800);
+            } else {
+              setTimeout(() => {
+                if (isMounted) navigate('/auth/login');
+              }, 1500);
+            }
           }
-        }
+        });
+
+        return () => unsubscribe();
       } catch (err: any) {
-        setStatus('error');
-        setErrorMsg(err.message || 'Google Authentication failed');
+        if (isMounted) {
+          setStatus('error');
+          setErrorMsg(err.message || 'Firebase authentication failed');
+        }
       }
     }
 
-    handleOAuth();
+    async function processFirebaseUser(fbUser: any) {
+      const email = fbUser.email || '';
+      const fullName = fbUser.displayName || '';
+      const uid = fbUser.uid;
+      const idToken = await fbUser.getIdToken();
+
+      try {
+        const res = await authApi.firebaseLogin({
+          email,
+          displayName: fullName,
+          uid,
+          idToken,
+        });
+
+        if (res.success && res.data) {
+          const { user: authUser, accessToken, refreshToken } = res.data;
+          setAuth(authUser, accessToken, refreshToken);
+          if (isMounted) {
+            setStatus('success');
+            setTimeout(() => navigate(getRolePath(authUser.role)), 600);
+          }
+          return;
+        }
+      } catch (syncErr: any) {
+        console.warn('Backend sync note:', syncErr?.message);
+      }
+
+      // Standalone fallback
+      const storedRole = localStorage.getItem(`vilp_user_role_${uid}`) || 'STUDENT';
+      const userObj = {
+        id: uid,
+        email,
+        role: storedRole as any,
+        emailVerified: fbUser.emailVerified,
+        createdAt: new Date().toISOString(),
+      };
+
+      setAuth(userObj as any, idToken, '');
+      if (isMounted) {
+        setStatus('success');
+        setTimeout(() => navigate(getRolePath(storedRole)), 600);
+      }
+    }
+
+    handleAuth();
+
+    return () => {
+      isMounted = false;
+    };
   }, [navigate, setAuth]);
 
   return (

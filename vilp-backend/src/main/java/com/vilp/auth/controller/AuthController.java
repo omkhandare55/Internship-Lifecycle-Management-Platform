@@ -58,6 +58,17 @@ public class AuthController {
     }
 
     /**
+     * POST /api/auth/firebase-login
+     * Authenticate or register user via Firebase Authentication.
+     */
+    @PostMapping("/firebase-login")
+    @Operation(summary = "Authenticate or register user via Firebase Auth")
+    public ResponseEntity<ApiResponse<TokenResponse>> firebaseLogin(@Valid @RequestBody FirebaseLoginRequest request) {
+        TokenResponse tokens = authService.firebaseLogin(request);
+        return ResponseEntity.ok(ApiResponse.success(tokens));
+    }
+
+    /**
      * POST /api/auth/refresh
      * Refresh access token using a valid refresh token.
      */
