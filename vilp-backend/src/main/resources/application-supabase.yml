@@ -27,7 +27,12 @@ spring:
         default_schema: public
 
   flyway:
-    enabled: false
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+    validate-on-migrate: false
+    out-of-order: true
 
 server:
   port: ${PORT:8080}
