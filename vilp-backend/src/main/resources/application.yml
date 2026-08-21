@@ -10,7 +10,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate          # Flyway manages schema — JPA must NOT auto-create
+      ddl-auto: update          # Auto-sync entities with database schema
     show-sql: false
     properties:
       hibernate:

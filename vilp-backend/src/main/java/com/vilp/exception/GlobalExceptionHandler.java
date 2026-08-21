@@ -89,9 +89,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleGenericException(Exception ex) {
         log.error("Unhandled exception: {}", ex.getMessage(), ex);
-        String message = ("dev".equals(activeProfile) || "local".equals(activeProfile))
-                ? ex.getClass().getSimpleName() + ": " + ex.getMessage()
-                : "An unexpected error occurred. Please try again.";
+        String message = ex.getClass().getSimpleName() + ": " + (ex.getMessage() != null ? ex.getMessage() : "Error occurred");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("INTERNAL_ERROR", message));
     }
