@@ -1,3 +1,5 @@
+import { firebaseStorage } from './firebaseClient';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { supabase } from './supabaseClient';
 
 export type BucketName = 'resumes' | 'kyc-documents' | 'certificates' | 'stamped-nocs';
@@ -9,69 +11,109 @@ export interface UploadResult {
 
 export class StorageService {
   /**
-   * Upload a file to a designated Supabase Storage Bucket
+   * Upload a file to Firebase Cloud Storage (Primary) with Supabase Storage fallback
    */
   static async uploadFile(
     bucket: BucketName,
     filePath: string,
     file: File
   ): Promise<UploadResult> {
-    if (!supabase) throw new Error('Supabase client not initialized');
-
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: true,
-      });
-
-    if (error) {
-      throw new Error(`Storage upload failed: ${error.message}`);
+    // 1. Try Firebase Cloud Storage
+    if (firebaseStorage) {
+      try {
+        const fullPath = `${bucket}/${filePath}`;
+        const storageRef = ref(firebaseStorage, fullPath);
+        const snapshot = await uploadBytes(storageRef, file, {
+          contentType: file.type,
+          customMetadata: {
+            uploadedAt: new Date().toISOString(),
+            bucket,
+          },
+        });
+        const publicUrl = await getDownloadURL(snapshot.ref);
+        return {
+          path: snapshot.ref.fullPath,
+          publicUrl,
+        };
+      } catch (fbErr: any) {
+        console.warn('[Firebase Storage] Primary upload fallback:', fbErr.message);
+      }
     }
 
-    const { data: urlData } = supabase.storage
-      .from(bucket)
-      .getPublicUrl(data.path);
+    // 2. Supabase Storage Fallback
+    if (supabase) {
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true,
+        });
 
-    return {
-      path: data.path,
-      publicUrl: urlData.publicUrl,
-    };
+      if (!error && data) {
+        const { data: urlData } = supabase.storage
+          .from(bucket)
+          .getPublicUrl(data.path);
+
+        return {
+          path: data.path,
+          publicUrl: urlData.publicUrl,
+        };
+      }
+    }
+
+    throw new Error('Storage service unavailable: could not persist document.');
   }
 
   /**
-   * Generate a secure temporary signed URL for private KYC documents (valid for 1 hour)
+   * Generate a secure URL for uploaded documents
    */
   static async getSignedUrl(
     bucket: BucketName,
     filePath: string,
     expiresInSeconds: number = 3600
   ): Promise<string> {
-    if (!supabase) throw new Error('Supabase client not initialized');
-
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .createSignedUrl(filePath, expiresInSeconds);
-
-    if (error) {
-      throw new Error(`Failed to create signed URL: ${error.message}`);
+    if (firebaseStorage) {
+      try {
+        const fullPath = filePath.startsWith(bucket) ? filePath : `${bucket}/${filePath}`;
+        const storageRef = ref(firebaseStorage, fullPath);
+        return await getDownloadURL(storageRef);
+      } catch (fbErr: any) {
+        console.warn('[Firebase Storage] Signed URL fallback:', fbErr.message);
+      }
     }
 
-    return data.signedUrl;
+    if (supabase) {
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .createSignedUrl(filePath, expiresInSeconds);
+
+      if (!error && data?.signedUrl) {
+        return data.signedUrl;
+      }
+    }
+
+    return '';
   }
 
   /**
    * Delete a file from a bucket
    */
   static async deleteFile(bucket: BucketName, filePath: string): Promise<void> {
-    if (!supabase) throw new Error('Supabase client not initialized');
+    if (firebaseStorage) {
+      try {
+        const fullPath = filePath.startsWith(bucket) ? filePath : `${bucket}/${filePath}`;
+        const storageRef = ref(firebaseStorage, fullPath);
+        await deleteObject(storageRef);
+        return;
+      } catch (fbErr: any) {
+        console.warn('[Firebase Storage] Delete fallback:', fbErr.message);
+      }
+    }
 
-    const { error } = await supabase.storage
-      .from(bucket)
-      .remove([filePath]);
-
-    if (error) {
-      throw new Error(`Failed to delete file: ${error.message}`);
+    if (supabase) {
+      await supabase.storage
+        .from(bucket)
+        .remove([filePath]);
     }
   }
 }

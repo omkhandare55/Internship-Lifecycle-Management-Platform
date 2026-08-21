@@ -1,5 +1,6 @@
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
 import { getFirestore, type Firestore } from 'firebase/firestore';
+import { getStorage, type FirebaseStorage } from 'firebase/storage';
 import { getAnalytics, isSupported, type Analytics } from 'firebase/analytics';
 
 /**
@@ -22,6 +23,7 @@ export const firebaseApp: FirebaseApp = getApps().length === 0
   : getApps()[0];
 
 export const firestoreDb: Firestore = getFirestore(firebaseApp);
+export const firebaseStorage: FirebaseStorage = getStorage(firebaseApp);
 
 // Initialize Firebase Analytics safely (only in supported browser environments)
 export let analytics: Analytics | null = null;

@@ -378,4 +378,179 @@
     color: #065F46;
     border-color: #A7F3D0;
   }
+
+  /* ── Galactic Glow Enterprise Design System ────────────────────────────── */
+  :root {
+    --galactic-primary: #723ECF;
+    --galactic-accent: #ED4B86;
+    --galactic-bg: #F4EEF7;
+    --galactic-highlight: #FEF8E7;
+    --galactic-dark: #140C2E;
+    --galactic-slate: #5E527F;
+    --galactic-border: rgba(114, 62, 207, 0.14);
+  }
+
+  .bg-galactic-bg {
+    background-color: #F4EEF7;
+  }
+
+  .text-galactic-primary {
+    color: #723ECF;
+  }
+
+  .text-galactic-accent {
+    color: #ED4B86;
+  }
+
+  .text-galactic-dark {
+    color: #140C2E;
+  }
+
+  .text-galactic-muted {
+    color: #5E527F;
+  }
+
+  .gradient-galactic-text {
+    background: linear-gradient(135deg, #723ECF 0%, #ED4B86 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .gradient-galactic-header {
+    background: linear-gradient(135deg, #140C2E 0%, #723ECF 70%, #ED4B86 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .btn-galactic-primary {
+    background: linear-gradient(135deg, #723ECF 0%, #5B29BF 100%);
+    color: #FFFFFF !important;
+    font-weight: 700;
+    font-size: 0.875rem;
+    padding: 0.75rem 1.625rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 24px -4px rgba(114, 62, 207, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+    text-decoration: none;
+  }
+
+  .btn-galactic-primary:hover {
+    background: linear-gradient(135deg, #814AE6 0%, #6832D4 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px -2px rgba(114, 62, 207, 0.45), 0 0 15px rgba(237, 75, 134, 0.3);
+    color: #FFFFFF !important;
+  }
+
+  .btn-galactic-primary:active {
+    transform: translateY(1px);
+    box-shadow: 0 4px 12px rgba(114, 62, 207, 0.25);
+  }
+
+  .btn-galactic-accent {
+    background: linear-gradient(135deg, #ED4B86 0%, #D82F6D 100%);
+    color: #FFFFFF !important;
+    font-weight: 700;
+    font-size: 0.875rem;
+    padding: 0.75rem 1.625rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 24px -4px rgba(237, 75, 134, 0.35);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+    text-decoration: none;
+  }
+
+  .btn-galactic-accent:hover {
+    background: linear-gradient(135deg, #FA5B95 0%, #E33E7B 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px -2px rgba(237, 75, 134, 0.5);
+    color: #FFFFFF !important;
+  }
+
+  .btn-galactic-outline {
+    background: #FFFFFF;
+    color: #140C2E !important;
+    font-weight: 700;
+    font-size: 0.875rem;
+    padding: 0.75rem 1.625rem;
+    border-radius: 9999px;
+    border: 1.5px solid rgba(114, 62, 207, 0.22);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(114, 62, 207, 0.05);
+  }
+
+  .btn-galactic-outline:hover {
+    border-color: #723ECF;
+    background: #FEF8E7;
+    color: #723ECF !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(114, 62, 207, 0.12);
+  }
+
+  .card-galactic {
+    background: #FFFFFF;
+    border: 1px solid rgba(114, 62, 207, 0.12);
+    border-radius: 1.25rem;
+    box-shadow: 0 10px 30px -6px rgba(114, 62, 207, 0.07);
+    transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+  }
+
+  .card-galactic:hover {
+    border-color: rgba(114, 62, 207, 0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 18px 42px -8px rgba(114, 62, 207, 0.14), 0 0 20px rgba(237, 75, 134, 0.06);
+  }
+
+  .glass-galactic {
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+  }
+
+  .glow-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 1rem;
+    border-radius: 9999px;
+    background: #FEF8E7;
+    border: 1px solid rgba(237, 75, 134, 0.25);
+    color: #723ECF;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .glow-pill-accent {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 1rem;
+    border-radius: 9999px;
+    background: rgba(237, 75, 134, 0.1);
+    border: 1px solid rgba(237, 75, 134, 0.3);
+    color: #ED4B86;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
 }
