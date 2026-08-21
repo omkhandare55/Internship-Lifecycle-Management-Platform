@@ -370,11 +370,11 @@ export function ResponsivePortalLayout({
                     )}
                   </div>
 
-                  {/* Realtime Live Sync Status */}
+                  {/* Live Sync Status */}
                   <div className="p-2.5 bg-[#F8FAFC] border-t border-[#E2E8F0] flex justify-between items-center text-[10px]">
                     <span className="text-slate-600 font-bold flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      Supabase Realtime Live Feed
+                      Live Notification Feed
                     </span>
                     <span className="text-slate-400 font-mono">TLS 1.3 Encrypted</span>
                   </div>
@@ -413,8 +413,10 @@ export function ResponsivePortalLayout({
         </nav>
       )}
 
-      {/* Raycast/Linear-style Universal Command Palette HUD */}
-      <CommandPaletteHUD />
+      {/* Raycast/Linear-style Universal Command Palette HUD — desktop only */}
+      <div className="hidden md:block">
+        <CommandPaletteHUD />
+      </div>
     </div>
   );
 }

@@ -5,7 +5,6 @@ import {
   ShieldCheck,
   Search,
   Lock,
-  ExternalLink,
 } from 'lucide-react';
 import { CommandPaletteHUD } from '@/components/CommandPaletteHUD';
 
@@ -141,7 +140,6 @@ const LIFECYCLE_STAGES: LifecycleStage[] = [
 export function LandingPage() {
   const [activeStageId, setActiveStageId] = useState<number>(1);
   const [activeRoleTab, setActiveRoleTab] = useState<'STUDENT' | 'COMPANY' | 'MENTOR' | 'TNP'>('STUDENT');
-  const [verificationCode, setVerificationCode] = useState('');
   const [isAutoCycling, setIsAutoCycling] = useState(true);
 
   // Auto-cycle through the lifecycle visualization if user is idle
@@ -155,14 +153,8 @@ export function LandingPage() {
 
   const activeStage = LIFECYCLE_STAGES.find((s) => s.id === activeStageId) || LIFECYCLE_STAGES[0];
 
-  const handleVerificationSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!verificationCode.trim()) return;
-    window.open(`/verify/noc/${encodeURIComponent(verificationCode.trim())}`, '_blank');
-  };
-
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-mono selection:bg-[#2563EB] selection:text-white antialiased">
+    <div className="min-h-screen overflow-x-hidden bg-[#F8FAFC] text-[#0F172A] font-mono selection:bg-[#2563EB] selection:text-white antialiased">
       {/* ── Top Status Ribbon (#0A2540 Stripe Marine) ─────────────────────────── */}
       <div className="bg-[#0A2540] border-b border-[#1E3A5F] text-[11px] text-white px-3 sm:px-8 py-2 select-none">
         <div className="container-fluid max-w-7xl mx-auto d-flex flex-wrap align-items-center justify-content-between gap-2">
@@ -203,7 +195,6 @@ export function LandingPage() {
             <a href="#ecosystem" className="text-[#0A2540] hover:text-[#2563EB] transition-colors text-decoration-none">[ 02. ECOSYSTEM ]</a>
             <a href="#features" className="text-[#0A2540] hover:text-[#2563EB] transition-colors text-decoration-none">[ 03. ENGINES ]</a>
             <a href="#analytics" className="text-[#0A2540] hover:text-[#2563EB] transition-colors text-decoration-none">[ 04. TELEMETRY ]</a>
-            <a href="#verifier" className="text-[#0A2540] hover:text-[#2563EB] transition-colors text-decoration-none">[ 05. CRYPTO VAULT ]</a>
           </nav>
 
           <div className="d-flex align-items-center gap-2.5 sm:gap-3">
@@ -262,9 +253,9 @@ export function LandingPage() {
                   <span>Launch Live System</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
-                <a href="#verifier" className="btn-secondary text-decoration-none">
+                <a href="#lifecycle" className="btn-secondary text-decoration-none">
                   <Lock className="w-3.5 h-3.5 text-[#F97316]" />
-                  <span>Verify Credential</span>
+                  <span>View Lifecycle</span>
                 </a>
               </div>
 
@@ -780,90 +771,6 @@ export function LandingPage() {
                 <span className="text-[10px] text-slate-500 font-bold uppercase block">NOC_CLEARANCE</span>
                 <div className="text-3xl font-black text-[#0A2540] font-mono">&lt;10 <span className="text-base text-[#2563EB]">Sec</span></div>
                 <span className="text-[11px] text-[#2563EB] font-bold">Zero Paper Bureaucracy</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── SECTION 06: CRYPTOGRAPHIC VERIFIER VAULT ──────────────────────── */}
-      <section id="verifier" className="border-b border-[#CBD5E1] bg-[#F1F5F9]">
-        <div className="container-fluid max-w-7xl mx-auto px-4 sm:px-8 py-12 sm:py-16">
-          <div className="row g-5 align-items-center">
-            <div className="col-12 col-lg-6 space-y-4">
-              <span className="text-xs font-bold text-[#F97316] uppercase tracking-wider d-block">
-                SECTION 06 // FAIL-CLOSED VERIFIER
-              </span>
-              <h2 className="text-2xl sm:text-4xl font-black text-[#0A2540] uppercase font-sans m-0">
-                Instant Public Credential Verification
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-600 font-mono leading-relaxed m-0">
-                Enter any institutional NOC code or Certificate Serial Number to perform an immediate, fail-closed authenticity check against our live PostgreSQL hash ledger.
-              </p>
-
-              {/* Sample credentials shortcuts */}
-              <div className="border border-[#CBD5E1] p-3.5 bg-white space-y-2 text-xs rounded-xs">
-                <span className="text-[10px] font-bold text-[#0A2540] uppercase d-block">
-                  TEST WITH LIVE ACCREDITED TOKENS:
-                </span>
-                <div className="d-flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setVerificationCode('NOC-2026-004821')}
-                    className="px-2 py-1 bg-[#F8FAFC] border border-[#CBD5E1] font-mono text-[11px] text-[#0A2540] hover:border-[#2563EB] hover:text-[#2563EB] cursor-pointer rounded-xs"
-                  >
-                    NOC-2026-004821 (Sample NOC)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setVerificationCode('VILP-2026-CSE-8841')}
-                    className="px-2 py-1 bg-[#F8FAFC] border border-[#CBD5E1] font-mono text-[11px] text-[#0A2540] hover:border-[#F97316] hover:text-[#F97316] cursor-pointer rounded-xs"
-                  >
-                    VILP-2026-CSE-8841 (Sample Cert)
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Verifier Form Terminal */}
-            <div className="col-12 col-lg-6">
-              <div className="border border-[#0A2540] bg-[#0A2540] text-white p-5 sm:p-7 rounded-xs shadow-md space-y-4">
-                <div className="d-flex align-items-center justify-content-between border-b border-white/10 pb-3">
-                  <div className="d-flex align-items-center gap-2">
-                    <Lock className="w-4 h-4 text-[#F97316]" />
-                    <span className="font-bold text-xs font-mono">PUBLIC_VERIFICATION_TERMINAL</span>
-                  </div>
-                  <span className="text-[10px] text-emerald-400 font-mono font-bold">READY</span>
-                </div>
-
-                <form onSubmit={handleVerificationSubmit} className="space-y-3">
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-300 uppercase font-mono block mb-1.5">
-                      CREDENTIAL_CODE_OR_HASH:
-                    </label>
-                    <input
-                      type="text"
-                      value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value)}
-                      placeholder="e.g. NOC-2026-004821 or VILP-2026-CSE-8841"
-                      className="w-100 bg-white/10 border border-white/20 px-3 py-2.5 text-xs text-white font-mono placeholder:text-slate-400 focus:outline-none focus:border-[#2563EB] rounded-xs"
-                      required
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="btn-primary bg-[#2563EB] hover:bg-[#1D4ED8] text-white w-100 font-bold py-2.5 text-xs text-decoration-none"
-                  >
-                    <span>Execute Cryptographic Verification</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </button>
-                </form>
-
-                <div className="pt-2 border-t border-white/10 d-flex justify-content-between text-[10px] text-slate-400 font-mono">
-                  <span>SHA-256 INTEGRITY VALIDATION</span>
-                  <span className="text-slate-200">FAIL-CLOSED PROTOCOL ACTIVE</span>
-                </div>
               </div>
             </div>
           </div>

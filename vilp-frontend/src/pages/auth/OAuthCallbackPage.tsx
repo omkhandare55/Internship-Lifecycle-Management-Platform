@@ -24,11 +24,36 @@ export function OAuthCallbackPage() {
           const sessionUser = data.session.user;
           const email = sessionUser.email || '';
           const fullName = sessionUser.user_metadata?.full_name || sessionUser.user_metadata?.name || '';
-          const existingRole = sessionUser.user_metadata?.role as any;
-          const isOnboarded = localStorage.getItem(`vilp_user_onboarded_${sessionUser.id}`) === 'true' || !!sessionUser.user_metadata?.onboarded;
+          const existingRole = sessionUser.user_metadata?.role as string | undefined;
 
-          // If new user who has not completed role registration, route them to register / select role first
-          if (!isOnboarded && !existingRole) {
+          // Determine if user has previously completed onboarding
+          const isOnboarded =
+            localStorage.getItem(`vilp_user_onboarded_${sessionUser.id}`) === 'true' ||
+            !!sessionUser.user_metadata?.onboarded;
+
+          // Try to resolve the user's role from the backend using their Google token
+          let resolvedRole: string | null = existingRole || null;
+          try {
+            const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://vilp-backend.onrender.com/api';
+            const cleanBase = rawBaseUrl.replace(/\/+$/, '');
+            const meUrl = cleanBase.endsWith('/api') ? `${cleanBase}/auth/me` : `${cleanBase}/api/auth/me`;
+            const meRes = await fetch(meUrl, {
+              headers: { Authorization: `Bearer ${data.session.access_token}` },
+            });
+            if (meRes.ok) {
+              const meData = await meRes.json();
+              resolvedRole = meData?.data?.role || resolvedRole;
+              // Mark as onboarded if backend knows this user
+              if (meData?.data?.role) {
+                localStorage.setItem(`vilp_user_onboarded_${sessionUser.id}`, 'true');
+              }
+            }
+          } catch {
+            // best-effort; fall through to role metadata
+          }
+
+          // Truly new user with no role: route to role selection
+          if (!isOnboarded && !resolvedRole) {
             setStatus('success');
             setTimeout(() => {
               navigate(`/onboarding/roles?email=${encodeURIComponent(email)}&name=${encodeURIComponent(fullName)}&googleAuth=true`);
@@ -36,11 +61,11 @@ export function OAuthCallbackPage() {
             return;
           }
 
-          // Existing onboarded user
+          // Existing onboarded user → set auth state and route to dashboard
           const userObj = {
             id: sessionUser.id,
             email: email,
-            role: existingRole || 'STUDENT',
+            role: resolvedRole || 'STUDENT',
             emailVerified: true,
             createdAt: sessionUser.created_at,
           };
@@ -48,15 +73,16 @@ export function OAuthCallbackPage() {
           setAuth(userObj as any, data.session.access_token, data.session.refresh_token || '');
           setStatus('success');
 
+          const role = resolvedRole || 'STUDENT';
           setTimeout(() => {
-            if (existingRole === 'COMPANY') navigate('/company/dashboard');
-            else if (existingRole === 'MENTOR') navigate('/mentor/dashboard');
-            else if (existingRole === 'TNP_OFFICER' || existingRole === 'TNP_HEAD') navigate('/tnp/dashboard');
-            else if (existingRole === 'SUPER_ADMIN') navigate('/admin/dashboard');
+            if (role === 'COMPANY') navigate('/company/dashboard');
+            else if (role === 'MENTOR') navigate('/mentor/dashboard');
+            else if (role === 'TNP_OFFICER' || role === 'TNP_HEAD') navigate('/tnp/dashboard');
+            else if (role === 'SUPER_ADMIN') navigate('/admin/dashboard');
             else navigate('/student/dashboard');
           }, 800);
         } else {
-          // Check hash parameters in URL
+          // No session — check hash for access_token (implicit flow)
           const hash = window.location.hash;
           if (hash && hash.includes('access_token')) {
             setStatus('success');

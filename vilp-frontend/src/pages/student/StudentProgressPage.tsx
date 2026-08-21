@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Clock,
   CheckCircle2,
   Plus,
   X,
@@ -90,38 +89,34 @@ export function StudentProgressPage() {
   });
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-12 animate-fade-in font-mono text-[#171024]">
-      {/* ── Top Header Ribbon (#FEF8E7) ────────────────────────────────────── */}
-      <div className="bg-[#FEF8E7] border border-[#E0D3E8] p-6 sm:p-8 space-y-3">
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white text-xs text-[#723ECF] border border-[#E0D3E8] font-bold">
-          <Clock className="w-3.5 h-3.5 text-[#ED4B86]" />
-          <span>240-HOUR ATTENDANCE TELEMETRY // AICTE DEGREE REQUIREMENT</span>
+    <div className="max-w-7xl mx-auto space-y-8 pb-12 animate-fade-in font-mono text-[#0F172A]">
+      {/* ── Page Header ──────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <span className="text-[10px] font-bold text-[#2563EB] uppercase tracking-wider block">
+            240-HOUR ATTENDANCE TELEMETRY // AICTE DEGREE REQUIREMENT
+          </span>
+          <h1 className="text-xl sm:text-2xl font-black uppercase text-[#0A2540] font-sans tracking-tight m-0">
+            Weekly Activity Logbook &amp; Hours Tracker
+          </h1>
+          <p className="text-xs text-slate-600 font-mono mt-1 max-w-2xl m-0">
+            Log your weekly engineering hours, report technical milestones, and receive official faculty mentor performance ratings.
+          </p>
         </div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-black uppercase text-[#171024] font-sans tracking-tight">
-              Weekly Activity Logbook &amp; Hours Tracker
-            </h1>
-            <p className="text-xs text-zinc-600 font-mono mt-1 max-w-2xl">
-              Log your weekly engineering hours, report technical milestones, and receive official faculty mentor performance ratings.
-            </p>
-          </div>
-
-          <button
-            onClick={() => setIsSubmitModalOpen(true)}
-            className="btn-primary text-xs self-start sm:self-auto flex items-center gap-2 px-5 py-2.5"
-          >
-            <Plus className="w-3.5 h-3.5" /> SUBMIT NEW WEEK LOG
-          </button>
-        </div>
+        <button
+          onClick={() => setIsSubmitModalOpen(true)}
+          className="btn-primary text-xs self-start sm:self-auto flex items-center gap-2 px-5 py-2.5"
+        >
+          <Plus className="w-3.5 h-3.5" /> SUBMIT NEW WEEK LOG
+        </button>
       </div>
 
       {msg && (
         <div
           className={`p-4 border text-xs font-bold flex items-center gap-2 ${
             msg.type === 'success'
-              ? 'bg-[#F4EEF7] text-[#723ECF] border-[#723ECF]'
-              : 'bg-[#fdf2f4] text-[#ED4B86] border-[#ED4B86]'
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+              : 'bg-red-50 text-red-700 border-red-300'
           }`}
         >
           <CheckCircle2 className="w-4 h-4" /> {msg.text}
