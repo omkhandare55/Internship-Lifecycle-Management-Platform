@@ -9,7 +9,7 @@ import {
   Loader2,
   Calendar,
 } from 'lucide-react';
-import { verificationApi } from '@/services/vilpApi';
+import { verificationApi, documentApi } from '@/services/vilpApi';
 import { StatusBadge } from '@/components/StatusBadge';
 import type { VerificationItem } from '@/types/vilp.types';
 
@@ -132,14 +132,13 @@ export function TnpDocumentsPage() {
                       </div>
                     </td>
                     <td className="py-3 px-4 text-end">
-                      <a
-                        href={`/api/documents/${doc.entityId}/download`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="d-inline-flex align-items-center gap-1 text-[11px] font-bold text-[#2563EB] hover:underline"
+                      <button
+                        type="button"
+                        onClick={() => documentApi.downloadFile(doc.entityId, `${doc.verificationType || 'document'}-${doc.entityId}.pdf`)}
+                        className="d-inline-flex align-items-center gap-1 text-[11px] font-bold text-[#2563EB] hover:underline cursor-pointer bg-transparent border-0 p-0"
                       >
                         <Download className="w-3.5 h-3.5" /> Download
-                      </a>
+                      </button>
                     </td>
                   </tr>
                 ))}

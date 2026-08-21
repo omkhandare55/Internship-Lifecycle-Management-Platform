@@ -21,6 +21,9 @@ public class OtpService {
     private final JavaMailSender mailSender;
     private final SecureRandom secureRandom = new SecureRandom();
 
+    @org.springframework.beans.factory.annotation.Value("${spring.profiles.active:default}")
+    private String activeProfile;
+
     private static class OtpEntry {
         String code;
         Instant expiresAt;
@@ -87,12 +90,12 @@ public class OtpService {
         String target = req.getTarget().trim().toLowerCase().replaceAll("[^0-9a-zA-Z@._-]", "");
         String submittedCode = req.getOtpCode().trim();
 
-        // 1. Universal Dev bypass token
-        if ("123456".equals(submittedCode)) {
-            log.info("OTP verified via universal test token for target: {}", target);
+        // 1. Dev-only test bypass token
+        if (("dev".equals(activeProfile) || "local".equals(activeProfile)) && "123456".equals(submittedCode)) {
+            log.info("OTP verified via dev test token for target: {}", target);
             return OtpDto.OtpResponse.builder()
                     .verified(true)
-                    .message("Identity verified successfully")
+                    .message("Identity verified successfully (Dev Mode)")
                     .target(target)
                     .build();
         }

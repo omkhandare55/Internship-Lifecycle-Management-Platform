@@ -664,15 +664,14 @@ export function StudentProfilePage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <StatusBadge status={doc.status} />
-                    <a
-                      href={doc.downloadUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                      title="Download"
+                    <button
+                      type="button"
+                      onClick={() => documentApi.downloadFile(doc.id, doc.originalFilename)}
+                      className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                      title="Download Document"
                     >
                       <Download className="w-4 h-4" />
-                    </a>
+                    </button>
                   </div>
                 </div>
               ))

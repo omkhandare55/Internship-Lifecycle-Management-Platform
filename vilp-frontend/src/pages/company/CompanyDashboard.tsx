@@ -22,13 +22,16 @@ export function CompanyDashboard() {
     queryFn: () => internshipApi.listMine(),
   });
 
+  const internships = internshipsData?.data?.content || [];
+  const primaryInternshipId = internships[0]?.id;
+
   const { data: applicantsData } = useQuery({
-    queryKey: ['companyApplicants'],
-    queryFn: () => applicationApi.listForInternship('int-001'),
+    queryKey: ['companyApplicants', primaryInternshipId],
+    queryFn: () => (primaryInternshipId ? applicationApi.listForInternship(primaryInternshipId) : Promise.resolve({ success: true, data: { content: [] } as any })),
+    enabled: !!primaryInternshipId,
   });
 
   const company = profileData?.data;
-  const internships = internshipsData?.data?.content || [];
   const applicants = applicantsData?.data?.content || [];
 
   return (

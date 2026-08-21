@@ -13,8 +13,7 @@ import {
   Clock,
   ShieldCheck,
 } from 'lucide-react';
-import { offerApi } from '@/services/vilpApi';
-import { MOCK_STUDENT_PROFILE } from '@/services/mockData';
+import { offerApi, studentApi } from '@/services/vilpApi';
 import { sendFirebaseNotification } from '@/services/firebaseNotificationService';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { ApiErrorState } from '@/components/ui/ApiErrorState';
@@ -33,6 +32,12 @@ export function StudentOffersPage() {
     queryFn: () => offerApi.getMyOffers(0, 50),
   });
 
+  const { data: studentData } = useQuery({
+    queryKey: ['studentProfile'],
+    queryFn: studentApi.getMyProfile,
+  });
+
+  const student = studentData?.data;
   const offers = offersData?.data?.content || [];
 
   const respondMutation = useMutation({
@@ -324,10 +329,10 @@ export function StudentOffersPage() {
             {/* Certificate Body */}
             <div className="space-y-4 text-xs text-zinc-800 leading-relaxed font-mono">
               <p>
-                This is to certify that <strong>{MOCK_STUDENT_PROFILE.fullName || 'Verified Candidate'}</strong> (Student No: <strong>{MOCK_STUDENT_PROFILE.studentNumber || 'REG-2026-001'}</strong>), an enrolled candidate in the Department of {MOCK_STUDENT_PROFILE.department?.name || 'Computer Science & Engineering'}, has been granted institutional clearance to undertake the accredited corporate internship with <strong>Google Cloud India</strong>.
+                This is to certify that <strong>{student?.fullName || 'Verified Candidate'}</strong> (Student No: <strong>{student?.studentNumber || 'REG-2026-001'}</strong>), an enrolled candidate in the Department of {student?.branch || student?.department?.name || 'Computer Science & Engineering'}, has been granted institutional clearance to undertake the accredited corporate internship with <strong>{offers.find((o) => o.id === viewNocForOfferId)?.companyName || 'Accredited Corporate Partner'}</strong>.
               </p>
               <p>
-                The student has satisfied all academic prerequisites (CGPA: <strong>8.85</strong>, Active Backlogs: <strong>0</strong>) and is permitted to log up to 240 hours towards mandatory degree credit completion.
+                The student has satisfied all academic prerequisites (CGPA: <strong>{student?.cgpa?.toFixed(2) || '8.50'}</strong>, Active Backlogs: <strong>{student?.backlogs ?? 0}</strong>) and is permitted to log up to 240 hours towards mandatory degree credit completion.
               </p>
             </div>
 

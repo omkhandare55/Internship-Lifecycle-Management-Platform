@@ -88,8 +88,8 @@ export const realOtpService = {
     // 2. Try backend OTP verification endpoint
     try {
       const res = await axiosInstance.post<{ success: boolean; message?: string }>('/auth/otp/verify', {
-        email: cleanEmail,
-        token: cleanToken,
+        target: cleanEmail,
+        otpCode: cleanToken,
       });
       if (res.data?.success) {
         return { success: true, message: 'Institutional email verified successfully!' };

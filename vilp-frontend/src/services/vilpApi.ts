@@ -376,6 +376,20 @@ export const documentApi = {
     const res = await axiosInstance.get<ApiResponse<DocumentItem[]>>(`/documents/entity/${entityType}/${entityId}`);
     return res.data;
   },
+  downloadFile: async (docId: string, filename?: string): Promise<void> => {
+    const res = await axiosInstance.get(`/documents/${docId}/download`, {
+      responseType: 'blob',
+    });
+    const blob = new Blob([res.data]);
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || `document-${docId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  },
 };
 
 export const verificationApi = {
