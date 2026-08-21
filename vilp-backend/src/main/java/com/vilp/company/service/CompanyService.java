@@ -30,14 +30,26 @@ public class CompanyService {
     private final UserRepository userRepository;
 
     public CompanyDto.CompanyResponse create(UUID userId, CompanyDto.CreateCompanyRequest req) {
-        if (companyRepository.existsByUserId(userId)) {
-            throw new AuthException("PROFILE_EXISTS", "Company profile already exists");
+        java.util.Optional<Company> existingOpt = companyRepository.findByUserId(userId);
+        if (existingOpt.isPresent()) {
+            Company existing = existingOpt.get();
+            if (req.getName() != null) existing.setName(req.getName());
+            if (req.getDescription() != null) existing.setDescription(req.getDescription());
+            if (req.getWebsite() != null) existing.setWebsite(req.getWebsite());
+            if (req.getIndustry() != null) existing.setIndustry(req.getIndustry());
+            if (req.getSize() != null) existing.setSize(req.getSize());
+            if (req.getHeadquarters() != null) existing.setHeadquarters(req.getHeadquarters());
+            if (req.getContactEmail() != null) existing.setContactEmail(req.getContactEmail());
+            if (req.getContactPhone() != null) existing.setContactPhone(req.getContactPhone());
+            if (req.getContactPersonName() != null) existing.setContactPersonName(req.getContactPersonName());
+            companyRepository.save(existing);
+            return CompanyDto.toResponse(existing);
         }
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Company company = Company.builder()
-                .user(user).name(req.getName()).description(req.getDescription())
+                .user(user).name(req.getName() != null ? req.getName() : "Enterprise Partner").description(req.getDescription())
                 .website(req.getWebsite()).industry(req.getIndustry()).size(req.getSize())
                 .headquarters(req.getHeadquarters()).contactEmail(req.getContactEmail())
                 .contactPhone(req.getContactPhone()).contactPersonName(req.getContactPersonName())

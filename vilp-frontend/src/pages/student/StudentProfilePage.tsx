@@ -119,7 +119,7 @@ export function StudentProfilePage() {
     onError: (err: any) => {
       setSubmitMsg({
         type: 'error',
-        text: err.response?.data?.error?.message || 'Failed to save profile',
+        text: err?.message || err?.response?.data?.message || err?.response?.data?.error?.message || 'Failed to save profile',
       });
     },
   });

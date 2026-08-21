@@ -39,12 +39,28 @@ public class StudentService {
     // ─── Create profile ────────────────────────────────────────────────────
 
     public StudentDto.StudentResponse createProfile(UUID userId, StudentDto.CreateProfileRequest req) {
-        if (studentRepository.existsByUserId(userId)) {
-            throw new AuthException("PROFILE_EXISTS", "Student profile already exists");
+        java.util.Optional<Student> existingOpt = studentRepository.findByUserId(userId);
+        if (existingOpt.isPresent()) {
+            StudentDto.UpdateProfileRequest updateReq = new StudentDto.UpdateProfileRequest();
+            updateReq.setFullName(req.getFullName());
+            updateReq.setDepartmentId(req.getDepartmentId());
+            updateReq.setBranch(req.getBranch());
+            updateReq.setSemester(req.getSemester());
+            updateReq.setCgpa(req.getCgpa());
+            updateReq.setBacklogs(req.getBacklogs());
+            updateReq.setPassingYear(req.getPassingYear());
+            updateReq.setPhone(req.getPhone());
+            updateReq.setLinkedinUrl(req.getLinkedinUrl());
+            updateReq.setPortfolioUrl(req.getPortfolioUrl());
+            updateReq.setAbout(req.getAbout());
+            return updateProfile(userId, updateReq);
         }
 
-        if (studentRepository.existsByStudentNumber(req.getStudentNumber())) {
-            throw new AuthException("STUDENT_NUMBER_EXISTS", "Student number already registered");
+        String studentNumber = req.getStudentNumber();
+        if (studentNumber == null || studentNumber.trim().isEmpty()) {
+            studentNumber = "REG-" + System.currentTimeMillis();
+        } else if (studentRepository.existsByStudentNumber(studentNumber)) {
+            studentNumber = studentNumber + "-" + UUID.randomUUID().toString().substring(0, 4);
         }
 
         User user = userRepository.findById(userId)
@@ -52,14 +68,13 @@ public class StudentService {
 
         Department department = null;
         if (req.getDepartmentId() != null) {
-            department = departmentRepository.findById(req.getDepartmentId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Department not found"));
+            department = departmentRepository.findById(req.getDepartmentId()).orElse(null);
         }
 
         Student student = Student.builder()
                 .user(user)
-                .studentNumber(req.getStudentNumber())
-                .fullName(req.getFullName())
+                .studentNumber(studentNumber)
+                .fullName(req.getFullName() != null ? req.getFullName() : user.getEmail().split("@")[0])
                 .department(department)
                 .branch(req.getBranch())
                 .semester(req.getSemester())
@@ -100,8 +115,20 @@ public class StudentService {
     // ─── Update profile ────────────────────────────────────────────────────
 
     public StudentDto.StudentResponse updateProfile(UUID userId, StudentDto.UpdateProfileRequest req) {
-        Student student = studentRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student profile not found"));
+        java.util.Optional<Student> existingOpt = studentRepository.findByUserId(userId);
+        Student student;
+        if (existingOpt.isEmpty()) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+            student = Student.builder()
+                    .user(user)
+                    .studentNumber("REG-" + System.currentTimeMillis())
+                    .fullName(req.getFullName() != null ? req.getFullName() : user.getEmail().split("@")[0])
+                    .verificationStatus("REGISTERED")
+                    .build();
+        } else {
+            student = existingOpt.get();
+        }
 
         if (req.getFullName() != null)    student.setFullName(req.getFullName());
         if (req.getBranch() != null)      student.setBranch(req.getBranch());
@@ -115,13 +142,15 @@ public class StudentService {
         if (req.getAbout() != null)       student.setAbout(req.getAbout());
 
         if (req.getDepartmentId() != null) {
-            Department dept = departmentRepository.findById(req.getDepartmentId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Department not found"));
-            student.setDepartment(dept);
+            Department dept = departmentRepository.findById(req.getDepartmentId()).orElse(null);
+            if (dept != null) {
+                student.setDepartment(dept);
+            }
         }
 
         student.setProfileCompletion(calculateCompletion(student));
         studentRepository.save(student);
+        log.info("Student profile updated for userId: {}", userId);
         return StudentDto.toResponse(student);
     }
 
