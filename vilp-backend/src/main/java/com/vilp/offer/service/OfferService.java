@@ -135,7 +135,7 @@ public class OfferService {
             offer.setStatus("ACCEPTED");
             offer.setResponseDate(OffsetDateTime.now());
             offer.setResponseNotes(req.getNotes());
-            offer = offerRepository.save(offer);
+            offerRepository.save(offer);
 
             // Update application state
             if (offer.getApplication() != null) {
@@ -146,15 +146,16 @@ public class OfferService {
             // Automatically trigger institutional NOC Request
             createNocRequest(offer);
 
+            final Offer currentOffer = offer;
             tryNotify(() -> {
-                if (offer.getCompany() != null && offer.getCompany().getUser() != null) {
+                if (currentOffer.getCompany() != null && currentOffer.getCompany().getUser() != null) {
                     notificationService.createNotification(
                         NotificationDto.CreateNotificationRequest.builder()
-                            .userId(offer.getCompany().getUser().getId())
+                            .userId(currentOffer.getCompany().getUser().getId())
                             .title("Offer Accepted")
-                            .message((offer.getStudent() != null ? offer.getStudent().getFullName() : "Candidate") +
+                            .message((currentOffer.getStudent() != null ? currentOffer.getStudent().getFullName() : "Candidate") +
                                      " accepted the offer for '" +
-                                     (offer.getInternship() != null ? offer.getInternship().getTitle() : "Internship") +
+                                     (currentOffer.getInternship() != null ? currentOffer.getInternship().getTitle() : "Internship") +
                                      "'. NOC process has been initiated.")
                             .type("SUCCESS")
                             .targetUrl("/company/offers")
@@ -167,7 +168,7 @@ public class OfferService {
             offer.setStatus("REJECTED");
             offer.setResponseDate(OffsetDateTime.now());
             offer.setResponseNotes(req.getNotes());
-            offer = offerRepository.save(offer);
+            offerRepository.save(offer);
 
             if (offer.getApplication() != null) {
                 offer.getApplication().setStatus("REJECTED");
@@ -175,15 +176,16 @@ public class OfferService {
                 applicationRepository.save(offer.getApplication());
             }
 
+            final Offer currentOffer = offer;
             tryNotify(() -> {
-                if (offer.getCompany() != null && offer.getCompany().getUser() != null) {
+                if (currentOffer.getCompany() != null && currentOffer.getCompany().getUser() != null) {
                     notificationService.createNotification(
                         NotificationDto.CreateNotificationRequest.builder()
-                            .userId(offer.getCompany().getUser().getId())
+                            .userId(currentOffer.getCompany().getUser().getId())
                             .title("Offer Declined")
-                            .message((offer.getStudent() != null ? offer.getStudent().getFullName() : "Candidate") +
+                            .message((currentOffer.getStudent() != null ? currentOffer.getStudent().getFullName() : "Candidate") +
                                      " has declined the offer for '" +
-                                     (offer.getInternship() != null ? offer.getInternship().getTitle() : "Internship") +
+                                     (currentOffer.getInternship() != null ? currentOffer.getInternship().getTitle() : "Internship") +
                                      "'.")
                             .type("INFO")
                             .targetUrl("/company/offers")
