@@ -15,6 +15,7 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleRole, setGoogleRole] = useState<'STUDENT' | 'COMPANY' | 'TNP_OFFICER' | 'MENTOR'>('STUDENT');
 
   const {
     register,
@@ -72,12 +73,13 @@ export function LoginPage() {
       const uid = fbUser.uid;
       const idToken = await fbUser.getIdToken();
 
-      // Synchronize with VILP backend to issue RBAC JWT tokens
+      // Synchronize with VILP backend with chosen role
       const res = await authApi.firebaseLogin({
         email,
         displayName,
         uid,
         idToken,
+        role: googleRole as any,
       });
 
       if (res.success && res.data) {
@@ -123,6 +125,34 @@ export function LoginPage() {
         </div>
       )}
 
+      {/* Role Selection for Google Auth */}
+      <div className="space-y-1.5">
+        <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
+          Sign In Role:
+        </label>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1">
+          {[
+            { role: 'STUDENT', label: '🎓 Student' },
+            { role: 'COMPANY', label: '🏢 Company' },
+            { role: 'TNP_OFFICER', label: '🏛️ T&P' },
+            { role: 'MENTOR', label: '👨‍🏫 Mentor' },
+          ].map((item) => (
+            <button
+              key={item.role}
+              type="button"
+              onClick={() => setGoogleRole(item.role as any)}
+              className={`px-2 py-1.5 text-[10px] font-bold uppercase rounded-xs border transition-all cursor-pointer ${
+                googleRole === item.role
+                  ? 'bg-[#0A2540] text-white border-[#0A2540]'
+                  : 'bg-white text-slate-700 border-slate-300 hover:border-slate-400'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Google OAuth Button */}
       <button
         type="button"
@@ -152,7 +182,7 @@ export function LoginPage() {
             />
           </svg>
         )}
-        <span>Sign in with Google</span>
+        Continue with Google as {googleRole}
       </button>
 
       <div className="d-flex align-items-center gap-3 my-2">

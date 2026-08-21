@@ -166,10 +166,9 @@ public class OfferService {
 
     @Transactional(readOnly = true)
     public Page<OfferDto.OfferResponse> getMyStudentOffers(UUID studentUserId, Pageable pageable) {
-        Student student = studentRepository.findByUserId(studentUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student profile not found"));
-        return offerRepository.findByStudentId(student.getId(), pageable)
-                .map(OfferDto::toResponse);
+        return studentRepository.findByUserId(studentUserId)
+                .map(student -> offerRepository.findByStudentId(student.getId(), pageable).map(OfferDto::toResponse))
+                .orElseGet(() -> Page.empty(pageable));
     }
 
     @Transactional(readOnly = true)

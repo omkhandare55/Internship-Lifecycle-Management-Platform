@@ -1,6 +1,8 @@
 package com.vilp.auth.service;
 
 import com.vilp.auth.dto.*;
+import com.vilp.company.entity.Company;
+import com.vilp.company.repository.CompanyRepository;
 import com.vilp.exception.AuthException;
 import com.vilp.security.JwtTokenProvider;
 import com.vilp.student.entity.Student;
@@ -47,6 +49,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final StudentRepository studentRepository;
+    private final CompanyRepository companyRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
@@ -242,11 +245,12 @@ public class AuthService {
     public TokenResponse firebaseLogin(FirebaseLoginRequest request) {
         String cleanEmail = request.getEmail().trim().toLowerCase();
         String uid = request.getUid();
+        final UserRole requestedRole = (request.getRole() != null && request.getRole() != UserRole.SUPER_ADMIN)
+                ? request.getRole()
+                : null;
 
         User user = userRepository.findByEmail(cleanEmail).orElseGet(() -> {
-            final UserRole targetRole = (request.getRole() != null && request.getRole() != UserRole.SUPER_ADMIN)
-                    ? request.getRole()
-                    : UserRole.STUDENT;
+            final UserRole targetRole = requestedRole != null ? requestedRole : UserRole.STUDENT;
 
             Role role = roleRepository.findByName(targetRole).orElseGet(() -> {
                 Role newRole = Role.builder()
@@ -272,6 +276,16 @@ public class AuthService {
             return saved;
         });
 
+        // If an explicit role was requested and user is currently STUDENT, allow updating to COMPANY/TNP/MENTOR
+        if (requestedRole != null && user.getRole() != null && user.getRole().getName() != requestedRole) {
+            Role newRole = roleRepository.findByName(requestedRole).orElseGet(() ->
+                roleRepository.save(Role.builder().name(requestedRole).description(requestedRole.name() + " role").build())
+            );
+            user.setRole(newRole);
+            userRepository.save(user);
+            log.info("Updated Firebase user {} role to {}", cleanEmail, requestedRole);
+        }
+
         if (!user.isActive()) {
             throw new AuthException("ACCOUNT_SUSPENDED", "Account is suspended");
         }
@@ -289,12 +303,13 @@ public class AuthService {
             user.setEmailVerified(true);
         }
 
+        String displayName = (request.getDisplayName() != null && !request.getDisplayName().trim().isEmpty())
+                ? request.getDisplayName().trim()
+                : cleanEmail.split("@")[0];
+
         // If user is a student, ensure initial Student record exists
         if (user.getRole() != null && user.getRole().getName() == UserRole.STUDENT) {
             if (!studentRepository.existsByUserId(user.getId())) {
-                String displayName = (request.getDisplayName() != null && !request.getDisplayName().trim().isEmpty())
-                        ? request.getDisplayName().trim()
-                        : cleanEmail.split("@")[0];
                 String studentNumber = "REG-" + System.currentTimeMillis();
                 Student newStudent = Student.builder()
                         .user(user)
@@ -306,6 +321,20 @@ public class AuthService {
                         .build();
                 studentRepository.save(newStudent);
                 log.info("Auto-created student profile entity for Firebase user: {}", cleanEmail);
+            }
+        }
+
+        // If user is a company, ensure initial Company record exists
+        if (user.getRole() != null && user.getRole().getName() == UserRole.COMPANY) {
+            if (!companyRepository.existsByUserId(user.getId())) {
+                Company newCompany = Company.builder()
+                        .user(user)
+                        .name(displayName + " Organization")
+                        .contactEmail(cleanEmail)
+                        .verificationStatus("VERIFIED")
+                        .build();
+                companyRepository.save(newCompany);
+                log.info("Auto-created company profile entity for Firebase user: {}", cleanEmail);
             }
         }
 

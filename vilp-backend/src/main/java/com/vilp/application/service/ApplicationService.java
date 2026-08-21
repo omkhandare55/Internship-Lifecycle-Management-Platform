@@ -32,20 +32,32 @@ public class ApplicationService {
     private final ApplicationRepository applicationRepository;
     private final StudentRepository studentRepository;
     private final InternshipRepository internshipRepository;
+    private final com.vilp.user.repository.UserRepository userRepository;
 
     /** Student submits application */
     public ApplicationDto.ApplicationResponse apply(UUID userId, ApplicationDto.ApplyRequest req) {
-        Student student = studentRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student profile not found"));
+        Student student = studentRepository.findByUserId(userId).orElseGet(() -> {
+            com.vilp.user.entity.User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+            String studentNumber = "REG-" + System.currentTimeMillis();
+            Student newStudent = Student.builder()
+                    .user(user)
+                    .studentNumber(studentNumber)
+                    .fullName(user.getEmail().split("@")[0])
+                    .verificationStatus("REGISTERED")
+                    .backlogs(0)
+                    .build();
+            return studentRepository.save(newStudent);
+        });
 
-        if (!"VERIFIED".equals(student.getVerificationStatus())) {
-            throw new AuthException("NOT_VERIFIED", "Your student profile must be verified before applying");
+        if ("REJECTED".equalsIgnoreCase(student.getVerificationStatus()) || "SUSPENDED".equalsIgnoreCase(student.getVerificationStatus())) {
+            throw new AuthException("NOT_VERIFIED", "Your student profile is suspended or rejected from applying");
         }
 
         Internship internship = internshipRepository.findById(req.getInternshipId())
                 .orElseThrow(() -> new ResourceNotFoundException("Internship not found"));
 
-        if (!"APPLICATION_OPEN".equals(internship.getStatus())) {
+        if (!"APPLICATION_OPEN".equals(internship.getStatus()) && !"ACTIVE".equals(internship.getStatus())) {
             throw new AuthException("NOT_OPEN", "This internship is not accepting applications");
         }
 
@@ -59,8 +71,9 @@ public class ApplicationService {
         }
 
         Application app = Application.builder()
-                .student(student).internship(internship)
-                .coverLetter(req.getCoverLetter())
+                .student(student)
+                .internship(internship)
+                .coverLetter(req.getCoverLetter() != null ? req.getCoverLetter() : "Interested in this internship opportunity.")
                 .status("APPLIED")
                 .build();
 
@@ -72,10 +85,9 @@ public class ApplicationService {
     /** Student: list own applications */
     @Transactional(readOnly = true)
     public Page<ApplicationDto.ApplicationResponse> myApplications(UUID userId, Pageable pageable) {
-        Student student = studentRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student profile not found"));
-        return applicationRepository.findByStudentId(student.getId(), pageable)
-                .map(ApplicationDto::toResponse);
+        return studentRepository.findByUserId(userId)
+                .map(student -> applicationRepository.findByStudentId(student.getId(), pageable).map(ApplicationDto::toResponse))
+                .orElseGet(() -> Page.empty(pageable));
     }
 
     /** Company: list applicants for an internship */

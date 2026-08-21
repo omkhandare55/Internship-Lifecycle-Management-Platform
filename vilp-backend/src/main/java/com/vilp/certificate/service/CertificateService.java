@@ -92,12 +92,12 @@ public class CertificateService {
 
     @Transactional(readOnly = true)
     public List<CertificateDto.CertificateResponse> getMyCertificates(UUID studentUserId) {
-        Student student = studentRepository.findByUserId(studentUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student profile not found"));
-        return certificateRepository.findByStudentId(student.getId())
-                .stream()
-                .map(CertificateDto::toResponse)
-                .collect(Collectors.toList());
+        return studentRepository.findByUserId(studentUserId)
+                .map(student -> certificateRepository.findByStudentId(student.getId())
+                        .stream()
+                        .map(CertificateDto::toResponse)
+                        .collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
     }
 
     @Transactional(readOnly = true)

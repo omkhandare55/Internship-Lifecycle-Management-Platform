@@ -99,10 +99,9 @@ public class WeeklyReportService {
 
     @Transactional(readOnly = true)
     public Page<WeeklyReportDto.WeeklyReportResponse> getMyReports(UUID studentUserId, Pageable pageable) {
-        Student student = studentRepository.findByUserId(studentUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student profile not found"));
-        return weeklyReportRepository.findByStudentId(student.getId(), pageable)
-                .map(WeeklyReportDto::toResponse);
+        return studentRepository.findByUserId(studentUserId)
+                .map(student -> weeklyReportRepository.findByStudentId(student.getId(), pageable).map(WeeklyReportDto::toResponse))
+                .orElseGet(() -> Page.empty(pageable));
     }
 
     @Transactional(readOnly = true)
@@ -124,9 +123,9 @@ public class WeeklyReportService {
 
     @Transactional(readOnly = true)
     public Integer getTotalApprovedHours(UUID studentUserId) {
-        Student student = studentRepository.findByUserId(studentUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student profile not found"));
-        return weeklyReportRepository.getTotalApprovedHours(student.getId());
+        return studentRepository.findByUserId(studentUserId)
+                .map(student -> weeklyReportRepository.getTotalApprovedHours(student.getId()))
+                .orElse(0);
     }
 
     /**

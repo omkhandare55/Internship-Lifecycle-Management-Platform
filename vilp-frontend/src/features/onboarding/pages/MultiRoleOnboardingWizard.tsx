@@ -21,6 +21,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { tokenUtils } from '@/utils/tokenUtils';
 import { authApi } from '@/features/auth/api/authApi';
 import { studentApi, companyApi } from '@/services/vilpApi';
+import { firebaseSignInWithGoogle } from '@/services/firebaseClient';
 
 export function MultiRoleOnboardingWizard() {
   const [searchParams] = useSearchParams();
@@ -33,6 +34,14 @@ export function MultiRoleOnboardingWizard() {
 
   const roleMeta = PLATFORM_ROLES.find((r) => r.id === roleParam) || PLATFORM_ROLES[0];
 
+  let mappedRole: 'STUDENT' | 'COMPANY' | 'MENTOR' | 'TNP_OFFICER' | 'SUPER_ADMIN' = 'STUDENT';
+  const roleKey = (roleParam as string || '').toUpperCase();
+  if (roleKey === 'COMPANY_RECRUITER' || roleKey === 'COMPANY') mappedRole = 'COMPANY';
+  else if (roleKey === 'FACULTY_MENTOR' || roleKey === 'MENTOR' || roleKey === 'FACULTY') mappedRole = 'MENTOR';
+  else if (roleKey === 'TNP_OFFICER' || roleKey === 'TNP' || roleKey === 'TNP_HEAD') mappedRole = 'TNP_OFFICER';
+  else if (roleKey === 'SUPER_ADMIN' || roleKey === 'ADMIN') mappedRole = 'SUPER_ADMIN';
+  else mappedRole = 'STUDENT';
+
   const [currentStep, setCurrentStep] = useState(1);
 
   // Common Identity Fields (pre-filled from Google OAuth if available)
@@ -40,47 +49,39 @@ export function MultiRoleOnboardingWizard() {
   const [email, setEmail] = useState(paramEmail);
   const [mobileNumber, setMobileNumber] = useState('');
   const [password, setPassword] = useState('');
-
   const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage] = useState(
-    isGoogleAuth ? '✓ Google Identity Authenticated. Complete your institutional registration details.' : ''
-  );
 
-  // Student-specific States
+  // Role-Specific Fields
   const [collegeName, setCollegeName] = useState('');
   const [universityName, setUniversityName] = useState('');
   const [branch, setBranch] = useState('');
   const [enrollmentNumber, setEnrollmentNumber] = useState('');
-  const [skills, setSkills] = useState<string[]>([]);
-  const [github, setGithub] = useState('');
-  const [linkedin, setLinkedin] = useState('');
-
-  // Faculty / Mentor / HOD / Admin specific States
+  const [companyName, setCompanyName] = useState('');
+  const [companyWebsite, setCompanyWebsite] = useState('');
   const [department, setDepartment] = useState('');
   const [designation, setDesignation] = useState('');
   const [employeeId, setEmployeeId] = useState('');
   const [experienceYears, setExperienceYears] = useState(0);
-  const [companyName, setCompanyName] = useState('');
-  const [companyWebsite, setCompanyWebsite] = useState('');
+  const [linkedin, setLinkedin] = useState('');
+  const [github, setGithub] = useState('');
 
-  // Calculate Profile Completeness Percentage
-  const calculateCompleteness = () => {
-    let score = 20;
-    if (fullName) score += 20;
-    if (email) score += 20;
-    if (mobileNumber.length >= 10) score += 15;
-    if (collegeName || companyName) score += 15;
-    if (skills.length >= 2 || department || github || linkedin) score += 10;
-    return Math.min(score, 100);
-  };
+  const [successMessage] = useState(
+    isGoogleAuth ? '✓ Google Identity Authenticated. Complete your institutional registration details.' : ''
+  );
 
-  const completeness = calculateCompleteness();
+  const completeness = currentStep === 1 ? 33 : currentStep === 2 ? 66 : 100;
 
   const handleResumeUpload = async (file: File) => {
-    const result = await parseResumeWithAi(file);
-    if (result.skills?.value) setSkills(result.skills.value);
-    if (result.githubUrl?.value) setGithub(result.githubUrl.value);
-    if (result.linkedinUrl?.value) setLinkedin(result.linkedinUrl.value);
+    try {
+      const parsedData: any = await parseResumeWithAi(file);
+      if (parsedData.fullName?.value) setFullName(parsedData.fullName.value);
+      if (parsedData.email?.value) setEmail(parsedData.email.value);
+      if (parsedData.branch?.value) setBranch(parsedData.branch.value);
+      if (parsedData.linkedinUrl?.value) setLinkedin(parsedData.linkedinUrl.value);
+      if (parsedData.githubUrl?.value) setGithub(parsedData.githubUrl.value);
+    } catch {
+      // Non-blocking fallback
+    }
     handleFinishOnboarding();
   };
 
@@ -89,14 +90,6 @@ export function MultiRoleOnboardingWizard() {
   const handleFinishOnboarding = async () => {
     setErrorMessage('');
     setIsSubmitting(true);
-
-    let mappedRole: 'STUDENT' | 'COMPANY' | 'MENTOR' | 'TNP_OFFICER' | 'SUPER_ADMIN' = 'STUDENT';
-    const roleKey = (roleParam as string || '').toUpperCase();
-    if (roleKey === 'COMPANY_RECRUITER' || roleKey === 'COMPANY') mappedRole = 'COMPANY';
-    else if (roleKey === 'FACULTY_MENTOR' || roleKey === 'MENTOR' || roleKey === 'FACULTY') mappedRole = 'MENTOR';
-    else if (roleKey === 'TNP_OFFICER' || roleKey === 'TNP' || roleKey === 'TNP_HEAD') mappedRole = 'TNP_OFFICER';
-    else if (roleKey === 'SUPER_ADMIN' || roleKey === 'ADMIN') mappedRole = 'SUPER_ADMIN';
-    else mappedRole = 'STUDENT';
 
     if (mappedRole === 'SUPER_ADMIN') {
       setErrorMessage('Institutional Administrator accounts cannot be self-registered publicly. Please use institutional admin credentials or contact your system administrator.');
@@ -503,6 +496,79 @@ export function MultiRoleOnboardingWizard() {
                 <p className="text-xs text-slate-600 m-0">
                   Provide your professional credentials to establish verified {roleMeta.category.toLowerCase()} authorization.
                 </p>
+              </div>
+
+              {/* Fast-Track Google Sign-Up for Company / T&P / Mentor */}
+              <div className="bg-[#F8FAFC] border border-[#CBD5E1] p-3 rounded-xs space-y-2">
+                <div className="d-flex align-items-center justify-content-between">
+                  <span className="text-[11px] font-bold text-[#0A2540] uppercase">
+                    ⚡ 1-Click Fast Track:
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-medium">Google Auth Supported</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      setIsSubmitting(true);
+                      setErrorMessage('');
+                      const result = await firebaseSignInWithGoogle();
+                      const fbUser = result.user;
+                      const gEmail = fbUser.email || '';
+                      const gName = fbUser.displayName || fullName || 'User';
+                      const uid = fbUser.uid;
+                      const idToken = await fbUser.getIdToken();
+
+                      const res = await authApi.firebaseLogin({
+                        email: gEmail,
+                        displayName: gName,
+                        uid,
+                        idToken,
+                        role: mappedRole as any,
+                      });
+
+                      if (res.success && res.data) {
+                        const { user, accessToken, refreshToken } = res.data;
+                        tokenUtils.setTokens(accessToken, refreshToken);
+                        useAuthStore.getState().setAuth(user, accessToken, refreshToken);
+
+                        if (mappedRole === 'COMPANY') {
+                          try {
+                            await companyApi.createProfile({
+                              name: companyName || `${gName} Organization`,
+                              contactEmail: gEmail,
+                              contactPersonName: gName,
+                            } as any);
+                          } catch (_) {}
+                        }
+
+                        navigate(roleMeta.targetDashboard);
+                      }
+                    } catch (gErr: any) {
+                      setErrorMessage(gErr.message || 'Google registration failed.');
+                    } finally {
+                      setIsSubmitting(false);
+                    }
+                  }}
+                  disabled={isSubmitting}
+                  className="btn-secondary w-100 min-h-[42px] d-flex align-items-center justify-content-center gap-2 font-bold text-xs uppercase cursor-pointer"
+                >
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                  </svg>
+                  Register &amp; Sign In with Google as {roleMeta.title}
+                </button>
+              </div>
+
+              <div className="d-flex align-items-center gap-3 my-1">
+                <div className="flex-1 border-t border-[#CBD5E1]" />
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                  OR ENTER CREDENTIALS
+                </span>
+                <div className="flex-1 border-t border-[#CBD5E1]" />
               </div>
 
               <div className="row g-3">
