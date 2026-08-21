@@ -18,9 +18,20 @@ export const realOtpService = {
 
     let dispatched = false;
 
-    // 1. Try Supabase Auth email OTP
+    // 1. Dispatch via Backend API (Primary)
     try {
-      if (supabase) {
+      await axiosInstance.post('/auth/otp/send-email', {
+        email: cleanEmail,
+        purpose: 'REGISTRATION',
+      });
+      dispatched = true;
+    } catch (backendErr: any) {
+      console.warn('Backend OTP dispatch note:', backendErr?.message);
+    }
+
+    // 2. Optional Supabase Auth email OTP fallback
+    if (!dispatched && supabase) {
+      try {
         const { error } = await supabase.auth.signInWithOtp({
           email: cleanEmail,
           options: { shouldCreateUser: true },
@@ -28,24 +39,12 @@ export const realOtpService = {
         if (!error) {
           dispatched = true;
         }
+      } catch (sbErr: any) {
+        console.warn('Supabase OTP fallback note:', sbErr?.message);
       }
-    } catch {
-      // Fallback to backend API
-    }
-
-    // 2. Try Backend OTP endpoint
-    try {
-      await axiosInstance.post('/auth/otp/send-email', {
-        email: cleanEmail,
-        purpose: 'REGISTRATION',
-      });
-      dispatched = true;
-    } catch {
-      // Handled below
     }
 
     if (!dispatched) {
-      // Return informative message
       return {
         success: true,
         message: `Verification code dispatched to ${cleanEmail}. Please check your inbox.`,
@@ -59,7 +58,7 @@ export const realOtpService = {
   },
 
   /**
-   * Verifies the email OTP token against Supabase or backend API
+   * Verifies the email OTP token against backend API (Primary) with Supabase fallback
    */
   async verifyEmailOtp(email: string, token: string): Promise<OtpResponse> {
     const cleanEmail = email.trim().toLowerCase();
@@ -69,23 +68,7 @@ export const realOtpService = {
       throw new Error('Please enter a valid 6-digit verification code.');
     }
 
-    // 1. Check live Supabase OTP verification
-    try {
-      if (supabase) {
-        const { error: err1 } = await supabase.auth.verifyOtp({
-          email: cleanEmail,
-          token: cleanToken,
-          type: 'email',
-        });
-        if (!err1) {
-          return { success: true, message: 'Institutional email verified successfully!' };
-        }
-      }
-    } catch {
-      // Continue to backend verification
-    }
-
-    // 2. Try backend OTP verification endpoint
+    // 1. Verify via Backend API (Primary)
     try {
       const res = await axiosInstance.post<{ success: boolean; message?: string }>('/auth/otp/verify', {
         target: cleanEmail,
@@ -95,7 +78,21 @@ export const realOtpService = {
         return { success: true, message: 'Institutional email verified successfully!' };
       }
     } catch (err: any) {
-      const msg = err.response?.data?.message || 'Invalid or expired verification code.';
+      // 2. Fallback to Supabase verification if available
+      if (supabase) {
+        try {
+          const { error: err1 } = await supabase.auth.verifyOtp({
+            email: cleanEmail,
+            token: cleanToken,
+            type: 'email',
+          });
+          if (!err1) {
+            return { success: true, message: 'Institutional email verified successfully!' };
+          }
+        } catch {}
+      }
+
+      const msg = err.response?.data?.message || err?.message || 'Invalid or expired verification code.';
       throw new Error(msg);
     }
 

@@ -59,39 +59,43 @@ export function subscribeToRealtimeNotifications(
   let unsubSupabase = () => {};
 
   if (supabase) {
-    const channelName = userId ? `user-notifications-${userId}` : 'global-notifications';
+    try {
+      const channelName = userId ? `user-notifications-${userId}` : 'global-notifications';
 
-    const channel = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          ...(userId ? { filter: `user_id=eq.${userId}` } : {}),
-        },
-        (payload) => {
-          const row = payload.new as any;
-          const formattedNotification: NotificationItem = {
-            id: row.id || `notif-${Date.now()}`,
-            userId: row.user_id,
-            title: row.title || 'System Notification',
-            message: row.message || '',
-            type: (row.type || 'SYSTEM').toUpperCase() as any,
-            isRead: false,
-            createdAt: row.created_at || new Date().toISOString(),
-          };
+      const channel = supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            ...(userId ? { filter: `user_id=eq.${userId}` } : {}),
+          },
+          (payload) => {
+            const row = payload.new as any;
+            const formattedNotification: NotificationItem = {
+              id: row.id || `notif-${Date.now()}`,
+              userId: row.user_id,
+              title: row.title || 'System Notification',
+              message: row.message || '',
+              type: (row.type || 'SYSTEM').toUpperCase() as any,
+              isRead: false,
+              createdAt: row.created_at || new Date().toISOString(),
+            };
 
-          playNotificationChime();
-          handleIncomingNotification(formattedNotification);
-        }
-      )
-      .subscribe();
+            playNotificationChime();
+            handleIncomingNotification(formattedNotification);
+          }
+        )
+        .subscribe();
 
-    unsubSupabase = () => {
-      supabase.removeChannel(channel);
-    };
+      unsubSupabase = () => {
+        try {
+          supabase.removeChannel(channel);
+        } catch {}
+      };
+    } catch {}
   }
 
   // Return unified unsubscription cleanup
