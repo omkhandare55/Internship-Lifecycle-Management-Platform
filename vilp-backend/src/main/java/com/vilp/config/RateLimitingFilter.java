@@ -1,5 +1,7 @@
 package com.vilp.config;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Refill;
@@ -15,8 +17,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * IP-based rate limiting filter using Bucket4j.
@@ -26,14 +26,22 @@ import java.util.concurrent.ConcurrentHashMap;
  *   - All other API endpoints: 120 requests / minute per IP
  *
  * Returns HTTP 429 with Retry-After header on breach.
+ * Uses Caffeine cache with TTL eviction to prevent memory leaks under high IP churn.
  */
 @Component
 @Slf4j
 public class RateLimitingFilter extends OncePerRequestFilter {
 
-    // Separate buckets per IP address for auth vs. general API
-    private final Map<String, Bucket> authBuckets    = new ConcurrentHashMap<>();
-    private final Map<String, Bucket> generalBuckets = new ConcurrentHashMap<>();
+    // Caffeine-backed buckets: max 10K entries, evict after 5 minutes of inactivity
+    private final Cache<String, Bucket> authBuckets = Caffeine.newBuilder()
+            .maximumSize(10_000)
+            .expireAfterAccess(Duration.ofMinutes(5))
+            .build();
+
+    private final Cache<String, Bucket> generalBuckets = Caffeine.newBuilder()
+            .maximumSize(10_000)
+            .expireAfterAccess(Duration.ofMinutes(5))
+            .build();
 
     private static final int AUTH_REQUESTS_PER_MINUTE    = 10;
     private static final int GENERAL_REQUESTS_PER_MINUTE = 120;
@@ -48,7 +56,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         // Skip rate limiting for non-API paths (static assets, actuator health)
-        if (!path.startsWith("/api/") || path.equals("/api/actuator/health")) {
+        if (!path.startsWith("/api/") || path.equals("/api/actuator/health") || path.startsWith("/actuator/")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -58,8 +66,8 @@ public class RateLimitingFilter extends OncePerRequestFilter {
                 || path.startsWith("/api/auth/forgot-password");
 
         Bucket bucket = isAuthPath
-                ? authBuckets.computeIfAbsent(ip, this::newAuthBucket)
-                : generalBuckets.computeIfAbsent(ip, this::newGeneralBucket);
+                ? authBuckets.get(ip, this::newAuthBucket)
+                : generalBuckets.get(ip, this::newGeneralBucket);
 
         if (bucket.tryConsume(1)) {
             filterChain.doFilter(request, response);
@@ -101,3 +109,4 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         return request.getRemoteAddr();
     }
 }
+

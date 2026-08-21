@@ -175,7 +175,7 @@ public class InternshipService {
 
     private String generateUniqueId(Internship i) {
         int year = java.time.Year.now().getValue();
-        String seq = String.format("%05d", (i.getId().getMostSignificantBits() & 0xFFFFF) % 100000);
-        return "INT-" + year + "-" + seq;
+        long count = internshipRepository.count();
+        return "INT-" + year + "-" + String.format("%05d", count);
     }
 }

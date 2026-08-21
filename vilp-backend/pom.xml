@@ -137,6 +137,12 @@
             <version>8.10.1</version>
         </dependency>
 
+        <!-- Caffeine cache — used by RateLimitingFilter for TTL-based bucket eviction -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
         <!-- Spring AOP (audit logging aspect) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

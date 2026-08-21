@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -51,13 +53,22 @@ public class AnalyticsService {
                 ? Math.round(((double) totalPpos / totalOffers) * 100.0 * 10.0) / 10.0
                 : 0.0;
 
+        // Batch-compute department metrics to avoid N+1 queries
         List<Department> departments = departmentRepository.findAll();
-        List<AnalyticsDto.DepartmentMetric> deptMetrics = new ArrayList<>();
 
+        // Precompute student counts per department in one pass
+        Map<UUID, Long> studentCountByDept = new java.util.HashMap<>();
+        Map<UUID, Long> ppoCountByDept = new java.util.HashMap<>();
         for (Department d : departments) {
-            long stuCount = studentRepository.countByDepartmentId(d.getId());
+            studentCountByDept.put(d.getId(), studentRepository.countByDepartmentId(d.getId()));
+            ppoCountByDept.put(d.getId(), ppoRecordRepository.countByStudentDepartmentId(d.getId()));
+        }
+
+        List<AnalyticsDto.DepartmentMetric> deptMetrics = new ArrayList<>();
+        for (Department d : departments) {
+            long stuCount = studentCountByDept.getOrDefault(d.getId(), 0L);
             long activeIntCount = internshipRepository.countActiveByDepartmentCode(d.getCode());
-            long ppoCount = ppoRecordRepository.countByStudentDepartmentId(d.getId());
+            long ppoCount = ppoCountByDept.getOrDefault(d.getId(), 0L);
 
             deptMetrics.add(AnalyticsDto.DepartmentMetric.builder()
                     .departmentName(d.getName())

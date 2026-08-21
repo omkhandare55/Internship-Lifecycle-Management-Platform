@@ -21,6 +21,8 @@ import { realOtpService } from '../services/onboardingApi';
 import { CommandPaletteHUD } from '@/components/CommandPaletteHUD';
 import { useAuthStore } from '@/stores/authStore';
 import { tokenUtils } from '@/utils/tokenUtils';
+import { authApi } from '@/features/auth/api/authApi';
+import { studentApi, companyApi } from '@/services/vilpApi';
 
 export function MultiRoleOnboardingWizard() {
   const [searchParams] = useSearchParams();
@@ -140,71 +142,137 @@ export function MultiRoleOnboardingWizard() {
     handleFinishOnboarding();
   };
 
-  const handleFinishOnboarding = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleFinishOnboarding = async () => {
+    setErrorMessage('');
+    setIsSubmitting(true);
+
     let mappedRole: 'STUDENT' | 'COMPANY' | 'MENTOR' | 'TNP_OFFICER' | 'SUPER_ADMIN' = 'STUDENT';
     if (roleParam === 'COMPANY_RECRUITER') mappedRole = 'COMPANY';
     else if (roleParam === 'FACULTY_MENTOR') mappedRole = 'MENTOR';
     else if (roleParam === 'TNP_OFFICER') mappedRole = 'TNP_OFFICER';
     else if (roleParam === 'SUPER_ADMIN') mappedRole = 'SUPER_ADMIN';
 
-    const mockId = `usr-${Date.now()}`;
     const userFullName = fullName || email.split('@')[0] || 'Verified Candidate';
 
-    const studentProfile = {
-      id: mockId,
-      studentNumber: enrollmentNumber || 'REG-2026-001',
-      fullName: userFullName,
-      email: email,
-      department: { id: 1, name: department || branch || 'Computer Science & Engineering', code: 'CSE' },
-      branch: branch || 'Computer Science',
-      collegeName: collegeName || universityName || 'Institutional Institute',
-      universityName: universityName || collegeName || 'State Technical University',
-      semester: 6,
-      cgpa: 8.85,
-      backlogs: 0,
-      passingYear: 2026,
-      phone: mobileNumber,
-      linkedinUrl: linkedin || `https://linkedin.com/in/${encodeURIComponent(userFullName.toLowerCase().replace(/\s+/g, '-'))}`,
-      portfolioUrl: github || `https://github.com/${encodeURIComponent(userFullName.toLowerCase().replace(/\s+/g, '-'))}`,
-      about: `Enrolled student candidate in ${branch || 'Computer Science & Engineering'}.`,
-      verificationStatus: 'VERIFIED',
-      profileCompletion: completeness,
-      skills: skills.length > 0 ? skills.map((s, idx) => ({ id: idx + 1, name: s })) : [
-        { id: 1, name: 'Java' },
-        { id: 2, name: 'Spring Boot' },
-        { id: 3, name: 'React' },
-        { id: 4, name: 'TypeScript' },
-      ],
-      createdAt: new Date().toISOString(),
-    };
-
     try {
-      localStorage.setItem('vilp_student_profile', JSON.stringify(studentProfile));
-    } catch {}
+      // Check if we already have a valid Supabase/backend access token (Google OAuth flow)
+      const existingToken = tokenUtils.getAccessToken();
+      const existingRefresh = tokenUtils.getRefreshToken();
+      let accessToken = existingToken;
+      let refreshToken = existingRefresh;
+      let userId: string | undefined;
 
-    const mockUser = {
-      id: mockId,
-      email: email,
-      fullName: userFullName,
-      role: mappedRole,
-      emailVerified: true,
-      createdAt: new Date().toISOString(),
-    };
+      if (!existingToken || !existingRefresh) {
+        // ── Step 1: Register new user account via backend API ──────────────
+        try {
+          await authApi.register({
+            email: email.toLowerCase(),
+            password: password,
+            role: mappedRole,
+          });
+        } catch (regError: any) {
+          // If user already exists (e.g., re-registration), continue to login
+          if (regError?.code !== 'EMAIL_ALREADY_EXISTS') {
+            const msg = regError?.message || 'Registration failed. Please try again.';
+            setErrorMessage(msg);
+            setIsSubmitting(false);
+            return;
+          }
+        }
 
-    localStorage.setItem(`vilp_user_onboarded_${mockId}`, 'true');
+        // ── Step 2: Login to get real JWT tokens ──────────────────────────
+        try {
+          const loginRes = await authApi.login({
+            email: email.toLowerCase(),
+            password: password,
+          });
+          const tokenData = loginRes.data;
+          if (!tokenData) {
+            setErrorMessage('Login succeeded but received empty token data.');
+            setIsSubmitting(false);
+            return;
+          }
+          accessToken = tokenData.accessToken;
+          refreshToken = tokenData.refreshToken;
+          userId = tokenData.user.id;
 
-    const existingToken = tokenUtils.getAccessToken();
-    const existingRefresh = tokenUtils.getRefreshToken();
-    const safePayload = btoa(JSON.stringify({
-      sub: mockId,
-      email: email,
-      role: mappedRole,
-      exp: Math.floor(Date.now() / 1000) + (86400 * 30),
-    }));
-    const validToken = existingToken || `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${safePayload}.signed`;
+          // Store real tokens
+          tokenUtils.setTokens(accessToken, refreshToken);
+        } catch (loginError: any) {
+          // If email not verified, inform the user
+          const msg = loginError?.message || 'Login failed after registration.';
+          setErrorMessage(msg);
+          setIsSubmitting(false);
+          return;
+        }
+      }
 
-    setAuth(mockUser as any, validToken, existingRefresh || 'vilp-refresh-token-active');
-    navigate(roleMeta.targetDashboard);
+      // ── Step 3: Create role-specific profile via backend API ──────────
+      try {
+        if (mappedRole === 'STUDENT') {
+          await studentApi.createProfile({
+            studentNumber: enrollmentNumber || `REG-${Date.now()}`,
+            fullName: userFullName,
+            branch: branch || 'Computer Science',
+            semester: 6,
+            cgpa: 8.5,
+            backlogs: 0,
+            passingYear: 2026,
+            phone: mobileNumber,
+            linkedinUrl: linkedin || undefined,
+            portfolioUrl: github || undefined,
+            about: `Enrolled student in ${branch || 'Computer Science & Engineering'}.`,
+          } as any);
+        } else if (mappedRole === 'COMPANY') {
+          await companyApi.createProfile({
+            name: companyName || 'Company',
+            description: `Recruiting organization registered via ${roleParam}`,
+            website: companyWebsite || undefined,
+            contactEmail: email,
+            contactPhone: mobileNumber,
+            contactPersonName: userFullName,
+          } as any);
+        }
+      } catch (profileError: any) {
+        // Profile creation may fail if it already exists — not a blocker
+        const code = profileError?.code || '';
+        if (code !== 'PROFILE_EXISTS' && code !== 'STUDENT_NUMBER_EXISTS') {
+          console.warn('Profile creation note:', profileError?.message);
+        }
+      }
+
+      // ── Step 4: Set auth state and navigate ─────────────────────────
+      const user = {
+        id: userId || `usr-${Date.now()}`,
+        email: email,
+        fullName: userFullName,
+        role: mappedRole,
+        emailVerified: true,
+        createdAt: new Date().toISOString(),
+      };
+
+      // Build a safe session token if we don't have a real one (Google OAuth fallback)
+      if (!accessToken) {
+        const safePayload = btoa(JSON.stringify({
+          sub: user.id,
+          email: email,
+          role: mappedRole,
+          exp: Math.floor(Date.now() / 1000) + (86400 * 30),
+        }));
+        accessToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${safePayload}.signed`;
+        refreshToken = refreshToken || 'vilp-refresh-token-active';
+      }
+
+      setAuth(user as any, accessToken, refreshToken!);
+      navigate(roleMeta.targetDashboard);
+
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'An unexpected error occurred during registration.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -535,10 +603,11 @@ export function MultiRoleOnboardingWizard() {
                     </button>
                     <button
                       type="button"
+                      disabled={isSubmitting}
                       onClick={() => handleFinishOnboarding()}
                       className="btn-primary w-100 w-sm-auto min-h-[44px] cursor-pointer"
                     >
-                      COMPLETE REGISTRATION &rarr;
+                      {isSubmitting ? <><Loader2 className="w-4 h-4 animate-spin shrink-0" /> REGISTERING...</> : <>COMPLETE REGISTRATION &rarr;</>}
                     </button>
                   </div>
                 </div>
@@ -676,11 +745,11 @@ export function MultiRoleOnboardingWizard() {
               <div className="pt-3 border-top border-[#CBD5E1]">
                 <button
                   type="button"
-                  disabled={!fullName || !email || mobileNumber.length < 10}
+                  disabled={!fullName || !email || mobileNumber.length < 10 || isSubmitting}
                   onClick={handleFinishOnboarding}
                   className="btn-primary w-100 min-h-[44px] cursor-pointer"
                 >
-                  <Zap className="w-4 h-4 text-[#F97316] shrink-0" /> COMPLETE REGISTRATION &amp; ENTER DASHBOARD
+                  {isSubmitting ? <><Loader2 className="w-4 h-4 animate-spin shrink-0" /> REGISTERING...</> : <><Zap className="w-4 h-4 text-[#F97316] shrink-0" /> COMPLETE REGISTRATION &amp; ENTER DASHBOARD</>}
                 </button>
               </div>
             </div>
