@@ -67,7 +67,7 @@ class OtpServiceTest {
                 .build();
 
         AuthException ex = assertThrows(AuthException.class, () -> otpService.verifyOtp(req));
-        assertEquals("INVALID_OTP", ex.getErrorCode());
+        assertEquals("INVALID_OTP", ex.getCode());
     }
 
     @Test
@@ -83,6 +83,6 @@ class OtpServiceTest {
         }
 
         AuthException ex = assertThrows(AuthException.class, () -> otpService.sendEmailOtp(req));
-        assertEquals("RATE_LIMIT_EXCEEDED", ex.getErrorCode());
+        assertEquals("RATE_LIMIT_EXCEEDED", ex.getCode());
     }
 }
