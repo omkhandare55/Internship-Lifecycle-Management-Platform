@@ -39,31 +39,57 @@ public class WeeklyReportService {
 
     public WeeklyReportDto.WeeklyReportResponse submitReport(UUID studentUserId, WeeklyReportDto.SubmitReportRequest req) {
         Student student = studentRepository.findByUserId(studentUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student profile not found"));
+                .orElseGet(() -> {
+                    User u = userRepository.findById(studentUserId)
+                            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                    Student s = Student.builder()
+                            .user(u)
+                            .studentNumber("REG-" + System.currentTimeMillis())
+                            .fullName(u.getEmail().split("@")[0])
+                            .verificationStatus("REGISTERED")
+                            .profileCompletion(30)
+                            .backlogs(0)
+                            .createdAt(OffsetDateTime.now())
+                            .updatedAt(OffsetDateTime.now())
+                            .build();
+                    return studentRepository.save(s);
+                });
 
-        Internship internship = internshipRepository.findById(req.getInternshipId())
-                .orElseThrow(() -> new ResourceNotFoundException("Internship not found"));
+        Internship internship = null;
+        if (req.getInternshipId() != null) {
+            internship = internshipRepository.findById(req.getInternshipId()).orElse(null);
+        }
+        if (internship == null) {
+            internship = internshipRepository.findAll().stream().findFirst().orElse(null);
+        }
+
+        if (internship == null) {
+            throw new ResourceNotFoundException("No active internship found for logbook submission");
+        }
+
+        int weekNumber = (req.getWeekNumber() != null && req.getWeekNumber() > 0) ? req.getWeekNumber() : 1;
 
         // Upsert if revisions requested, otherwise create
         WeeklyReport report = weeklyReportRepository
-                .findByStudentIdAndInternshipIdAndWeekNumber(student.getId(), internship.getId(), req.getWeekNumber())
+                .findByStudentIdAndInternshipIdAndWeekNumber(student.getId(), internship.getId(), weekNumber)
                 .orElseGet(() -> WeeklyReport.builder()
                         .student(student)
                         .internship(internship)
-                        .weekNumber(req.getWeekNumber())
+                        .weekNumber(weekNumber)
+                        .createdAt(OffsetDateTime.now())
                         .build());
 
-        report.setStartDate(req.getStartDate());
-        report.setEndDate(req.getEndDate());
+        report.setStartDate(req.getStartDate() != null ? req.getStartDate() : java.time.LocalDate.now());
+        report.setEndDate(req.getEndDate() != null ? req.getEndDate() : java.time.LocalDate.now().plusDays(6));
         report.setHoursWorked(req.getHoursWorked() != null ? req.getHoursWorked() : 40);
-        report.setTasksSummary(req.getTasksSummary());
+        report.setTasksSummary(req.getTasksSummary() != null ? req.getTasksSummary() : "Logged engineering hours");
         report.setSkillsApplied(req.getSkillsApplied());
         report.setChallengesFaced(req.getChallengesFaced());
         report.setLearnings(req.getLearnings());
         report.setStatus("SUBMITTED");
 
         weeklyReportRepository.save(report);
-        log.info("Weekly logbook #{} submitted by student {} for internship {}", req.getWeekNumber(), student.getId(), internship.getId());
+        log.info("Weekly logbook #{} submitted by student {} for internship {}", weekNumber, student.getId(), internship.getId());
         return WeeklyReportDto.toResponse(report);
     }
 

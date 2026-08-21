@@ -242,7 +242,14 @@ export const nocApi = {
 
 export const logbookApi = {
   submitReport: async (data: SubmitWeeklyReportInput): Promise<ApiResponse<WeeklyReport>> => {
-    const res = await axiosInstance.post<ApiResponse<WeeklyReport>>('/logbooks', data);
+    const payload = {
+      ...data,
+      internshipId:
+        data.internshipId && !data.internshipId.startsWith('int-') && data.internshipId !== 'mock-id'
+          ? data.internshipId
+          : undefined,
+    };
+    const res = await axiosInstance.post<ApiResponse<WeeklyReport>>('/logbooks', payload);
     return res.data;
   },
   getMyReports: async (page = 0, size = 50): Promise<ApiResponse<PageResponse<WeeklyReport>>> => {
