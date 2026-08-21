@@ -33,7 +33,10 @@ export const useAuthStore = create<AuthState>()(
         const token = tokenUtils.getAccessToken();
         // Fire-and-forget: tell backend to invalidate (best-effort)
         if (token) {
-          fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://vilp-backend.onrender.com/api'}/auth/logout`, {
+          const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://vilp-backend.onrender.com/api';
+          const cleanBase = rawBaseUrl.replace(/\/+$/, '');
+          const logoutUrl = cleanBase.endsWith('/api') ? `${cleanBase}/auth/logout` : `${cleanBase}/api/auth/logout`;
+          fetch(logoutUrl, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` },
           }).catch(() => {}); // ignore errors — client clears tokens regardless

@@ -22,7 +22,9 @@ export class ApiError extends Error {
   }
 }
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://vilp-backend.onrender.com/api';
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://vilp-backend.onrender.com/api';
+const cleanBase = rawBaseUrl.replace(/\/+$/, '');
+const BASE_URL = cleanBase.endsWith('/api') ? cleanBase : `${cleanBase}/api`;
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 500;
 
