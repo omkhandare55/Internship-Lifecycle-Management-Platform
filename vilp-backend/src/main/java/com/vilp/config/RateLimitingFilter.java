@@ -83,16 +83,18 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     }
 
     private Bucket newAuthBucket(String ip) {
-        Bandwidth limit = Bandwidth.classic(
-                AUTH_REQUESTS_PER_MINUTE,
-                Refill.greedy(AUTH_REQUESTS_PER_MINUTE, Duration.ofMinutes(1)));
+        Bandwidth limit = Bandwidth.builder()
+                .capacity(AUTH_REQUESTS_PER_MINUTE)
+                .refillGreedy(AUTH_REQUESTS_PER_MINUTE, Duration.ofMinutes(1))
+                .build();
         return Bucket.builder().addLimit(limit).build();
     }
 
     private Bucket newGeneralBucket(String ip) {
-        Bandwidth limit = Bandwidth.classic(
-                GENERAL_REQUESTS_PER_MINUTE,
-                Refill.greedy(GENERAL_REQUESTS_PER_MINUTE, Duration.ofMinutes(1)));
+        Bandwidth limit = Bandwidth.builder()
+                .capacity(GENERAL_REQUESTS_PER_MINUTE)
+                .refillGreedy(GENERAL_REQUESTS_PER_MINUTE, Duration.ofMinutes(1))
+                .build();
         return Bucket.builder().addLimit(limit).build();
     }
 

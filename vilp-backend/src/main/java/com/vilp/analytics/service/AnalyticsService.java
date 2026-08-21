@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -57,8 +56,8 @@ public class AnalyticsService {
         List<Department> departments = departmentRepository.findAll();
 
         // Precompute student counts per department in one pass
-        Map<UUID, Long> studentCountByDept = new java.util.HashMap<>();
-        Map<UUID, Long> ppoCountByDept = new java.util.HashMap<>();
+        Map<Long, Long> studentCountByDept = new java.util.HashMap<>();
+        Map<Long, Long> ppoCountByDept = new java.util.HashMap<>();
         for (Department d : departments) {
             studentCountByDept.put(d.getId(), studentRepository.countByDepartmentId(d.getId()));
             ppoCountByDept.put(d.getId(), ppoRecordRepository.countByStudentDepartmentId(d.getId()));
