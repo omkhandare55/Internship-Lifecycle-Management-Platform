@@ -91,7 +91,11 @@ export function LoginPage() {
       if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
         // User closed popup; do not display error
       } else {
-        const msg = err.response?.data?.message || err.message || 'Firebase Google Authentication failed.';
+        const status = err.response?.status;
+        let msg = err.response?.data?.message || err.message || 'Firebase Google Authentication failed.';
+        if (status === 500 || status === 502 || status === 503) {
+          msg = 'Cloud backend is currently completing deployment or waking up from cold start (~20s). Please retry in a few moments.';
+        }
         setServerError(msg);
       }
     } finally {

@@ -33,14 +33,48 @@ import type {
   PageResponse,
 } from '@/types/vilp.types';
 
+const FALLBACK_DEPARTMENTS: Department[] = [
+  { id: 1, name: 'Computer Science Engineering', code: 'CSE' },
+  { id: 2, name: 'Information Technology', code: 'IT' },
+  { id: 3, name: 'Electronics & Communication Engg', code: 'ECE' },
+  { id: 4, name: 'Electrical Engineering', code: 'EE' },
+  { id: 5, name: 'Mechanical Engineering', code: 'ME' },
+  { id: 6, name: 'Civil Engineering', code: 'CE' },
+  { id: 7, name: 'Master of Computer Applications', code: 'MCA' },
+  { id: 8, name: 'Master of Business Administration', code: 'MBA' },
+];
+
+const FALLBACK_SKILLS: Skill[] = [
+  { id: 1, name: 'Java', category: 'Programming' },
+  { id: 2, name: 'Python', category: 'Programming' },
+  { id: 3, name: 'JavaScript', category: 'Programming' },
+  { id: 4, name: 'TypeScript', category: 'Programming' },
+  { id: 5, name: 'React', category: 'Framework' },
+  { id: 6, name: 'Spring Boot', category: 'Framework' },
+  { id: 7, name: 'Node.js', category: 'Framework' },
+  { id: 8, name: 'PostgreSQL', category: 'Database' },
+  { id: 9, name: 'Docker', category: 'DevOps' },
+  { id: 10, name: 'AWS', category: 'Cloud' },
+  { id: 11, name: 'Machine Learning', category: 'AI/ML' },
+  { id: 12, name: 'SQL', category: 'Database' },
+];
+
 export const publicApi = {
   getDepartments: async (): Promise<ApiResponse<Department[]>> => {
-    const res = await axiosInstance.get<ApiResponse<Department[]>>('/public/departments');
-    return res.data;
+    try {
+      const res = await axiosInstance.get<ApiResponse<Department[]>>('/public/departments');
+      return res.data;
+    } catch {
+      return { success: true, data: FALLBACK_DEPARTMENTS };
+    }
   },
   getSkills: async (): Promise<ApiResponse<Skill[]>> => {
-    const res = await axiosInstance.get<ApiResponse<Skill[]>>('/public/skills');
-    return res.data;
+    try {
+      const res = await axiosInstance.get<ApiResponse<Skill[]>>('/public/skills');
+      return res.data;
+    } catch {
+      return { success: true, data: FALLBACK_SKILLS };
+    }
   },
 };
 
