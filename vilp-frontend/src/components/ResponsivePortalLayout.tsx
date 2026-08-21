@@ -161,9 +161,7 @@ export function ResponsivePortalLayout({
           {/* Brand Header */}
           <div className="h-16 px-4 flex items-center justify-between border-b border-[#CBD5E1] shrink-0">
             <div className="flex items-center gap-2.5 overflow-hidden">
-              <div className="w-8 h-8 bg-[#0A2540] text-white flex items-center justify-center font-bold text-xs shrink-0 rounded-xs shadow-xs">
-                V
-              </div>
+              <img src="/favicon.svg" alt="VILP" className="w-8 h-8 object-contain shrink-0 rounded-xs" />
               {!sidebarCollapsed && (
                 <div className="truncate">
                   <p className="text-xs font-bold text-[#0A2540] tracking-wider">VILP OS</p>
@@ -251,9 +249,7 @@ export function ResponsivePortalLayout({
             <div className="relative w-4/5 max-w-xs bg-[#F1F5F9] flex flex-col h-full z-10 border-r border-[#CBD5E1] shadow-2xl">
               <div className="h-16 px-4 flex items-center justify-between border-b border-[#CBD5E1]">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-[#0A2540] text-white flex items-center justify-center font-bold text-xs rounded-xs">
-                    V
-                  </div>
+                  <img src="/favicon.svg" alt="VILP" className="w-8 h-8 object-contain shrink-0 rounded-xs" />
                   <div>
                     <p className="text-xs font-bold text-[#0A2540]">VILP OS</p>
                     <p className="text-[10px] text-[#2563EB] font-bold">{roleName}</p>

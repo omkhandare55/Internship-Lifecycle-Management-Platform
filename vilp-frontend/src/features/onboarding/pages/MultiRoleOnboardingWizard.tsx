@@ -194,9 +194,7 @@ export function MultiRoleOnboardingWizard() {
       <div className="bg-[#0A2540] text-white border-b border-[#1E3A5F] px-3 px-md-4 py-3 sticky top-0 z-50">
         <div className="container p-0 d-flex align-items-center justify-content-between gap-2">
           <div className="d-flex align-items-center gap-2 gap-sm-3 min-w-0">
-            <div className="w-8 h-8 bg-[#2563EB] text-white font-bold text-xs d-flex align-items-center justify-content-center rounded-xs shrink-0 shadow-xs">
-              VILP
-            </div>
+            <img src="/favicon.svg" alt="VILP" className="w-8 h-8 object-contain shrink-0" />
             <div className="min-w-0">
               <div className="text-xs font-bold font-mono uppercase tracking-wider d-flex align-items-center gap-1.5">
                 <span className="truncate max-w-[130px] sm:max-w-xs">{roleMeta.title.toUpperCase()}</span>
