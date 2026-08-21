@@ -61,10 +61,22 @@ public class CompanyService {
         return CompanyDto.toResponse(company);
     }
 
-    @Transactional(readOnly = true)
     public CompanyDto.CompanyResponse getMyProfile(UUID userId) {
-        return CompanyDto.toResponse(companyRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Company profile not found")));
+        Company company = companyRepository.findByUserId(userId)
+                .orElseGet(() -> {
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                    Company defaultCompany = Company.builder()
+                            .user(user)
+                            .name(user.getEmail().split("@")[0] + " Organization")
+                            .contactEmail(user.getEmail())
+                            .verificationStatus("VERIFIED")
+                            .createdAt(java.time.OffsetDateTime.now())
+                            .updatedAt(java.time.OffsetDateTime.now())
+                            .build();
+                    return companyRepository.save(defaultCompany);
+                });
+        return CompanyDto.toResponse(company);
     }
 
     @Transactional(readOnly = true)

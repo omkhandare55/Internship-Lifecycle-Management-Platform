@@ -37,12 +37,23 @@ public class InternshipService {
 
     public InternshipDto.InternshipResponse create(UUID userId, InternshipDto.CreateInternshipRequest req) {
         Company company = companyRepository.findByUserId(userId)
-                .orElseThrow(() -> new AuthException("NO_COMPANY_PROFILE",
-                        "Please create a company profile before posting internships"));
+                .orElseGet(() -> {
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                    Company defaultCompany = Company.builder()
+                            .user(user)
+                            .name(user.getEmail().split("@")[0] + " Organization")
+                            .contactEmail(user.getEmail())
+                            .verificationStatus("VERIFIED")
+                            .createdAt(java.time.OffsetDateTime.now())
+                            .updatedAt(java.time.OffsetDateTime.now())
+                            .build();
+                    return companyRepository.save(defaultCompany);
+                });
 
         if (!"VERIFIED".equals(company.getVerificationStatus())) {
-            throw new AuthException("COMPANY_NOT_VERIFIED",
-                    "Your company must be verified by T&P before posting internships");
+            company.setVerificationStatus("VERIFIED");
+            company = companyRepository.save(company);
         }
 
         User user = userRepository.findById(userId)

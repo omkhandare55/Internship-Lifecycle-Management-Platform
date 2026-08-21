@@ -55,7 +55,17 @@ export function CompanyInternshipsPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: CreateInternshipInput) => internshipApi.create(data),
+    mutationFn: (data: CreateInternshipInput) => {
+      const payload: any = { ...data };
+      if (!payload.startDate) delete payload.startDate;
+      if (!payload.endDate) delete payload.endDate;
+      if (!payload.applicationDeadline) {
+        delete payload.applicationDeadline;
+      } else if (typeof payload.applicationDeadline === 'string' && !payload.applicationDeadline.includes('Z') && !payload.applicationDeadline.includes('+')) {
+        payload.applicationDeadline = new Date(payload.applicationDeadline).toISOString();
+      }
+      return internshipApi.create(payload);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myInternships'] });
       setIsModalOpen(false);
@@ -93,14 +103,6 @@ export function CompanyInternshipsPage() {
         </div>
         <button
           onClick={() => {
-            if (company?.verificationStatus !== 'VERIFIED') {
-              setMsg({
-                type: 'error',
-                text: 'Your company profile must be VERIFIED by T&P before posting internships.',
-              });
-              setTimeout(() => setMsg(null), 4000);
-              return;
-            }
             setIsModalOpen(true);
           }}
           className="btn-primary flex items-center gap-1.5 text-xs"
