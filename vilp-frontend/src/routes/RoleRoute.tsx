@@ -25,19 +25,24 @@ export function RoleRoute({ allowedRoles }: RoleRouteProps) {
   const tokenRole = (jwtPayload?.role as string) || user.role;
 
   const normalizeRole = (role: string): string => {
-    if (role === 'COMPANY_RECRUITER') return 'COMPANY';
-    if (role === 'FACULTY_MENTOR' || role === 'EXTERNAL_EVALUATOR') return 'MENTOR';
-    if (role === 'DEPT_COORDINATOR') return 'TNP_OFFICER';
-    if (role === 'HOD' || role === 'COLLEGE_ADMIN') return 'TNP_HEAD';
-    return role;
+    const r = (role || '').toUpperCase();
+    if (r === 'COMPANY_RECRUITER' || r === 'COMPANY') return 'COMPANY';
+    if (r === 'FACULTY_MENTOR' || r === 'MENTOR' || r === 'EXTERNAL_EVALUATOR' || r === 'FACULTY') return 'MENTOR';
+    if (r === 'DEPT_COORDINATOR' || r === 'TNP_OFFICER' || r === 'TNP') return 'TNP_OFFICER';
+    if (r === 'HOD' || r === 'COLLEGE_ADMIN' || r === 'TNP_HEAD') return 'TNP_HEAD';
+    if (r === 'SUPER_ADMIN' || r === 'ADMIN') return 'SUPER_ADMIN';
+    if (r === 'STUDENT') return 'STUDENT';
+    return r;
   };
 
   const userNorm = normalizeRole(tokenRole);
+  const allowedNorm = allowedRoles.map((r) => normalizeRole(String(r)));
+
   const isAllowed =
     allowedRoles.includes(tokenRole) ||
-    allowedRoles.includes(userNorm) ||
-    (allowedRoles.includes('TNP_OFFICER') && userNorm === 'TNP_HEAD') ||
-    tokenRole === 'SUPER_ADMIN';
+    allowedNorm.includes(userNorm) ||
+    (allowedNorm.includes('TNP_OFFICER') && userNorm === 'TNP_HEAD') ||
+    userNorm === 'SUPER_ADMIN';
 
   if (!isAllowed) {
     return <Navigate to="/unauthorized" replace />;

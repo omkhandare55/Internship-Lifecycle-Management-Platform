@@ -33,9 +33,8 @@ public class InternshipController {
 
     private final InternshipService internshipService;
 
-    /** GET /api/internships — Open internships visible to students */
+    /** GET /api/internships — Open internships visible to all */
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "List internships with optional search and status filter")
     public ResponseEntity<ApiResponse<Page<InternshipDto.InternshipResponse>>> listOpen(
             @PageableDefault(size = 20, sort = "createdAt", direction = org.springframework.data.domain.Sort.Direction.DESC) Pageable pageable,
@@ -47,7 +46,6 @@ public class InternshipController {
 
     /** GET /api/internships/{id} */
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Get internship by ID")
     public ResponseEntity<ApiResponse<InternshipDto.InternshipResponse>> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.success(internshipService.getById(id)));

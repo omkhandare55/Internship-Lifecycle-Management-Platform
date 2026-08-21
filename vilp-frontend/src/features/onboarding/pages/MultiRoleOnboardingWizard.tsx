@@ -659,16 +659,73 @@ export function MultiRoleOnboardingWizard() {
                 </div>
 
                 <div className="col-12 col-md-6 space-y-1.5">
-                  <label className="text-xs font-bold text-[#0A2540] uppercase block">
-                    {roleParam === 'COMPANY_RECRUITER' ? 'Corporate Work Email *' : 'Official Institutional Email *'}
-                  </label>
+                  <label className="text-xs font-bold text-[#0A2540] uppercase block">Account Password (Min 8 Characters) *</label>
                   <input
-                    type="email"
-                    placeholder={roleParam === 'COMPANY_RECRUITER' ? 'recruiter@company.com' : 'official@institution.edu'}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    type="password"
+                    placeholder="••••••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="input-field"
                   />
+                </div>
+
+                {/* Email Verification Box for Corporate / Faculty / Admin */}
+                <div className="col-12 col-md-6">
+                  <div className="space-y-2 border border-[#E2E8F0] p-3 rounded-xs bg-[#F8FAFC] w-100">
+                    <div className="d-flex justify-content-between align-items-center mb-1">
+                      <label className="text-xs font-bold text-[#0A2540] uppercase truncate m-0 d-flex align-items-center gap-1">
+                        <Mail className="w-3.5 h-3.5 text-[#2563EB]" /> {roleParam === 'COMPANY_RECRUITER' ? 'Work Email *' : 'Official Email *'}
+                      </label>
+                      {emailOtpVerified ? (
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-xs d-flex align-items-center gap-1 shrink-0">
+                          <CheckCircle2 className="w-3 h-3" /> VERIFIED
+                        </span>
+                      ) : emailTimer > 0 ? (
+                        <span className="text-[10px] text-slate-500 d-flex align-items-center gap-1 shrink-0">
+                          <Clock className="w-3 h-3 text-amber-600" /> Resend in {emailTimer}s
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleSendEmailOtp}
+                          disabled={isSendingEmailOtp}
+                          className="text-[10px] text-[#2563EB] hover:underline font-bold shrink-0 cursor-pointer"
+                        >
+                          {isSendingEmailOtp ? 'Sending...' : emailOtpSent ? 'RESEND CODE' : 'SEND CODE'}
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      type="email"
+                      placeholder={roleParam === 'COMPANY_RECRUITER' ? 'recruiter@company.com' : 'official@institution.edu'}
+                      disabled={emailOtpVerified}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={`w-100 p-2 text-xs border rounded-xs outline-hidden ${
+                        emailOtpVerified ? 'bg-slate-100 text-slate-600 border-slate-300' : 'bg-white border-[#CBD5E1] focus:border-[#2563EB]'
+                      }`}
+                    />
+                    {!emailOtpVerified && (
+                      <div className="d-flex gap-2 pt-1">
+                        <input
+                          type="text"
+                          maxLength={6}
+                          placeholder="Enter 6-digit code (e.g. 123456)"
+                          value={emailOtp}
+                          onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, ''))}
+                          className="w-100 p-2 text-xs border border-[#CBD5E1] rounded-xs font-mono font-bold tracking-widest text-center"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleVerifyEmailOtp}
+                          disabled={isVerifyingEmail || emailOtp.length < 6}
+                          className="px-3 py-1.5 bg-[#2563EB] text-white text-xs font-bold rounded-xs shrink-0 disabled:opacity-50 cursor-pointer"
+                        >
+                          {isVerifyingEmail ? '...' : 'VERIFY'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {roleParam === 'COMPANY_RECRUITER' ? (

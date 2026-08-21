@@ -80,7 +80,7 @@ export function CompanyProfilePage() {
     onError: (err: any) => {
       setMsg({
         type: 'error',
-        text: err.response?.data?.error?.message || 'Failed to save company profile',
+        text: err?.message || err?.response?.data?.error?.message || err?.response?.data?.message || 'Failed to save company profile',
       });
     },
   });

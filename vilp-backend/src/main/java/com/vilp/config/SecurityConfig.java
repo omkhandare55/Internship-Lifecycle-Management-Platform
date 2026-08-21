@@ -55,6 +55,8 @@ public class SecurityConfig {
             "/api/auth/**",
             "/api/public/**",
             "/api/noc/verify/**",
+            "/api/internships",
+            "/api/internships/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/api-docs/**",
@@ -80,6 +82,7 @@ public class SecurityConfig {
             // Authorization rules
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(PUBLIC_PATHS).permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/internships", "/api/internships/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
                 .anyRequest().authenticated()
             )

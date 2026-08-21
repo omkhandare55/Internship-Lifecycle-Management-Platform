@@ -74,8 +74,15 @@ public class CompanyService {
     }
 
     public CompanyDto.CompanyResponse update(UUID userId, CompanyDto.UpdateCompanyRequest req) {
-        Company c = companyRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Company profile not found"));
+        Company c = companyRepository.findByUserId(userId).orElseGet(() -> {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+            return Company.builder()
+                    .user(user)
+                    .name(req.getName() != null ? req.getName() : "Enterprise Partner")
+                    .verificationStatus("PENDING")
+                    .build();
+        });
 
         if (req.getName() != null)              c.setName(req.getName());
         if (req.getDescription() != null)       c.setDescription(req.getDescription());
