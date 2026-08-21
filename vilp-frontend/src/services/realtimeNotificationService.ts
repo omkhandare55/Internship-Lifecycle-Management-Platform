@@ -1,4 +1,3 @@
-import { supabase } from './supabaseClient';
 import { subscribeToFirebaseNotifications } from './firebaseNotificationService';
 import type { NotificationItem } from '@/types/vilp.types';
 
@@ -36,7 +35,7 @@ export function playNotificationChime() {
 }
 
 /**
- * Subscribes to live realtime notifications (Supabase + Firebase dual-engine with deduplication)
+ * Subscribes to live realtime notifications (Firebase Firestore stream)
  */
 export function subscribeToRealtimeNotifications(
   userId: string | undefined,
@@ -49,58 +48,10 @@ export function subscribeToRealtimeNotifications(
       return;
     }
     seenNotificationIds.add(notification.id);
+    playNotificationChime();
     onNewNotification(notification);
   };
 
-  // 1. Subscribe to Firebase Firestore Realtime Stream
-  const unsubFirebase = subscribeToFirebaseNotifications(userId, handleIncomingNotification);
-
-  // 2. Subscribe to Supabase PostgreSQL Realtime Stream
-  let unsubSupabase = () => {};
-
-  if (supabase) {
-    try {
-      const channelName = userId ? `user-notifications-${userId}` : 'global-notifications';
-
-      const channel = supabase
-        .channel(channelName)
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'notifications',
-            ...(userId ? { filter: `user_id=eq.${userId}` } : {}),
-          },
-          (payload) => {
-            const row = payload.new as any;
-            const formattedNotification: NotificationItem = {
-              id: row.id || `notif-${Date.now()}`,
-              userId: row.user_id,
-              title: row.title || 'System Notification',
-              message: row.message || '',
-              type: (row.type || 'SYSTEM').toUpperCase() as any,
-              isRead: false,
-              createdAt: row.created_at || new Date().toISOString(),
-            };
-
-            playNotificationChime();
-            handleIncomingNotification(formattedNotification);
-          }
-        )
-        .subscribe();
-
-      unsubSupabase = () => {
-        try {
-          supabase.removeChannel(channel);
-        } catch {}
-      };
-    } catch {}
-  }
-
-  // Return unified unsubscription cleanup
-  return () => {
-    unsubFirebase();
-    unsubSupabase();
-  };
+  // Subscribe to Firebase Firestore Realtime Stream
+  return subscribeToFirebaseNotifications(userId, handleIncomingNotification);
 }

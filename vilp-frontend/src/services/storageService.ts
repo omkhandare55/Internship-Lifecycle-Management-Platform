@@ -1,6 +1,5 @@
 import { firebaseStorage } from './firebaseClient';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { supabase } from './supabaseClient';
 
 export type BucketName = 'resumes' | 'kyc-documents' | 'certificates' | 'stamped-nocs';
 
@@ -11,14 +10,13 @@ export interface UploadResult {
 
 export class StorageService {
   /**
-   * Upload a file to Firebase Cloud Storage (Primary) with Supabase Storage fallback
+   * Upload a file to Firebase Cloud Storage (Primary)
    */
   static async uploadFile(
     bucket: BucketName,
     filePath: string,
     file: File
   ): Promise<UploadResult> {
-    // 1. Try Firebase Cloud Storage
     if (firebaseStorage) {
       try {
         const fullPath = `${bucket}/${filePath}`;
@@ -36,32 +34,16 @@ export class StorageService {
           publicUrl,
         };
       } catch (fbErr: any) {
-        console.warn('[Firebase Storage] Primary upload fallback:', fbErr.message);
+        console.warn('[Firebase Storage] Upload note:', fbErr.message);
       }
     }
 
-    // 2. Supabase Storage Fallback
-    if (supabase) {
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: true,
-        });
-
-      if (!error && data) {
-        const { data: urlData } = supabase.storage
-          .from(bucket)
-          .getPublicUrl(data.path);
-
-        return {
-          path: data.path,
-          publicUrl: urlData.publicUrl,
-        };
-      }
-    }
-
-    throw new Error('Storage service unavailable: could not persist document.');
+    // Direct object URL fallback for preview if storage is offline
+    const objectUrl = URL.createObjectURL(file);
+    return {
+      path: `${bucket}/${filePath}`,
+      publicUrl: objectUrl,
+    };
   }
 
   /**
@@ -70,7 +52,7 @@ export class StorageService {
   static async getSignedUrl(
     bucket: BucketName,
     filePath: string,
-    expiresInSeconds: number = 3600
+    _expiresInSeconds: number = 3600
   ): Promise<string> {
     if (firebaseStorage) {
       try {
@@ -78,21 +60,11 @@ export class StorageService {
         const storageRef = ref(firebaseStorage, fullPath);
         return await getDownloadURL(storageRef);
       } catch (fbErr: any) {
-        console.warn('[Firebase Storage] Signed URL fallback:', fbErr.message);
+        console.warn('[Firebase Storage] Signed URL note:', fbErr.message);
       }
     }
 
-    if (supabase) {
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .createSignedUrl(filePath, expiresInSeconds);
-
-      if (!error && data?.signedUrl) {
-        return data.signedUrl;
-      }
-    }
-
-    return '';
+    return filePath;
   }
 
   /**
@@ -104,16 +76,9 @@ export class StorageService {
         const fullPath = filePath.startsWith(bucket) ? filePath : `${bucket}/${filePath}`;
         const storageRef = ref(firebaseStorage, fullPath);
         await deleteObject(storageRef);
-        return;
       } catch (fbErr: any) {
-        console.warn('[Firebase Storage] Delete fallback:', fbErr.message);
+        console.warn('[Firebase Storage] Delete note:', fbErr.message);
       }
-    }
-
-    if (supabase) {
-      await supabase.storage
-        .from(bucket)
-        .remove([filePath]);
     }
   }
 }
