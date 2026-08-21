@@ -74,24 +74,37 @@ axiosInstance.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as AxiosRequestConfig & { _retryCount?: number; _isRetry?: boolean };
 
-    // 401 Unauthorized — attempt token refresh once
-    if (error.response?.status === 401 && !originalRequest._isRetry) {
+    const isAuthEndpoint =
+      originalRequest.url?.includes('/auth/login') ||
+      originalRequest.url?.includes('/auth/register') ||
+      originalRequest.url?.includes('/auth/firebase-login') ||
+      originalRequest.url?.includes('/auth/refresh');
+
+    // 401 Unauthorized on authenticated routes — attempt token refresh once
+    if (error.response?.status === 401 && !originalRequest._isRetry && !isAuthEndpoint) {
       originalRequest._isRetry = true;
-      try {
-        // Deduplicate concurrent refresh calls
-        if (!refreshPromise) {
-          refreshPromise = refreshAccessToken().finally(() => { refreshPromise = null; });
+      const currentRefreshToken = tokenUtils.getRefreshToken();
+
+      // Only attempt refresh and dispatch session-expired if user had an active session
+      if (currentRefreshToken) {
+        try {
+          if (!refreshPromise) {
+            refreshPromise = refreshAccessToken().finally(() => {
+              refreshPromise = null;
+            });
+          }
+          const newToken = await refreshPromise;
+          if (originalRequest.headers) {
+            (originalRequest.headers as Record<string, string>).Authorization = `Bearer ${newToken}`;
+          }
+          return axiosInstance(originalRequest);
+        } catch {
+          tokenUtils.clearTokens();
+          window.dispatchEvent(new CustomEvent('vilp:session-expired'));
+          return Promise.reject(
+            new ApiError(401, 'SESSION_EXPIRED', 'Your session has expired. Please log in again.')
+          );
         }
-        const newToken = await refreshPromise;
-        if (originalRequest.headers) {
-          (originalRequest.headers as Record<string, string>).Authorization = `Bearer ${newToken}`;
-        }
-        return axiosInstance(originalRequest);
-      } catch {
-        // Refresh failed — session is over
-        tokenUtils.clearTokens();
-        window.dispatchEvent(new CustomEvent('vilp:session-expired'));
-        return Promise.reject(new ApiError(401, 'SESSION_EXPIRED', 'Your session has expired. Please log in again.'));
       }
     }
 

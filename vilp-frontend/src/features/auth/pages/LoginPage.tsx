@@ -20,6 +20,7 @@ export function LoginPage() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
 
@@ -252,6 +253,55 @@ export function LoginPage() {
           )}
         </button>
       </form>
+
+      {/* 1-Click Fast Track Demo Fill */}
+      <div className="p-3 bg-slate-50 border border-slate-200 rounded-xs space-y-2">
+        <p className="text-[11px] font-bold text-slate-700 uppercase tracking-wider m-0">
+          ⚡ 1-Click Demo Fill:
+        </p>
+        <div className="grid grid-cols-2 gap-1.5">
+          <button
+            type="button"
+            onClick={() => {
+              setValue('email', 'student@vilp.edu');
+              setValue('password', 'Password@123');
+            }}
+            className="px-2 py-1.5 text-[10px] font-bold bg-white text-slate-800 border border-slate-300 rounded-xs hover:border-[#2563EB] hover:text-[#2563EB] text-left cursor-pointer transition-colors"
+          >
+            🎓 Student (<span className="text-slate-500">student@vilp.edu</span>)
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setValue('email', 'recruiter@google.com');
+              setValue('password', 'Password@123');
+            }}
+            className="px-2 py-1.5 text-[10px] font-bold bg-white text-slate-800 border border-slate-300 rounded-xs hover:border-[#2563EB] hover:text-[#2563EB] text-left cursor-pointer transition-colors"
+          >
+            🏢 Company (<span className="text-slate-500">recruiter@google.com</span>)
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setValue('email', 'tnp.officer@vilp.edu');
+              setValue('password', 'Password@123');
+            }}
+            className="px-2 py-1.5 text-[10px] font-bold bg-white text-slate-800 border border-slate-300 rounded-xs hover:border-[#2563EB] hover:text-[#2563EB] text-left cursor-pointer transition-colors"
+          >
+            🏛️ T&P (<span className="text-slate-500">tnp.officer@vilp.edu</span>)
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setValue('email', 'mentor@vilp.edu');
+              setValue('password', 'Password@123');
+            }}
+            className="px-2 py-1.5 text-[10px] font-bold bg-white text-slate-800 border border-slate-300 rounded-xs hover:border-[#2563EB] hover:text-[#2563EB] text-left cursor-pointer transition-colors"
+          >
+            👨‍🏫 Mentor (<span className="text-slate-500">mentor@vilp.edu</span>)
+          </button>
+        </div>
+      </div>
 
       <div className="text-center pt-2 border-top border-[#E2E8F0]">
         <p className="text-xs text-slate-600 m-0">

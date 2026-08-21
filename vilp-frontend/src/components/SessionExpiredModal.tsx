@@ -16,7 +16,7 @@ export function SessionExpiredModal() {
     if (sessionExpired) {
       // Small delay so any in-flight renders complete
       const timer = setTimeout(() => {
-        window.location.replace('/auth/login');
+        window.location.replace('/login');
       }, 3000);
       return () => clearTimeout(timer);
     }
