@@ -22,13 +22,6 @@ export function CompanyInternshipsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const { data: companyData } = useQuery({
-    queryKey: ['companyProfile'],
-    queryFn: companyApi.getMyProfile,
-  });
-
-  const company = companyData?.data;
-
   const { data: internshipsData, isLoading } = useQuery({
     queryKey: ['myInternships'],
     queryFn: () => internshipApi.listMine(0, 50),

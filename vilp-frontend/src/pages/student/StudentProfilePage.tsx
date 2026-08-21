@@ -14,7 +14,6 @@ import {
   Download,
   Upload,
   Sparkles,
-  FileCheck2,
 } from 'lucide-react';
 import { studentApi, publicApi, documentApi, verificationApi } from '@/services/vilpApi';
 import { StatusBadge } from '@/components/StatusBadge';

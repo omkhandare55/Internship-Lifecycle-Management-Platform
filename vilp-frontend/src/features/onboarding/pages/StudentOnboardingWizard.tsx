@@ -125,12 +125,11 @@ export function StudentOnboardingWizard() {
       if (result.phone?.value) setMobileNumber(result.phone.value);
       if (result.college?.value) setCollegeName(result.college.value);
       if (result.branch?.value) setBranch(result.branch.value);
-      if (result.graduationYear?.value) setPassingYear(String(result.graduationYear.value));
+      if (result.graduationYear?.value) setTargetGraduationYear(Number(result.graduationYear.value));
       if (result.cgpa?.value) setCgpa(String(result.cgpa.value));
       if (result.skills?.value && result.skills.value.length > 0) setSkills(result.skills.value);
       if (result.githubUrl?.value) setGithub(result.githubUrl.value);
       if (result.linkedinUrl?.value) setLinkedin(result.linkedinUrl.value);
-      if (result.portfolioUrl?.value) setPortfolio(result.portfolioUrl.value);
     } finally {
       setIsParsingResume(false);
     }
