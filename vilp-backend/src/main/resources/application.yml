@@ -64,6 +64,19 @@ app:
     api-key: ${GEMINI_API_KEY:}
     model: ${GEMINI_MODEL:gemini-2.0-flash}
 
+# Actuator / Management endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+  health:
+    mail:
+      enabled: false
+
 # Swagger / OpenAPI
 springdoc:
   api-docs:

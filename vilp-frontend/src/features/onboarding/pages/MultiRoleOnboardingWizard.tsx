@@ -201,6 +201,7 @@ export function MultiRoleOnboardingWizard() {
           refreshToken = loginRes.data.refreshToken;
           userId = loginRes.data.user.id;
           tokenUtils.setTokens(accessToken, refreshToken);
+          useAuthStore.getState().setAuth(loginRes.data.user, accessToken, refreshToken);
         }
       } catch (loginError: any) {
         console.warn('Backend login note:', loginError?.message);
@@ -240,8 +241,9 @@ export function MultiRoleOnboardingWizard() {
         }
       }
 
-      // ── Step 4: Set auth state and navigate ─────────────────────────
-      const user = {
+
+      // ── Step 4: Finalize authenticated user state and navigate ────────
+      const user = useAuthStore.getState().user || {
         id: userId || `usr-${Date.now()}`,
         email: email,
         fullName: userFullName,
@@ -250,7 +252,6 @@ export function MultiRoleOnboardingWizard() {
         createdAt: new Date().toISOString(),
       };
 
-      // Build a safe session token if we don't have a real one (Google OAuth fallback)
       if (!accessToken) {
         const safePayload = btoa(JSON.stringify({
           sub: user.id,

@@ -83,7 +83,7 @@ public class AuthService {
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(role)
                 .status("ACTIVE")
-                .emailVerified(false)
+                .emailVerified(true)
                 .verificationToken(verificationToken)
                 .verificationTokenExpiry(OffsetDateTime.now().plusHours(24))
                 .build();

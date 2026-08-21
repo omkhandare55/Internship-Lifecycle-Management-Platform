@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node scripts/test-loop.mjs --once",
+    "test:loop": "node scripts/test-loop.mjs --loop",
+    "test:fast": "node scripts/test-loop.mjs --interval=5 --loop"
   },
   "dependencies": {
     "@capacitor/core": "^8.5.0",
