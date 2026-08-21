@@ -73,43 +73,26 @@ export function LoginPage() {
       const idToken = await fbUser.getIdToken();
 
       // Synchronize with VILP backend to issue RBAC JWT tokens
-      try {
-        const res = await authApi.firebaseLogin({
-          email,
-          displayName,
-          uid,
-          idToken,
-        });
-
-        if (res.success && res.data) {
-          const { user: authUser, accessToken, refreshToken } = res.data;
-          setAuth(authUser, accessToken, refreshToken);
-          navigate(getRolePath(authUser.role));
-          return;
-        }
-      } catch (backendErr: any) {
-        console.warn('Backend sync warning, fallback to direct role check:', backendErr?.message);
-      }
-
-      // If existing user already has local profile recorded
-      const storedRole = localStorage.getItem(`vilp_user_role_${uid}`) || 'STUDENT';
-      const userObj = {
-        id: uid,
+      const res = await authApi.firebaseLogin({
         email,
-        role: storedRole as any,
-        emailVerified: fbUser.emailVerified,
-        createdAt: new Date().toISOString(),
-      };
+        displayName,
+        uid,
+        idToken,
+      });
 
-      setAuth(userObj as any, idToken, '');
-      navigate(getRolePath(storedRole));
-    } catch (err: any) {
-      if (err.code === 'auth/popup-closed-by-user') {
-        // User closed popup; do not display error
-      } else if (err.code === 'auth/cancelled-popup-request') {
-        // Ignored
+      if (res.success && res.data) {
+        const { user: authUser, accessToken, refreshToken } = res.data;
+        setAuth(authUser, accessToken, refreshToken);
+        navigate(getRolePath(authUser.role));
       } else {
-        setServerError(err.message || 'Firebase Google Authentication failed.');
+        throw new Error('Could not synchronize authentication with server.');
+      }
+    } catch (err: any) {
+      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+        // User closed popup; do not display error
+      } else {
+        const msg = err.response?.data?.message || err.message || 'Firebase Google Authentication failed.';
+        setServerError(msg);
       }
     } finally {
       setGoogleLoading(false);

@@ -96,10 +96,21 @@ public class StudentService {
 
     // ─── Get my profile ────────────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
+    @Transactional
     public StudentDto.StudentResponse getMyProfile(UUID userId) {
-        Student student = studentRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student profile not found. Please create your profile first."));
+        Student student = studentRepository.findByUserId(userId).orElseGet(() -> {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+            String studentNumber = "REG-" + System.currentTimeMillis();
+            Student newStudent = Student.builder()
+                    .user(user)
+                    .studentNumber(studentNumber)
+                    .fullName(user.getEmail().split("@")[0])
+                    .verificationStatus("REGISTERED")
+                    .backlogs(0)
+                    .build();
+            return studentRepository.save(newStudent);
+        });
         return StudentDto.toResponse(student);
     }
 
