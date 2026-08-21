@@ -13,7 +13,7 @@ import {
   AlertCircle,
   CheckCircle2,
 } from 'lucide-react';
-import { internshipApi, companyApi } from '@/services/vilpApi';
+import { internshipApi } from '@/services/vilpApi';
 import { StatusBadge } from '@/components/StatusBadge';
 import type { CreateInternshipInput } from '@/types/vilp.types';
 
