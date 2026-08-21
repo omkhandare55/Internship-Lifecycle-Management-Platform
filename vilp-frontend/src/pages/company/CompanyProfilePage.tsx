@@ -8,6 +8,7 @@ import {
   Plus,
   FileText,
   Download,
+  Upload,
 } from 'lucide-react';
 import { companyApi, documentApi, verificationApi } from '@/services/vilpApi';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -277,6 +278,71 @@ export function CompanyProfilePage() {
                   className="input-field"
                   placeholder="Brief overview of company mission, services, and work culture..."
                 />
+              </div>
+
+              {/* Embedded Document Upload & Management during Edit */}
+              <div className="sm:col-span-2 pt-3 border-t space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="label text-sm font-bold text-gray-900 m-0">
+                      Corporate KYC Documents ({documents.length})
+                    </label>
+                    <p className="text-xs text-gray-500">
+                      Attach Certificate of Incorporation or Company Brochure (PDF/JPEG, max 10MB).
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (isCompanyEmpty || !company?.id) {
+                        try {
+                          await saveMutation.mutateAsync();
+                        } catch (e) {}
+                      }
+                      setIsUploadOpen(true);
+                    }}
+                    className="btn-secondary text-xs flex items-center gap-1 py-1.5 px-3 cursor-pointer"
+                  >
+                    <Upload className="w-3.5 h-3.5 text-brand" /> Upload Document
+                  </button>
+                </div>
+
+                {documents.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {documents.map((doc) => (
+                      <div
+                        key={doc.id}
+                        className="p-3 bg-gray-50 border rounded-xl flex items-center justify-between text-xs"
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <FileText className="w-4 h-4 text-emerald-600 shrink-0" />
+                          <span className="font-semibold text-gray-800 truncate" title={doc.originalFilename}>
+                            {doc.originalFilename}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <StatusBadge status={doc.status} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div
+                    onClick={async () => {
+                      if (isCompanyEmpty || !company?.id) {
+                        try {
+                          await saveMutation.mutateAsync();
+                        } catch (e) {}
+                      }
+                      setIsUploadOpen(true);
+                    }}
+                    className="p-4 border-2 border-dashed border-gray-200 hover:border-brand bg-gray-50/60 rounded-xl text-center cursor-pointer transition-colors"
+                  >
+                    <Upload className="w-6 h-6 text-gray-400 mx-auto mb-1" />
+                    <p className="text-xs font-semibold text-gray-700">Click to upload Certificate of Incorporation / KYC Document</p>
+                    <p className="text-[11px] text-gray-400">Required for official T&P corporate accreditation</p>
+                  </div>
+                )}
               </div>
             </div>
 

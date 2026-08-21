@@ -30,7 +30,7 @@ public class OfferController {
     private final OfferService offerService;
 
     @PostMapping
-    @PreAuthorize("hasRole('COMPANY')")
+    @PreAuthorize("hasAnyRole('COMPANY', 'SUPER_ADMIN')")
     @Operation(summary = "Company extends formal internship offer")
     public ResponseEntity<ApiResponse<OfferDto.OfferResponse>> createOffer(
             @RequestBody OfferDto.CreateOfferRequest req,
@@ -41,7 +41,7 @@ public class OfferController {
     }
 
     @PostMapping("/{id}/respond")
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'SUPER_ADMIN')")
     @Operation(summary = "Student responds to offer (ACCEPT / REJECT)")
     public ResponseEntity<ApiResponse<OfferDto.OfferResponse>> respondToOffer(
             @PathVariable UUID id,
@@ -52,7 +52,7 @@ public class OfferController {
     }
 
     @GetMapping("/mine")
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'SUPER_ADMIN')")
     @Operation(summary = "Get offers extended to the logged-in student")
     public ResponseEntity<ApiResponse<Page<OfferDto.OfferResponse>>> getMyStudentOffers(
             @PageableDefault(size = 20) Pageable pageable,
@@ -62,7 +62,7 @@ public class OfferController {
     }
 
     @GetMapping("/company")
-    @PreAuthorize("hasRole('COMPANY')")
+    @PreAuthorize("hasAnyRole('COMPANY', 'SUPER_ADMIN')")
     @Operation(summary = "Get offers extended by logged-in company")
     public ResponseEntity<ApiResponse<Page<OfferDto.OfferResponse>>> getMyCompanyOffers(
             @PageableDefault(size = 20) Pageable pageable,

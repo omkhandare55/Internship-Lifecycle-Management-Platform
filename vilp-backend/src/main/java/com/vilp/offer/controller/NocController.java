@@ -27,7 +27,7 @@ public class NocController {
     private final NocService nocService;
 
     @GetMapping("/queue")
-    @PreAuthorize("hasAnyRole('TNP_OFFICER', 'TNP_HEAD', 'MENTOR', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('TNP_OFFICER', 'TNP_HEAD', 'MENTOR', 'SUPER_ADMIN', 'STUDENT')")
     @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "Get pending institutional NOC approval queue")
     public ResponseEntity<ApiResponse<Page<NocDto.NocResponse>>> getQueue(
