@@ -88,8 +88,11 @@ public class DocumentService {
     }
 
     @Transactional(readOnly = true)
-    public Resource loadFileAsResource(UUID documentId) {
+    public Resource loadFileAsResource(UUID userId, boolean isPrivileged, UUID documentId) {
         Document doc = getEntityById(documentId);
+        if (!isPrivileged && (doc.getUploadedBy() == null || !doc.getUploadedBy().getId().equals(userId))) {
+            throw new AuthException("FORBIDDEN", "Unauthorized to access this document");
+        }
         return storageService.loadAsResource(doc.getStorageKey());
     }
 

@@ -48,6 +48,7 @@ import { TnpInternshipsPage } from '@/pages/tnp/TnpInternshipsPage';
 import { TnpAnalyticsPage } from '@/pages/tnp/TnpAnalyticsPage';
 import { TnpAuditLogsPage } from '@/pages/tnp/TnpAuditLogsPage';
 import { TnpAutomationPage } from '@/pages/tnp/TnpAutomationPage';
+import { TnpDocumentsPage } from '@/pages/tnp/TnpDocumentsPage';
 
 import { AdminDashboard } from '@/pages/admin/AdminDashboard';
 import { PublicNocVerifyPage } from '@/pages/public/PublicNocVerifyPage';
@@ -156,6 +157,7 @@ export const router = createBrowserRouter([
               { path: '/tnp/internships', element: <TnpInternshipsPage /> },
               { path: '/tnp/analytics', element: <TnpAnalyticsPage /> },
               { path: '/tnp/automation', element: <TnpAutomationPage /> },
+              { path: '/tnp/documents', element: <TnpDocumentsPage /> },
               { path: '/tnp/audit', element: <TnpAuditLogsPage /> },
             ],
           },

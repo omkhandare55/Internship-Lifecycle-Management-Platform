@@ -181,9 +181,22 @@ public class OfferService {
     }
 
     @Transactional(readOnly = true)
-    public OfferDto.OfferResponse getById(UUID id) {
-        return OfferDto.toResponse(offerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Offer not found")));
+    public OfferDto.OfferResponse getById(UUID userId, boolean isPrivileged, UUID id) {
+        Offer offer = offerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Offer not found"));
+
+        if (!isPrivileged) {
+            boolean isRecipient = offer.getStudent() != null && offer.getStudent().getUser() != null &&
+                    offer.getStudent().getUser().getId().equals(userId);
+            boolean isIssuer = offer.getCompany() != null && offer.getCompany().getUser() != null &&
+                    offer.getCompany().getUser().getId().equals(userId);
+
+            if (!isRecipient && !isIssuer) {
+                throw new AuthException("FORBIDDEN", "Unauthorized to view this offer");
+            }
+        }
+
+        return OfferDto.toResponse(offer);
     }
 
     private void createNocRequest(Offer offer) {

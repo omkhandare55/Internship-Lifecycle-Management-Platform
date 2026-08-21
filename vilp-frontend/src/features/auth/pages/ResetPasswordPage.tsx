@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Loader2, CheckCircle2, AlertCircle, ShieldCheck, Lock, Key } from 'lucide-react';
-import { realOtpService } from '@/features/onboarding/services/onboardingApi';
+import { authApi } from '../api/authApi';
 
 export function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -20,12 +20,8 @@ export function ResetPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !email.includes('@')) {
-      setServerError('Please enter your account email address.');
-      return;
-    }
-    if (!token || token.length < 6) {
-      setServerError('Please enter the 6-digit recovery code or token.');
+    if (!token || token.trim().length < 6) {
+      setServerError('Please enter the recovery token provided in your reset link.');
       return;
     }
     if (newPassword.length < 8) {
@@ -40,11 +36,18 @@ export function ResetPasswordPage() {
     setServerError('');
     setIsSubmitting(true);
     try {
-      await realOtpService.resetPassword(email, token, newPassword);
-      setSuccess(true);
-      setTimeout(() => navigate('/auth/login'), 2000);
+      const res = await authApi.resetPassword({
+        token: token.trim(),
+        newPassword: newPassword,
+      });
+      if (res.success) {
+        setSuccess(true);
+        setTimeout(() => navigate('/auth/login'), 2000);
+      } else {
+        setServerError(res.error?.message || 'Password reset failed.');
+      }
     } catch (err: any) {
-      setServerError(err.message || 'Failed to reset password. Token may be expired.');
+      setServerError(err.message || 'Failed to reset password. The reset link or token is invalid or has expired.');
     } finally {
       setIsSubmitting(false);
     }

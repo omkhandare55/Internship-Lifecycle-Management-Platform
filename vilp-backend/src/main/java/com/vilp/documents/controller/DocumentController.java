@@ -49,9 +49,18 @@ public class DocumentController {
     @GetMapping("/{id}/download")
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Download a document")
-    public ResponseEntity<Resource> download(@PathVariable UUID id) {
+    public ResponseEntity<Resource> download(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserDetails ud) {
+        UUID userId = UUID.fromString(ud.getUsername());
+        boolean isPrivileged = ud.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_TNP_OFFICER")
+                            || a.getAuthority().equals("ROLE_TNP_HEAD")
+                            || a.getAuthority().equals("ROLE_MENTOR")
+                            || a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+
         Document doc = documentService.getEntityById(id);
-        Resource resource = documentService.loadFileAsResource(id);
+        Resource resource = documentService.loadFileAsResource(userId, isPrivileged, id);
 
         String contentType = doc.getMimeType() != null ? doc.getMimeType() : "application/octet-stream";
 

@@ -90,16 +90,22 @@ public class ApplicationService {
     }
 
     /** Company: update application status (shortlist, reject, etc.) */
-    public ApplicationDto.ApplicationResponse updateStatus(UUID applicationId, ApplicationDto.StatusUpdateRequest req) {
+    public ApplicationDto.ApplicationResponse updateStatus(UUID companyUserId, UUID applicationId, ApplicationDto.StatusUpdateRequest req) {
         Application app = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Application not found"));
+
+        if (app.getInternship() == null || app.getInternship().getCompany() == null ||
+                app.getInternship().getCompany().getUser() == null ||
+                !app.getInternship().getCompany().getUser().getId().equals(companyUserId)) {
+            throw new AuthException("FORBIDDEN", "Unauthorized to modify applications for this internship");
+        }
 
         app.setStatus(req.getStatus());
         if ("REJECTED".equals(req.getStatus()) && req.getRejectionReason() != null) {
             app.setRejectionReason(req.getRejectionReason());
         }
         applicationRepository.save(app);
-        log.info("Application {} status updated to {}", applicationId, req.getStatus());
+        log.info("Application {} status updated to {} by company user {}", applicationId, req.getStatus(), companyUserId);
         return ApplicationDto.toResponse(app);
     }
 

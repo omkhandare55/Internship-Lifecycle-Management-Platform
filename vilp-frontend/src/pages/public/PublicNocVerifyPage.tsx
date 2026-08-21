@@ -10,22 +10,11 @@ export function PublicNocVerifyPage() {
     queryKey: ['publicNocVerify', code],
     queryFn: () => (code ? nocApi.verifyPublic(code) : Promise.reject('No code')),
     enabled: !!code,
+    retry: 1,
   });
 
-  const noc = data?.data || {
-    id: 'noc-2026-004821',
-    offerId: 'off-2026-001',
-    studentId: 'stu-2026-001',
-    verificationCode: code || 'NOC-2026-CSE-4401',
-    studentName: 'Verified Candidate',
-    studentNumber: 'REG-2026-001',
-    companyName: 'Google Cloud India',
-    internshipId: 'int-2026-001',
-    internshipTitle: 'Cloud Platform Engineering Intern',
-    status: 'APPROVED' as const,
-    requestedAt: '2026-08-10T14:00:00Z',
-    departmentName: 'Computer Science Engineering',
-  };
+  const noc = data?.data;
+  const isFailed = !isLoading && (error || !noc || !data?.success);
 
   return (
     <div className="container-fluid p-3 p-sm-4 min-h-screen bg-[#F8FAFC] d-flex flex-column align-items-center justify-content-center text-[#0F172A] font-mono">
@@ -52,7 +41,7 @@ export function PublicNocVerifyPage() {
             Institutional NOC Verification
           </h1>
           <p className="text-[11px] font-mono text-[#2563EB] bg-[#F1F5F9] py-1 px-3 rounded-xs d-inline-block border border-[#CBD5E1] m-0 font-bold">
-            Clearance Code: {code || noc.verificationCode}
+            Clearance Code: {code || 'N/A'}
           </p>
         </div>
 
@@ -61,15 +50,18 @@ export function PublicNocVerifyPage() {
             <Loader2 className="w-8 h-8 text-[#2563EB] animate-spin" />
             <span className="text-xs text-slate-600 font-mono">Validating institutional countersign...</span>
           </div>
-        ) : error && !noc ? (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-xs text-center space-y-2">
-            <XCircle className="w-10 h-10 text-red-500 mx-auto" />
-            <h3 className="font-bold text-red-900 text-sm m-0">Clearance Verification Failed</h3>
+        ) : isFailed ? (
+          <div className="p-4 bg-red-50 border border-red-300 rounded-xs text-center space-y-2">
+            <XCircle className="w-10 h-10 text-red-600 mx-auto" />
+            <h3 className="font-bold text-red-900 text-sm m-0 uppercase">Clearance Verification Failed</h3>
             <p className="text-xs text-red-700 m-0">
-              The verification code provided is invalid, revoked, or does not exist in the institutional registry.
+              The verification code <strong className="font-mono">{code}</strong> is invalid, revoked, or does not exist in the institutional registry.
             </p>
+            <div className="pt-2 text-[10px] text-red-600 font-mono">
+              Status: UNVERIFIED / REJECTED · AICTE §7.2 Policy Enforced
+            </div>
           </div>
-        ) : (
+        ) : noc ? (
           <div className="space-y-3">
             {/* Authenticity Banner */}
             <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-xs d-flex align-items-center gap-3">
@@ -128,7 +120,7 @@ export function PublicNocVerifyPage() {
               </span>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

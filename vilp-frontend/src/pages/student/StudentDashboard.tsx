@@ -53,7 +53,7 @@ export function StudentDashboard() {
   const student = profileData?.data;
   const applications = appsData?.data?.content || [];
   const offers = offersData?.data?.content || [];
-  const approvedHours = hoursData?.data ?? 160;
+  const approvedHours = hoursData?.data ?? 0;
   const targetHours = 240;
   const progressPercent = Math.min(100, Math.round((approvedHours / targetHours) * 100));
   const aiRecommendations = aiRecsData?.data || [];
@@ -66,13 +66,13 @@ export function StudentDashboard() {
           <div className="space-y-1.5">
             <div className="d-inline-flex align-items-center gap-2 px-2.5 py-1 bg-white text-xs text-[#2563EB] border border-[#CBD5E1] font-bold rounded-xs">
               <ShieldCheck className="w-3.5 h-3.5 text-[#F97316]" />
-              <span>VERIFIED ACADEMIC PROFILE · {student?.studentNumber || 'REG-2026-001'}</span>
+              <span>VERIFIED ACADEMIC PROFILE · {student?.studentNumber || 'REG-PENDING'}</span>
             </div>
             <h1 className="text-xl sm:text-3xl font-black uppercase text-[#0A2540] font-sans tracking-tight m-0">
-              {student?.fullName || user?.email?.split('@')[0] || 'Verified Candidate'}
+              {student?.fullName || user?.fullName || user?.email?.split('@')[0] || 'Candidate'}
             </h1>
             <p className="text-xs text-slate-600 font-mono m-0">
-              {student?.department?.name || 'Computer Science & Engineering'} · Semester {student?.semester || 6} (Batch of {student?.passingYear || 2026})
+              {student?.department?.name || 'Department Ingestion Pending'} · Semester {student?.semester || '—'} (Batch of {student?.passingYear || '—'})
             </p>
           </div>
 
@@ -81,7 +81,7 @@ export function StudentDashboard() {
             <div className="border border-[#CBD5E1] bg-white p-2.5 p-sm-3 min-w-[100px] text-center rounded-xs">
               <span className="text-[10px] text-slate-500 uppercase font-bold block">CGPA</span>
               <p className="text-lg sm:text-xl font-mono font-bold text-[#2563EB] mt-0.5 m-0">
-                {student?.cgpa?.toFixed(2) || '8.85'}
+                {student?.cgpa !== undefined && student?.cgpa !== null ? Number(student.cgpa).toFixed(2) : '—'}
               </p>
             </div>
             <div className="border border-[#CBD5E1] bg-white p-2.5 p-sm-3 min-w-[100px] text-center rounded-xs">
@@ -91,9 +91,9 @@ export function StudentDashboard() {
               </p>
             </div>
             <div className="border border-[#CBD5E1] bg-white p-2.5 p-sm-3 min-w-[110px] text-center rounded-xs">
-              <span className="text-[10px] text-slate-500 uppercase font-bold block">KYC STATUS</span>
+              <span className="text-[10px] text-slate-500 uppercase font-bold block">STATUS</span>
               <p className="text-xs font-bold text-emerald-700 font-mono mt-1.5 uppercase m-0">
-                ACCREDITED
+                {student?.verificationStatus || 'REGISTERED'}
               </p>
             </div>
           </div>
@@ -108,10 +108,10 @@ export function StudentDashboard() {
             <Building2 className="w-4 h-4 text-[#2563EB]" />
           </div>
           <p className="text-sm sm:text-base font-black text-[#0A2540] truncate font-sans m-0">
-            {offers.length > 0 ? offers[0].companyName : 'Accredited Host Partner'}
+            {offers.length > 0 ? offers[0].companyName : 'No Active Placement'}
           </p>
           <span className="text-[10px] text-[#2563EB] font-bold block">
-            ● IN PROGRESS (OFFER LOCKED)
+            {offers.length > 0 ? '● IN PROGRESS' : '● AWAITING SELECTION'}
           </span>
         </div>
 
@@ -134,10 +134,10 @@ export function StudentDashboard() {
             <Briefcase className="w-4 h-4 text-[#2563EB]" />
           </div>
           <p className="text-xl sm:text-2xl font-bold text-[#0A2540] font-mono m-0">
-            {applications.length || 1}
+            {applications.length}
           </p>
           <span className="text-[10px] text-[#2563EB] font-bold block">
-            {applications.length > 0 ? applications[0].status : 'Selected for Offer'}
+            {applications.length > 0 ? applications[0].status : 'No Submissions Yet'}
           </span>
         </div>
 
@@ -147,10 +147,10 @@ export function StudentDashboard() {
             <Award className="w-4 h-4 text-[#F97316]" />
           </div>
           <p className="text-xl sm:text-2xl font-bold text-[#0A2540] font-mono m-0">
-            {offers.length || 1}
+            {offers.length}
           </p>
           <span className="text-[10px] text-[#F97316] font-bold block">
-            NOC-2026-004821 ISSUED
+            {offers.length > 0 ? `${offers[0].status} OFFER` : 'No Offers Yet'}
           </span>
         </div>
       </div>

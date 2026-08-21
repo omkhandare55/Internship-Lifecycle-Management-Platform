@@ -83,7 +83,9 @@ public class ApplicationController {
     @Operation(summary = "Update application status (Company)")
     public ResponseEntity<ApiResponse<ApplicationDto.ApplicationResponse>> updateStatus(
             @PathVariable UUID id,
-            @RequestBody ApplicationDto.StatusUpdateRequest req) {
-        return ResponseEntity.ok(ApiResponse.success(applicationService.updateStatus(id, req)));
+            @RequestBody ApplicationDto.StatusUpdateRequest req,
+            @AuthenticationPrincipal UserDetails ud) {
+        UUID companyUserId = UUID.fromString(ud.getUsername());
+        return ResponseEntity.ok(ApiResponse.success(applicationService.updateStatus(companyUserId, id, req)));
     }
 }

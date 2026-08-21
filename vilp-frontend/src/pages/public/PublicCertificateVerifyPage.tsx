@@ -10,21 +10,11 @@ export function PublicCertificateVerifyPage() {
     queryKey: ['publicCertVerify', certificateNumber],
     queryFn: () => (certificateNumber ? certificateApi.verifyPublic(certificateNumber) : Promise.reject('No number')),
     enabled: !!certificateNumber,
+    retry: 1,
   });
 
-  const cert = data?.data || {
-    certificateNumber: certificateNumber || 'VILP-2026-CSE-8841',
-    studentName: 'Verified Candidate',
-    studentNumber: 'REG-2026-001',
-    companyName: 'Accredited Host Partner',
-    internshipTitle: 'Cloud Platform Engineering Intern',
-    grade: 'A+ (Distinction)',
-    status: 'ISSUED',
-    issueDate: '2026-08-15T10:30:00Z',
-    verificationHash: '8f9b2d87e3c14a956102831f24d9c7e0984a17c',
-    totalHoursCompleted: 240,
-    departmentName: 'Computer Science Engineering',
-  };
+  const cert = data?.data;
+  const isFailed = !isLoading && (error || !cert || !data?.success);
 
   return (
     <div className="container-fluid p-3 p-sm-4 min-h-screen bg-[#F8FAFC] d-flex flex-column align-items-center justify-content-center text-[#0F172A] font-mono">
@@ -51,7 +41,7 @@ export function PublicCertificateVerifyPage() {
             Accredited Certificate Verification
           </h1>
           <p className="text-[11px] font-mono text-[#2563EB] bg-[#F1F5F9] py-1 px-3 rounded-xs d-inline-block border border-[#CBD5E1] m-0 font-bold">
-            Token: {certificateNumber || cert.certificateNumber}
+            Token: {certificateNumber || 'N/A'}
           </p>
         </div>
 
@@ -60,15 +50,18 @@ export function PublicCertificateVerifyPage() {
             <Loader2 className="w-8 h-8 text-[#2563EB] animate-spin" />
             <span className="text-xs text-slate-600 font-mono">Verifying cryptographic signature on ledger...</span>
           </div>
-        ) : error && !cert ? (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-xs text-center space-y-2">
-            <XCircle className="w-10 h-10 text-red-500 mx-auto" />
-            <h3 className="font-bold text-red-900 text-sm m-0">Credential Verification Failed</h3>
+        ) : isFailed ? (
+          <div className="p-4 bg-red-50 border border-red-300 rounded-xs text-center space-y-2">
+            <XCircle className="w-10 h-10 text-red-600 mx-auto" />
+            <h3 className="font-bold text-red-900 text-sm m-0 uppercase">Credential Verification Failed</h3>
             <p className="text-xs text-red-700 m-0">
-              The certificate token provided is invalid, revoked, or does not match any official academic record.
+              The certificate token <strong className="font-mono">{certificateNumber}</strong> is invalid, revoked, or does not exist in the institutional registry.
             </p>
+            <div className="pt-2 text-[10px] text-red-600 font-mono">
+              Status: UNVERIFIED / REJECTED · AICTE §7.2 Policy Enforced
+            </div>
           </div>
-        ) : (
+        ) : cert ? (
           <div className="space-y-3">
             {/* Authenticity Banner */}
             <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-xs d-flex align-items-center gap-3">
@@ -113,14 +106,16 @@ export function PublicCertificateVerifyPage() {
             </div>
 
             {/* SHA-256 Ledger Stamp */}
-            <div className="bg-[#F1F5F9] p-3 rounded-xs border border-[#CBD5E1] space-y-1">
-              <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider block">
-                IMMUTABLE SHA-256 LEDGER HASH
-              </span>
-              <p className="text-[10px] font-mono text-[#0A2540] break-all select-all font-bold m-0">
-                {cert.verificationHash}
-              </p>
-            </div>
+            {cert.verificationHash && (
+              <div className="bg-[#F1F5F9] p-3 rounded-xs border border-[#CBD5E1] space-y-1">
+                <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider block">
+                  IMMUTABLE SHA-256 LEDGER HASH
+                </span>
+                <p className="text-[10px] font-mono text-[#0A2540] break-all select-all font-bold m-0">
+                  {cert.verificationHash}
+                </p>
+              </div>
+            )}
 
             <div className="text-center pt-2">
               <span className="d-inline-flex align-items-center gap-1.5 text-[11px] font-bold text-emerald-700">
@@ -128,7 +123,7 @@ export function PublicCertificateVerifyPage() {
               </span>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

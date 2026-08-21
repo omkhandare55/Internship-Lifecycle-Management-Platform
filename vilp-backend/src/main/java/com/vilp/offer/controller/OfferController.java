@@ -74,7 +74,14 @@ public class OfferController {
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Get offer details by ID")
-    public ResponseEntity<ApiResponse<OfferDto.OfferResponse>> getById(@PathVariable UUID id) {
-        return ResponseEntity.ok(ApiResponse.success(offerService.getById(id)));
+    public ResponseEntity<ApiResponse<OfferDto.OfferResponse>> getById(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserDetails ud) {
+        UUID userId = UUID.fromString(ud.getUsername());
+        boolean isPrivileged = ud.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_TNP_OFFICER")
+                            || a.getAuthority().equals("ROLE_TNP_HEAD")
+                            || a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+        return ResponseEntity.ok(ApiResponse.success(offerService.getById(userId, isPrivileged, id)));
     }
 }
