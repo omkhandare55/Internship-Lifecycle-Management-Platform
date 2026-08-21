@@ -19,6 +19,7 @@ import {
   aiApi,
 } from '@/services/vilpApi';
 import { EligibilityModal } from '@/components/EligibilityModal';
+import { ActivityHeatmapCalendar } from '@/components/ActivityHeatmapCalendar';
 
 export function StudentDashboard() {
   const user = useAuthStore((s) => s.user);
@@ -45,6 +46,11 @@ export function StudentDashboard() {
     queryFn: () => logbookApi.getTotalApprovedHours(),
   });
 
+  const { data: reportsData } = useQuery({
+    queryKey: ['myLogbooks'],
+    queryFn: () => logbookApi.getMyReports(0, 50),
+  });
+
   const { data: aiRecsData } = useQuery({
     queryKey: ['aiRecommendations'],
     queryFn: () => aiApi.getRecommendations(),
@@ -53,6 +59,7 @@ export function StudentDashboard() {
   const student = profileData?.data;
   const applications = appsData?.data?.content || [];
   const offers = offersData?.data?.content || [];
+  const reports = reportsData?.data?.content || [];
   const approvedHours = hoursData?.data ?? 0;
   const targetHours = 240;
   const progressPercent = Math.min(100, Math.round((approvedHours / targetHours) * 100));
@@ -221,6 +228,14 @@ export function StudentDashboard() {
               </div>
             </div>
           </div>
+
+          {/* Daily Engineering Activity Heatmap Calendar */}
+          <ActivityHeatmapCalendar
+            reports={reports}
+            totalApprovedHours={approvedHours}
+            studentName={student?.fullName}
+            isRealtime={true}
+          />
 
           {/* Smart Skill Radar & Opportunity Feed */}
           <div className="border border-[#E2E8F0] bg-white p-4 p-sm-5 rounded-xs space-y-3 shadow-xs">

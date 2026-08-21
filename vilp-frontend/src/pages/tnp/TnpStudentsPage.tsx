@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, GraduationCap, Loader2 } from 'lucide-react';
+import { Search, GraduationCap, Loader2, Activity } from 'lucide-react';
 import { studentApi } from '@/services/vilpApi';
 import { StatusBadge } from '@/components/StatusBadge';
+import { StudentLiveTelemetryModal } from '@/components/StudentLiveTelemetryModal';
+import type { StudentProfile } from '@/types/vilp.types';
 
 export function TnpStudentsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [search, setSearch] = useState('');
+  const [selectedTelemetryStudent, setSelectedTelemetryStudent] = useState<StudentProfile | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['tnpStudents', statusFilter],
@@ -76,6 +79,7 @@ export function TnpStudentsPage() {
                   <th className="p-4">CGPA / Backlogs</th>
                   <th className="p-4">Profile</th>
                   <th className="p-4">Verification</th>
+                  <th className="p-4 text-right">Realtime Activity</th>
                 </tr>
               </thead>
               <tbody className="divide-y text-gray-700">
@@ -110,6 +114,16 @@ export function TnpStudentsPage() {
                     <td className="p-4">
                       <StatusBadge status={s.verificationStatus} />
                     </td>
+                    <td className="p-4 text-right">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedTelemetryStudent(s)}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-[#0A2540] hover:bg-[#2563EB] text-white text-[11px] font-mono font-bold rounded-xs transition-colors cursor-pointer"
+                      >
+                        <Activity className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                        <span>VIEW HEATMAP</span>
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -122,6 +136,14 @@ export function TnpStudentsPage() {
           <h3 className="font-bold text-gray-800 text-sm">No Students Found</h3>
           <p className="text-xs text-gray-400 mt-1">No student records match the search criteria.</p>
         </div>
+      )}
+
+      {/* ── Student Live Telemetry & Daily Activity Heatmap Modal ─────── */}
+      {selectedTelemetryStudent && (
+        <StudentLiveTelemetryModal
+          student={selectedTelemetryStudent}
+          onClose={() => setSelectedTelemetryStudent(null)}
+        />
       )}
     </div>
   );

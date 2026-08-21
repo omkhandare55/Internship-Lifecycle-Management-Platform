@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { logbookApi, offerApi } from '@/services/vilpApi';
 import { sendFirebaseNotification } from '@/services/firebaseNotificationService';
+import { ActivityHeatmapCalendar } from '@/components/ActivityHeatmapCalendar';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { ApiErrorState } from '@/components/ui/ApiErrorState';
 import type { SubmitWeeklyReportInput } from '@/types/vilp.types';
@@ -153,6 +154,13 @@ export function StudentProgressPage() {
           </div>
         </div>
       </div>
+
+      {/* ── Daily Activity Calendar (LeetCode / GitHub Green Boxes) ───────── */}
+      <ActivityHeatmapCalendar
+        reports={reports}
+        totalApprovedHours={approvedHours}
+        isRealtime={true}
+      />
 
       {/* ── Weekly Reports Ledger ──────────────────────────────────────────── */}
       <div className="border border-[#E0D3E8] bg-white p-6 sm:p-8 space-y-6">
