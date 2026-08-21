@@ -13,10 +13,13 @@ import {
   ExternalLink,
   Download,
   Upload,
+  Sparkles,
+  FileCheck2,
 } from 'lucide-react';
 import { studentApi, publicApi, documentApi, verificationApi } from '@/services/vilpApi';
 import { StatusBadge } from '@/components/StatusBadge';
 import { DocumentUploadModal } from '@/components/DocumentUploadModal';
+import { parseResumeWithAi } from '@/features/onboarding/services/aiResumeParserService';
 import { useAuthStore } from '@/stores/authStore';
 import type { CreateStudentProfileInput } from '@/types/vilp.types';
 
@@ -27,6 +30,7 @@ export function StudentProfilePage() {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [selectedSkillId, setSelectedSkillId] = useState<number | ''>('');
   const [submitMsg, setSubmitMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [isParsingResume, setIsParsingResume] = useState(false);
 
   // Queries
   const { data: profileData, isLoading: loadingProfile } = useQuery({
@@ -152,6 +156,53 @@ export function StudentProfilePage() {
       setSubmitMsg({ type: 'error', text: err.response?.data?.error?.message || 'Verification submission failed' });
     },
   });
+
+  const handleResumeAutoFill = async (file: File) => {
+    setIsParsingResume(true);
+    try {
+      const parsed = await parseResumeWithAi(file);
+      setIsEditing(true);
+
+      // Match extracted branch to department if available
+      let matchedDeptId = formData.departmentId;
+      if (deptsData?.data && parsed.branch?.value) {
+        const found = deptsData.data.find(
+          (d) =>
+            d.name.toLowerCase().includes(parsed.branch.value.toLowerCase()) ||
+            parsed.branch.value.toLowerCase().includes(d.code.toLowerCase())
+        );
+        if (found) matchedDeptId = found.id;
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        fullName: parsed.fullName?.value || prev.fullName,
+        branch: parsed.branch?.value || prev.branch,
+        departmentId: matchedDeptId || prev.departmentId,
+        cgpa: parsed.cgpa?.value ? Number(parsed.cgpa.value) : prev.cgpa,
+        passingYear: parsed.graduationYear?.value ? Number(parsed.graduationYear.value) : prev.passingYear,
+        phone: parsed.phone?.value || prev.phone,
+        linkedinUrl: parsed.linkedinUrl?.value || prev.linkedinUrl,
+        portfolioUrl: parsed.portfolioUrl?.value || prev.portfolioUrl,
+        about: parsed.projects?.value?.[0]?.description
+          ? `Software & Engineering Enthusiast. Project Highlight: ${parsed.projects.value[0].title} - ${parsed.projects.value[0].description}`
+          : prev.about,
+      }));
+
+      setSubmitMsg({
+        type: 'success',
+        text: `⚡ AI successfully extracted info from ${file.name}! Review and click "Save Profile" below.`,
+      });
+      setTimeout(() => setSubmitMsg(null), 5000);
+    } catch (err: any) {
+      setSubmitMsg({
+        type: 'error',
+        text: 'Failed to extract resume details. Please enter manually or try another PDF/DOCX file.',
+      });
+    } finally {
+      setIsParsingResume(false);
+    }
+  };
 
   if (loadingProfile) {
     return (
@@ -284,7 +335,51 @@ export function StudentProfilePage() {
 
       {/* Tab: Academic & Personal Info */}
       {activeTab === 'details' && (
-        <div className="bg-white rounded-2xl p-6 border shadow-sm">
+        <div className="bg-white rounded-2xl p-6 border shadow-sm space-y-6">
+          {/* AI Resume Auto-Fill Dropzone Banner */}
+          <div className="bg-gradient-to-r from-purple-50 via-indigo-50 to-pink-50 border border-purple-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                  1-Click AI Resume Auto-Fill
+                  <span className="text-[10px] bg-purple-100 text-purple-700 font-bold px-2 py-0.5 rounded-full border border-purple-200 uppercase">
+                    Zero Fatigue
+                  </span>
+                </h3>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  Upload your Resume (PDF / DOCX) to automatically extract your name, CGPA, branch, contact info, and portfolio links!
+                </p>
+              </div>
+            </div>
+
+            <label className="btn-primary text-xs flex items-center gap-2 cursor-pointer shrink-0 bg-purple-600 hover:bg-purple-700 border-purple-600 text-white py-2 px-4 shadow-sm">
+              {isParsingResume ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Extracting AI Data...</span>
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4" />
+                  <span>Upload &amp; Auto-Fill</span>
+                </>
+              )}
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx,.txt"
+                disabled={isParsingResume}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleResumeAutoFill(file);
+                }}
+                className="hidden"
+              />
+            </label>
+          </div>
+
           {isEditing || isProfileEmpty || !profile ? (
             <form
               onSubmit={(e) => {

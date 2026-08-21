@@ -120,10 +120,17 @@ export function StudentOnboardingWizard() {
     try {
       const result = await parseResumeWithAi(file);
       setParsedData(result);
+      if (result.fullName?.value) setFullName(result.fullName.value);
+      if (result.email?.value) setEmail(result.email.value);
+      if (result.phone?.value) setMobileNumber(result.phone.value);
+      if (result.college?.value) setCollegeName(result.college.value);
+      if (result.branch?.value) setBranch(result.branch.value);
+      if (result.graduationYear?.value) setPassingYear(String(result.graduationYear.value));
       if (result.cgpa?.value) setCgpa(String(result.cgpa.value));
-      if (result.skills?.value) setSkills(result.skills.value);
+      if (result.skills?.value && result.skills.value.length > 0) setSkills(result.skills.value);
       if (result.githubUrl?.value) setGithub(result.githubUrl.value);
       if (result.linkedinUrl?.value) setLinkedin(result.linkedinUrl.value);
+      if (result.portfolioUrl?.value) setPortfolio(result.portfolioUrl.value);
     } finally {
       setIsParsingResume(false);
     }
