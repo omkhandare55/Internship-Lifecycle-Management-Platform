@@ -149,10 +149,11 @@ export function MultiRoleOnboardingWizard() {
     setIsSubmitting(true);
 
     let mappedRole: 'STUDENT' | 'COMPANY' | 'MENTOR' | 'TNP_OFFICER' | 'SUPER_ADMIN' = 'STUDENT';
-    if (roleParam === 'COMPANY_RECRUITER' || roleParam === 'COMPANY') mappedRole = 'COMPANY';
-    else if (roleParam === 'FACULTY_MENTOR' || roleParam === 'MENTOR' || roleParam === 'FACULTY') mappedRole = 'MENTOR';
-    else if (roleParam === 'TNP_OFFICER' || roleParam === 'TNP' || roleParam === 'TNP_HEAD') mappedRole = 'TNP_OFFICER';
-    else if (roleParam === 'SUPER_ADMIN' || roleParam === 'ADMIN') mappedRole = 'SUPER_ADMIN';
+    const roleKey = (roleParam as string || '').toUpperCase();
+    if (roleKey === 'COMPANY_RECRUITER' || roleKey === 'COMPANY') mappedRole = 'COMPANY';
+    else if (roleKey === 'FACULTY_MENTOR' || roleKey === 'MENTOR' || roleKey === 'FACULTY') mappedRole = 'MENTOR';
+    else if (roleKey === 'TNP_OFFICER' || roleKey === 'TNP' || roleKey === 'TNP_HEAD') mappedRole = 'TNP_OFFICER';
+    else if (roleKey === 'SUPER_ADMIN' || roleKey === 'ADMIN') mappedRole = 'SUPER_ADMIN';
     else mappedRole = 'STUDENT';
 
     const userFullName = fullName || email.split('@')[0] || 'Verified Candidate';
