@@ -19,6 +19,12 @@ export const tokenUtils = {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem('vilp-auth');
+    localStorage.removeItem('vilp_student_profile');
+    localStorage.removeItem('vilp_company_profile');
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.clear();
+    }
   },
 
   isTokenExpired: (token: string | null): boolean => {

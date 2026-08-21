@@ -36,6 +36,9 @@ public class AiService {
     private final InternshipRepository internshipRepository;
 
     @Autowired(required = false)
+    private GroqAiClient groqClient;
+
+    @Autowired(required = false)
     private GeminiAiClient geminiClient;
 
     public List<AiDto.InternshipRecommendation> getRecommendations(UUID studentUserId) {
@@ -110,26 +113,39 @@ public class AiService {
     }
 
     public AiDto.ResumeScoreResponse evaluateResume(UUID studentUserId) {
-        // Try real AI first (only available when GEMINI_API_KEY is set)
-        if (geminiClient != null) {
+        // Try real AI first (Groq AI primary, Gemini secondary)
+        if (groqClient != null || geminiClient != null) {
             try {
                 Student student = studentRepository.findByUserId(studentUserId)
                         .orElseThrow(() -> new ResourceNotFoundException("Student profile not found"));
                 List<String> skillNames = student.getSkills() != null
-                        ? student.getSkills().stream().map(s -> s.getName()).collect(Collectors.toList())
+                        ? student.getSkills().stream().map(Skill::getName).collect(Collectors.toList())
                         : Collections.emptyList();
-                String geminiResult = geminiClient.analyzeResume(
-                        student.getFullName(),
-                        student.getAbout(),
-                        skillNames,
-                        student.getCgpa() != null ? student.getCgpa().toString() : null,
-                        student.getProfileCompletion() != null ? student.getProfileCompletion() : 0);
-                if (geminiResult != null) {
-                    AiDto.ResumeScoreResponse parsed = parseGeminiResumeResponse(geminiResult);
+
+                String aiResult = null;
+                if (groqClient != null) {
+                    aiResult = groqClient.analyzeResume(
+                            student.getFullName(),
+                            student.getAbout(),
+                            skillNames,
+                            student.getCgpa() != null ? student.getCgpa().toString() : null,
+                            student.getProfileCompletion() != null ? student.getProfileCompletion() : 0);
+                }
+                if (aiResult == null && geminiClient != null) {
+                    aiResult = geminiClient.analyzeResume(
+                            student.getFullName(),
+                            student.getAbout(),
+                            skillNames,
+                            student.getCgpa() != null ? student.getCgpa().toString() : null,
+                            student.getProfileCompletion() != null ? student.getProfileCompletion() : 0);
+                }
+
+                if (aiResult != null) {
+                    AiDto.ResumeScoreResponse parsed = parseGeminiResumeResponse(aiResult);
                     if (parsed != null) return parsed;
                 }
             } catch (Exception e) {
-                log.debug("Gemini resume analysis failed, falling back to rule-based: {}", e.getMessage());
+                log.debug("AI resume analysis failed, falling back to rule-based: {}", e.getMessage());
             }
         }
 

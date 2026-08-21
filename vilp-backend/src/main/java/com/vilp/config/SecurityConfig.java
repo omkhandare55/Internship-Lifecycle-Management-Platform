@@ -14,7 +14,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -55,8 +55,6 @@ public class SecurityConfig {
             "/api/auth/**",
             "/api/public/**",
             "/api/noc/verify/**",
-            "/api/internships",
-            "/api/internships/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/api-docs/**",
@@ -103,8 +101,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // Argon2id — OWASP recommended for password hashing (TRD §11)
-        return Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
     // ─── Authentication Provider ───────────────────────────────────────────

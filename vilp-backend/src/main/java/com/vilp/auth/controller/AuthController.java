@@ -68,11 +68,14 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(tokens));
     }
 
-    @DeleteMapping("/logout")
+    @PostMapping("/logout")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Logout", description = "Invalidates the current session on the client side. JWT tokens should be cleared by the client.")
     public ResponseEntity<ApiResponse<String>> logout(@AuthenticationPrincipal UserDetails userDetails) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
-        authService.logout(userId);
+        if (userDetails != null) {
+            UUID userId = UUID.fromString(userDetails.getUsername());
+            authService.logout(userId);
+        }
         return ResponseEntity.ok(ApiResponse.success("Logged out successfully"));
     }
 

@@ -27,7 +27,6 @@ import { studentApi, companyApi } from '@/services/vilpApi';
 export function MultiRoleOnboardingWizard() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const setAuth = useAuthStore((s) => s.setAuth);
 
   const roleParam = (searchParams.get('role') as UserRoleType) || 'STUDENT';
   const paramEmail = searchParams.get('email') || '';
@@ -156,6 +155,12 @@ export function MultiRoleOnboardingWizard() {
     else if (roleKey === 'SUPER_ADMIN' || roleKey === 'ADMIN') mappedRole = 'SUPER_ADMIN';
     else mappedRole = 'STUDENT';
 
+    if (mappedRole === 'SUPER_ADMIN') {
+      setErrorMessage('Institutional Administrator accounts cannot be self-registered publicly. Please use institutional admin credentials or contact your system administrator.');
+      setIsSubmitting(false);
+      return;
+    }
+
     const userFullName = fullName || email.split('@')[0] || 'Verified Candidate';
 
     const effectivePassword = password && password.length >= 8
@@ -171,12 +176,8 @@ export function MultiRoleOnboardingWizard() {
     }
 
     try {
-      // Check if we already have a valid Supabase/backend access token
-      const existingToken = tokenUtils.getAccessToken();
-      const existingRefresh = tokenUtils.getRefreshToken();
-      let accessToken = existingToken;
-      let refreshToken = existingRefresh;
-      let userId: string | undefined;
+      let accessToken: string | null = null;
+      let refreshToken: string | null = null;
 
       // ── Step 1: Register new user account via backend API ──────────────
       try {
@@ -186,28 +187,26 @@ export function MultiRoleOnboardingWizard() {
           role: mappedRole,
         });
       } catch (regError: any) {
-        // If user already exists or already registered, continue to login
+        // If user already exists, we will attempt to login
         if (regError?.code !== 'EMAIL_ALREADY_EXISTS' && !regError?.message?.includes('already exists')) {
           console.warn('Backend registration note:', regError?.message);
         }
       }
 
       // ── Step 2: Login to get real JWT tokens ──────────────────────────
-      try {
-        const loginRes = await authApi.login({
-          email: email.toLowerCase(),
-          password: effectivePassword,
-        });
-        if (loginRes?.data) {
-          accessToken = loginRes.data.accessToken;
-          refreshToken = loginRes.data.refreshToken;
-          userId = loginRes.data.user.id;
-          tokenUtils.setTokens(accessToken, refreshToken);
-          useAuthStore.getState().setAuth(loginRes.data.user, accessToken, refreshToken);
-        }
-      } catch (loginError: any) {
-        console.warn('Backend login note:', loginError?.message);
+      const loginRes = await authApi.login({
+        email: email.toLowerCase(),
+        password: effectivePassword,
+      });
+
+      if (!loginRes?.data?.accessToken) {
+        throw new Error('Could not obtain authenticated server token. Please log in directly.');
       }
+
+      accessToken = loginRes.data.accessToken;
+      refreshToken = loginRes.data.refreshToken;
+      tokenUtils.setTokens(accessToken, refreshToken);
+      useAuthStore.getState().setAuth(loginRes.data.user, accessToken, refreshToken);
 
       // ── Step 3: Create role-specific profile via backend API ──────────
       try {
@@ -243,29 +242,7 @@ export function MultiRoleOnboardingWizard() {
         }
       }
 
-
       // ── Step 4: Finalize authenticated user state and navigate ────────
-      const user = useAuthStore.getState().user || {
-        id: userId || `usr-${Date.now()}`,
-        email: email,
-        fullName: userFullName,
-        role: mappedRole,
-        emailVerified: true,
-        createdAt: new Date().toISOString(),
-      };
-
-      if (!accessToken) {
-        const safePayload = btoa(JSON.stringify({
-          sub: user.id,
-          email: email,
-          role: mappedRole,
-          exp: Math.floor(Date.now() / 1000) + (86400 * 30),
-        }));
-        accessToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${safePayload}.signed`;
-        refreshToken = refreshToken || 'vilp-refresh-token-active';
-      }
-
-      setAuth(user as any, accessToken, refreshToken!);
       navigate(roleMeta.targetDashboard);
 
     } catch (err: any) {
