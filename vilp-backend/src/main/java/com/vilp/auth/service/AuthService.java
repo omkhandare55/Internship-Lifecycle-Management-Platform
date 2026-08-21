@@ -278,12 +278,16 @@ public class AuthService {
 
         // If an explicit role was requested and user is currently STUDENT, allow updating to COMPANY/TNP/MENTOR
         if (requestedRole != null && user.getRole() != null && user.getRole().getName() != requestedRole) {
-            Role newRole = roleRepository.findByName(requestedRole).orElseGet(() ->
-                roleRepository.save(Role.builder().name(requestedRole).description(requestedRole.name() + " role").build())
-            );
-            user.setRole(newRole);
-            userRepository.save(user);
-            log.info("Updated Firebase user {} role to {}", cleanEmail, requestedRole);
+            try {
+                Role newRole = roleRepository.findByName(requestedRole).orElseGet(() ->
+                    roleRepository.save(Role.builder().name(requestedRole).description(requestedRole.name() + " role").build())
+                );
+                user.setRole(newRole);
+                user = userRepository.save(user);
+                log.info("Updated Firebase user {} role to {}", cleanEmail, requestedRole);
+            } catch (Exception e) {
+                log.warn("Role update note: {}", e.getMessage());
+            }
         }
 
         if (!user.isActive()) {
@@ -295,47 +299,57 @@ public class AuthService {
         }
 
         // Reset failed login attempts on successful Firebase login
-        userRepository.resetFailedAttempts(user.getId());
-
-        // Ensure email is verified if authenticated via Firebase
-        if (!Boolean.TRUE.equals(user.getEmailVerified())) {
-            userRepository.markEmailVerified(user.getId());
-            user.setEmailVerified(true);
+        try {
+            userRepository.resetFailedAttempts(user.getId());
+            if (!Boolean.TRUE.equals(user.getEmailVerified())) {
+                userRepository.markEmailVerified(user.getId());
+                user.setEmailVerified(true);
+            }
+        } catch (Exception e) {
+            log.warn("User status update note: {}", e.getMessage());
         }
 
         String displayName = (request.getDisplayName() != null && !request.getDisplayName().trim().isEmpty())
                 ? request.getDisplayName().trim()
                 : cleanEmail.split("@")[0];
 
-        // If user is a student, ensure initial Student record exists
-        if (user.getRole() != null && user.getRole().getName() == UserRole.STUDENT) {
-            if (!studentRepository.existsByUserId(user.getId())) {
-                String studentNumber = "REG-" + System.currentTimeMillis();
-                Student newStudent = Student.builder()
-                        .user(user)
-                        .studentNumber(studentNumber)
-                        .fullName(displayName)
-                        .verificationStatus("REGISTERED")
-                        .profileCompletion(30)
-                        .backlogs(0)
-                        .build();
-                studentRepository.save(newStudent);
-                log.info("Auto-created student profile entity for Firebase user: {}", cleanEmail);
+        try {
+            // If user is a student, ensure initial Student record exists
+            if (user.getRole() != null && user.getRole().getName() == UserRole.STUDENT) {
+                if (!studentRepository.existsByUserId(user.getId())) {
+                    String studentNumber = "REG-" + System.currentTimeMillis();
+                    Student newStudent = Student.builder()
+                            .user(user)
+                            .studentNumber(studentNumber)
+                            .fullName(displayName)
+                            .verificationStatus("REGISTERED")
+                            .profileCompletion(30)
+                            .backlogs(0)
+                            .createdAt(OffsetDateTime.now())
+                            .updatedAt(OffsetDateTime.now())
+                            .build();
+                    studentRepository.save(newStudent);
+                    log.info("Auto-created student profile entity for Firebase user: {}", cleanEmail);
+                }
             }
-        }
 
-        // If user is a company, ensure initial Company record exists
-        if (user.getRole() != null && user.getRole().getName() == UserRole.COMPANY) {
-            if (!companyRepository.existsByUserId(user.getId())) {
-                Company newCompany = Company.builder()
-                        .user(user)
-                        .name(displayName + " Organization")
-                        .contactEmail(cleanEmail)
-                        .verificationStatus("VERIFIED")
-                        .build();
-                companyRepository.save(newCompany);
-                log.info("Auto-created company profile entity for Firebase user: {}", cleanEmail);
+            // If user is a company, ensure initial Company record exists
+            if (user.getRole() != null && user.getRole().getName() == UserRole.COMPANY) {
+                if (!companyRepository.existsByUserId(user.getId())) {
+                    Company newCompany = Company.builder()
+                            .user(user)
+                            .name(displayName + " Organization")
+                            .contactEmail(cleanEmail)
+                            .verificationStatus("VERIFIED")
+                            .createdAt(OffsetDateTime.now())
+                            .updatedAt(OffsetDateTime.now())
+                            .build();
+                    companyRepository.save(newCompany);
+                    log.info("Auto-created company profile entity for Firebase user: {}", cleanEmail);
+                }
             }
+        } catch (Exception e) {
+            log.warn("Profile auto-initialization note (non-fatal): {}", e.getMessage());
         }
 
         log.info("Firebase login successful for user: {} ({})", user.getEmail(), user.getRoleName());

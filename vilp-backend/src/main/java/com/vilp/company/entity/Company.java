@@ -73,5 +73,6 @@ public class Company {
 
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
-    private OffsetDateTime updatedAt;
+    @Builder.Default
+    private OffsetDateTime updatedAt = OffsetDateTime.now();
 }

@@ -101,7 +101,8 @@ public class User {
 
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
-    private OffsetDateTime updatedAt;
+    @Builder.Default
+    private OffsetDateTime updatedAt = OffsetDateTime.now();
 
     // ─── Convenience methods ───────────────────────────────────────────────
 
