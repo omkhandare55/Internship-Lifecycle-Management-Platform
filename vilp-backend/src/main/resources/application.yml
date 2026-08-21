@@ -7,10 +7,17 @@ spring:
     username: ${DATABASE_USERNAME:vilpuser}
     password: ${DATABASE_PASSWORD:vilppassword}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 30000
+      data-source-properties:
+        prepareThreshold: 0
+        preparedStatementCacheQueries: 0
 
   jpa:
     hibernate:
-      ddl-auto: update          # Auto-sync entities with database schema
+      ddl-auto: none            # Flyway manages schema — disable Hibernate schema migrator for PgBouncer compatibility
     show-sql: false
     properties:
       hibernate:
