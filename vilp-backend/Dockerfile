@@ -6,13 +6,8 @@ FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /app
 
-# Copy POM first (Docker layer cache optimization)
+# Copy POM and source and build
 COPY pom.xml .
-
-# Download dependencies (cached layer unless pom.xml changes)
-RUN mvn dependency:go-offline -B
-
-# Copy source and build
 COPY src/ src/
 RUN mvn clean package -DskipTests -B
 
