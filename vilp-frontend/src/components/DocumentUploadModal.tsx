@@ -53,7 +53,8 @@ export function DocumentUploadModal({
     setError('');
 
     try {
-      const res = await documentApi.upload(entityType, entityId, docType, file);
+      const safeEntityId = entityId || '00000000-0000-0000-0000-000000000000';
+      const res = await documentApi.upload(entityType, safeEntityId, docType, file);
       if (res.success) {
         setSuccess(true);
         setTimeout(() => {

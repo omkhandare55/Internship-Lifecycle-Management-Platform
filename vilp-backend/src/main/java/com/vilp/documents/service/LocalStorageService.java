@@ -37,7 +37,10 @@ public class LocalStorageService implements StorageService {
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             "application/msword",
             "image/jpeg",
-            "image/png"
+            "image/png",
+            "image/webp",
+            "text/plain",
+            "application/octet-stream"
     );
 
     @PostConstruct
@@ -51,15 +54,32 @@ public class LocalStorageService implements StorageService {
         }
     }
 
+    private boolean isValidFile(MultipartFile file) {
+        String mimeType = file.getContentType();
+        if (mimeType != null) {
+            String lower = mimeType.toLowerCase();
+            if (ALLOWED_MIME_TYPES.contains(lower) || lower.contains("pdf") || lower.contains("word") || lower.contains("image") || lower.contains("octet-stream")) {
+                return true;
+            }
+        }
+        String filename = file.getOriginalFilename();
+        if (filename != null) {
+            String lower = filename.toLowerCase();
+            return lower.endsWith(".pdf") || lower.endsWith(".docx") || lower.endsWith(".doc")
+                    || lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png")
+                    || lower.endsWith(".webp") || lower.endsWith(".txt");
+        }
+        return false;
+    }
+
     @Override
     public String store(MultipartFile file, String subDirectory) throws IOException {
         if (file.isEmpty()) {
             throw new AuthException("EMPTY_FILE", "Failed to store empty file");
         }
 
-        String mimeType = file.getContentType();
-        if (mimeType == null || !ALLOWED_MIME_TYPES.contains(mimeType.toLowerCase())) {
-            throw new AuthException("INVALID_FILE_TYPE", "File type not supported. Allowed: PDF, DOCX, JPG, PNG");
+        if (!isValidFile(file)) {
+            throw new AuthException("INVALID_FILE_TYPE", "File type not supported. Allowed: PDF, DOCX, DOC, JPG, PNG");
         }
 
         String originalFilename = StringUtils.cleanPath(file.getOriginalFilename() != null ? file.getOriginalFilename() : "document");

@@ -35,13 +35,21 @@ public class DocumentController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Upload a document")
     public ResponseEntity<ApiResponse<DocumentDto.DocumentResponse>> upload(
-            @RequestParam("entityType") String entityType,
-            @RequestParam("entityId") UUID entityId,
+            @RequestParam(value = "entityType", defaultValue = "STUDENT") String entityType,
+            @RequestParam(value = "entityId", required = false) String entityIdStr,
             @RequestParam("documentType") String documentType,
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal UserDetails ud) throws IOException {
 
         UUID userId = UUID.fromString(ud.getUsername());
+        UUID entityId = userId;
+        if (entityIdStr != null && !entityIdStr.isBlank() && !"undefined".equalsIgnoreCase(entityIdStr) && !"null".equalsIgnoreCase(entityIdStr)) {
+            try {
+                entityId = UUID.fromString(entityIdStr);
+            } catch (Exception e) {
+                entityId = userId;
+            }
+        }
         DocumentDto.DocumentResponse response = documentService.upload(userId, entityType, entityId, documentType, file);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
