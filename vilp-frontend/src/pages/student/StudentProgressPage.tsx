@@ -55,6 +55,10 @@ export function StudentProgressPage() {
     mutationFn: () => logbookApi.submitReport(formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myLogbooks'] });
+      queryClient.invalidateQueries({ queryKey: ['approvedHours'] });
+      queryClient.invalidateQueries({ queryKey: ['mentorLogbookQueue'] });
+      queryClient.invalidateQueries({ queryKey: ['mentorDashboardQueue'] });
+      queryClient.invalidateQueries({ queryKey: ['mentorAnalytics'] });
 
       // Realtime Event Dispatch
       sendFirebaseNotification({

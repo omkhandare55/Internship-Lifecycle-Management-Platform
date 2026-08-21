@@ -47,6 +47,11 @@ export function StudentOffersPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myOffers'] });
+      queryClient.invalidateQueries({ queryKey: ['myApplications'] });
+      queryClient.invalidateQueries({ queryKey: ['studentProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['myCertificates'] });
+      queryClient.invalidateQueries({ queryKey: ['tnpNocQueue'] });
+      queryClient.invalidateQueries({ queryKey: ['nocQueue'] });
 
       // Realtime Event Dispatch
       sendFirebaseNotification({

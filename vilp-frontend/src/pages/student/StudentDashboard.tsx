@@ -31,12 +31,12 @@ export function StudentDashboard() {
   });
 
   const { data: appsData } = useQuery({
-    queryKey: ['studentApplications'],
+    queryKey: ['myApplications'],
     queryFn: () => applicationApi.myApplications(),
   });
 
   const { data: offersData } = useQuery({
-    queryKey: ['studentOffers'],
+    queryKey: ['myOffers'],
     queryFn: () => offerApi.getMyOffers(),
   });
 

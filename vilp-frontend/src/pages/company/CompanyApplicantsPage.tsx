@@ -45,7 +45,10 @@ export function CompanyApplicantsPage() {
     mutationFn: ({ appId, status, reason }: { appId: string; status: string; reason?: string }) =>
       applicationApi.updateStatus(appId, status, reason),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['applicants', activeInternshipId] });
+      queryClient.invalidateQueries({ queryKey: ['applicants'] });
+      queryClient.invalidateQueries({ queryKey: ['companyApplicants'] });
+      queryClient.invalidateQueries({ queryKey: ['myApplications'] });
+      queryClient.invalidateQueries({ queryKey: ['myOffers'] });
       setSelectedApp(null);
       setRejectionReason('');
       setMsg({ type: 'success', text: 'Application status updated successfully!' });
@@ -56,7 +59,10 @@ export function CompanyApplicantsPage() {
   const createOfferMutation = useMutation({
     mutationFn: (input: CreateOfferInput) => offerApi.createOffer(input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['applicants', activeInternshipId] });
+      queryClient.invalidateQueries({ queryKey: ['applicants'] });
+      queryClient.invalidateQueries({ queryKey: ['companyApplicants'] });
+      queryClient.invalidateQueries({ queryKey: ['myOffers'] });
+      queryClient.invalidateQueries({ queryKey: ['myApplications'] });
       
       // Realtime Event Dispatch to Student
       sendFirebaseNotification({

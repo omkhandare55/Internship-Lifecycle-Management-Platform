@@ -36,6 +36,10 @@ export function MentorLogbookReviewPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mentorLogbookQueue'] });
+      queryClient.invalidateQueries({ queryKey: ['mentorDashboardQueue'] });
+      queryClient.invalidateQueries({ queryKey: ['mentorAnalytics'] });
+      queryClient.invalidateQueries({ queryKey: ['myLogbooks'] });
+      queryClient.invalidateQueries({ queryKey: ['approvedHours'] });
 
       // Realtime Event Dispatch to Student
       sendFirebaseNotification({

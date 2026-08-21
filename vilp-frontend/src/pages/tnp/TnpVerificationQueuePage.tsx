@@ -42,6 +42,11 @@ export function TnpVerificationQueuePage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['verificationQueue'] });
+      queryClient.invalidateQueries({ queryKey: ['studentProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['companyProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['tnpStudents'] });
+      queryClient.invalidateQueries({ queryKey: ['tnpCompanies'] });
+      queryClient.invalidateQueries({ queryKey: ['allStudents'] });
       setSelectedItem(null);
       setNotes('');
       setRejectionReason('');

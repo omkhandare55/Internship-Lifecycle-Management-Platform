@@ -64,6 +64,10 @@ export function StudentInternshipsPage() {
     mutationFn: (internshipId: string) => applicationApi.apply(internshipId, coverLetter),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myApplications'] });
+      queryClient.invalidateQueries({ queryKey: ['openInternships'] });
+      queryClient.invalidateQueries({ queryKey: ['companyApplicants'] });
+      queryClient.invalidateQueries({ queryKey: ['applicants'] });
+      queryClient.invalidateQueries({ queryKey: ['myInternships'] });
       setSelectedInternship(null);
       setCoverLetter('');
       setActionMsg({
