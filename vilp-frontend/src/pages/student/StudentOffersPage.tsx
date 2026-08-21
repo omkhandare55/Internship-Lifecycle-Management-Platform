@@ -75,6 +75,13 @@ export function StudentOffersPage() {
       });
       setTimeout(() => setMsg(null), 4000);
     },
+    onError: (err: any) => {
+      setMsg({
+        type: 'error',
+        text: err?.response?.data?.error?.message || err?.message || 'Failed to submit response to offer',
+      });
+      setTimeout(() => setMsg(null), 5000);
+    },
   });
 
   return (
