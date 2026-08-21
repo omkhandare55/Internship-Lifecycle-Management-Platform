@@ -80,7 +80,12 @@ public class AuthService {
         }
 
         Role role = roleRepository.findByName(request.getRole())
-                .orElseThrow(() -> new AuthException("INVALID_ROLE", "Invalid role specified"));
+                .orElseGet(() -> roleRepository.save(
+                        Role.builder()
+                                .name(request.getRole())
+                                .description(request.getRole().name() + " institutional role")
+                                .build()
+                ));
 
         String verificationToken = UUID.randomUUID().toString();
 
@@ -92,9 +97,41 @@ public class AuthService {
                 .emailVerified(true)
                 .verificationToken(verificationToken)
                 .verificationTokenExpiry(OffsetDateTime.now().plusHours(24))
+                .createdAt(OffsetDateTime.now())
+                .updatedAt(OffsetDateTime.now())
                 .build();
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        // Auto-provision initial profile entity
+        try {
+            if (request.getRole() == UserRole.STUDENT && !studentRepository.existsByUserId(savedUser.getId())) {
+                String studentNumber = "REG-" + System.currentTimeMillis();
+                Student newStudent = Student.builder()
+                        .user(savedUser)
+                        .studentNumber(studentNumber)
+                        .fullName(savedUser.getEmail().split("@")[0])
+                        .verificationStatus("REGISTERED")
+                        .profileCompletion(30)
+                        .backlogs(0)
+                        .createdAt(OffsetDateTime.now())
+                        .updatedAt(OffsetDateTime.now())
+                        .build();
+                studentRepository.save(newStudent);
+            } else if (request.getRole() == UserRole.COMPANY && !companyRepository.existsByUserId(savedUser.getId())) {
+                Company newCompany = Company.builder()
+                        .user(savedUser)
+                        .name(savedUser.getEmail().split("@")[0] + " Organization")
+                        .contactEmail(savedUser.getEmail())
+                        .verificationStatus("VERIFIED")
+                        .createdAt(OffsetDateTime.now())
+                        .updatedAt(OffsetDateTime.now())
+                        .build();
+                companyRepository.save(newCompany);
+            }
+        } catch (Exception e) {
+            log.warn("Profile provisioning note (non-fatal): {}", e.getMessage());
+        }
 
         // Send verification email (non-blocking — failure logged, not thrown)
         sendVerificationEmail(user.getEmail(), verificationToken);
