@@ -7,13 +7,21 @@ import {
   Loader2,
   ShieldCheck,
   Target,
+  UploadCloud,
+  FileText,
+  Check,
+  Zap,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { aiApi } from '@/services/vilpApi';
+import { aiApi, studentApi } from '@/services/vilpApi';
 import { EligibilityModal } from '@/components/EligibilityModal';
+import { parseResumeWithAi, type ParsedResumeProfile } from '@/features/onboarding/services/aiResumeParserService';
 
 export function StudentAiAdvisorPage() {
   const [selectedInternship, setSelectedInternship] = useState<{ id: string; title: string } | null>(null);
+  const [analyzedResume, setAnalyzedResume] = useState<ParsedResumeProfile | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
   const { data: recommendationsData, isLoading: loadingRecs } = useQuery({
     queryKey: ['aiRecommendations'],
@@ -26,14 +34,74 @@ export function StudentAiAdvisorPage() {
   });
 
   const recommendations = recommendationsData?.data || [];
-  const score = resumeScoreData?.data || {
-    overallScore: 91,
-    technicalFitScore: 95,
-    formattingScore: 90,
-    completenessScore: 95,
-    strengths: ['High academic distinction (CGPA 8.85)', 'Clean record with 0 backlogs', '5 certified skills (Java, Spring Boot, React, Postgres)'],
-    improvementAreas: ['Add repository links demonstrating microservices & containerization (Docker/K8s)'],
-    recommendedKeywords: ['Spring Boot', 'PostgreSQL', 'Docker', 'REST API', 'Microservices', 'TypeScript', 'Redis'],
+  const serverScore = resumeScoreData?.data;
+
+  // Combine live analyzed resume with backend score
+  const score = analyzedResume
+    ? {
+        overallScore: analyzedResume.atsScore,
+        technicalFitScore: Math.min(analyzedResume.skills.value.length * 10, 100),
+        formattingScore: 92,
+        completenessScore: Math.min(Math.round((analyzedResume.wordCount / 200) * 100), 100),
+        strengths: [
+          `Identified candidate identity: ${analyzedResume.fullName.value}`,
+          `Extracted ${analyzedResume.skills.value.length} core technical competencies`,
+          `Verified academic standing: CGPA ${analyzedResume.cgpa.value.toFixed(2)} (${analyzedResume.branch.value})`,
+        ],
+        improvementAreas: [
+          'Add targeted cloud infrastructure keywords (AWS/GCP/Docker) for shortlist acceleration',
+          'Include live project repository and portfolio demo URLs',
+        ],
+        recommendedKeywords: analyzedResume.skills.value,
+      }
+    : serverScore || {
+        overallScore: 78,
+        technicalFitScore: 80,
+        formattingScore: 88,
+        completenessScore: 75,
+        strengths: [
+          'Registered profile in good academic standing',
+          'Verified contact details on ledger',
+        ],
+        improvementAreas: [
+          'Upload your resume below to calculate personalized ATS and recruiter match metrics',
+          'Add accredited skill tokens from the catalog',
+        ],
+        recommendedKeywords: ['Java', 'Spring Boot', 'React', 'PostgreSQL', 'Docker', 'REST API', 'Git'],
+      };
+
+  const handleResumeDrop = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const file = files[0];
+
+    setIsAnalyzing(true);
+    setSyncStatus(null);
+    try {
+      const parsed = await parseResumeWithAi(file);
+      setAnalyzedResume(parsed);
+    } catch (err: any) {
+      console.error('Resume parsing failed:', err);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleSyncSkills = async () => {
+    if (!analyzedResume) return;
+    setSyncStatus('syncing');
+    try {
+      // Sync portfolio / about if present
+      await studentApi.updateProfile({
+        linkedinUrl: analyzedResume.linkedinUrl.value || undefined,
+        portfolioUrl: analyzedResume.portfolioUrl.value || undefined,
+        about: `Candidate in ${analyzedResume.branch.value} with focus on ${analyzedResume.skills.value.slice(0, 4).join(', ')}.`,
+      } as any);
+      setSyncStatus('synced');
+      setTimeout(() => setSyncStatus(null), 3000);
+    } catch (err) {
+      setSyncStatus('error');
+    }
   };
 
   return (
@@ -42,14 +110,100 @@ export function StudentAiAdvisorPage() {
       <div className="bg-[#FEF8E7] border border-[#E0D3E8] p-6 sm:p-8 space-y-3">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-white text-xs text-[#723ECF] border border-[#E0D3E8] font-bold">
           <Sparkles className="w-3.5 h-3.5 text-[#ED4B86]" />
-          <span>SMART CAREER RADAR // BATCH 2026 SPECIFICATION</span>
+          <span>SMART CAREER RADAR // AI RESUME ANALYZER</span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-black uppercase text-[#171024] font-sans tracking-tight">
-          Smart Career Intelligence &amp; Skill Gap Radar
+          Smart Career Intelligence &amp; Resume Diagnostic Radar
         </h1>
         <p className="text-xs text-zinc-600 font-mono max-w-3xl">
-          Automated profile strength scoring, deterministic keyword extraction, and personalized opportunity matching based on AICTE placement cutoffs.
+          Real-time ATS parsing, semantic entity extraction, and personalized opportunity matching based on AICTE placement benchmarks.
         </p>
+      </div>
+
+      {/* ── Interactive Resume Upload & Live AI Scanner Card ─────────────────── */}
+      <div className="border border-[#CBD5E1] bg-white p-6 sm:p-8 rounded-xs shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#E2E8F0]">
+          <div className="space-y-1">
+            <h2 className="text-base sm:text-lg font-black uppercase text-[#0A2540] font-sans m-0 flex items-center gap-2">
+              <UploadCloud className="w-5 h-5 text-[#2563EB]" /> Live Resume ATS Scanner
+            </h2>
+            <p className="text-xs text-slate-500 m-0">
+              Upload your latest Resume (PDF, DOCX, or Text) for automated entity extraction and keyword scoring.
+            </p>
+          </div>
+
+          <label className="btn-primary text-xs px-4 py-2.5 cursor-pointer flex items-center gap-2 shrink-0">
+            {isAnalyzing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Analyzing Document...
+              </>
+            ) : (
+              <>
+                <FileText className="w-4 h-4" /> Select Resume File
+              </>
+            )}
+            <input
+              type="file"
+              accept=".pdf,.docx,.txt"
+              disabled={isAnalyzing}
+              onChange={handleResumeDrop}
+              className="hidden"
+            />
+          </label>
+        </div>
+
+        {analyzedResume && (
+          <div className="p-4 bg-[#F8FAFC] border border-[#CBD5E1] rounded-xs space-y-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                <span className="text-xs font-bold text-[#0A2540]">
+                  Analyzed: <strong className="font-mono">{analyzedResume.fullName.value}</strong> ({analyzedResume.branch.value})
+                </span>
+              </div>
+              <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-xs">
+                ATS Readiness: {analyzedResume.atsScore}%
+              </span>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {analyzedResume.skills.value.map((skill, i) => (
+                <span
+                  key={i}
+                  className="px-2 py-0.5 bg-white border border-[#CBD5E1] text-[#2563EB] text-[10px] font-bold"
+                >
+                  ✓ {skill}
+                </span>
+              ))}
+            </div>
+
+            <div className="pt-2 flex items-center justify-between">
+              <span className="text-[11px] text-slate-500 font-mono">
+                Extracted from document ({analyzedResume.wordCount} words detected)
+              </span>
+              <button
+                type="button"
+                onClick={handleSyncSkills}
+                disabled={syncStatus === 'syncing'}
+                className="text-xs font-bold text-[#2563EB] hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                {syncStatus === 'syncing' ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Syncing...
+                  </>
+                ) : syncStatus === 'synced' ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-600" /> Synced to Profile!
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-3.5 h-3.5 text-amber-500" /> Sync Extracted Data to Profile
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Top Diagnostics Ledger Grid (3 Columns) ────────────────────────── */}
@@ -61,7 +215,7 @@ export function StudentAiAdvisorPage() {
               <span className="text-[10px] text-[#ED4B86] font-bold uppercase tracking-wider">
                 OVERALL RESUME HEALTH
               </span>
-              <span className="text-xs font-mono font-bold text-emerald-400">● TIER-1 READY</span>
+              <span className="text-xs font-mono font-bold text-emerald-400">● {score.overallScore >= 80 ? 'TIER-1 READY' : 'OPTIMIZING'}</span>
             </div>
 
             <div className="flex items-baseline gap-3">
@@ -71,7 +225,7 @@ export function StudentAiAdvisorPage() {
 
             <p className="text-xs text-zinc-400 leading-relaxed font-mono">
               {score.overallScore >= 80
-                ? 'Candidate profile satisfies 94% of accredited Tier-1 recruiter academic & skill cutoffs.'
+                ? 'Candidate profile satisfies accredited Tier-1 recruiter academic & skill cutoffs.'
                 : 'Follow the targeted suggestions below to unlock automated shortlist acceleration.'}
             </p>
           </div>
@@ -144,8 +298,10 @@ export function StudentAiAdvisorPage() {
       <div className="border border-[#E0D3E8] bg-white p-6 sm:p-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E0D3E8] pb-4">
           <div>
-            <h3 className="text-xl font-mono text-neon-green mb-8 flex items-center tracking-widest"><span className="w-2 h-2 bg-neon-green rounded-full mr-3 shadow-glow-green"></span>RECOMMENDED BY SMART RADAR</h3>
-            <h2 className="text-xl font-black text-[#171024] uppercase font-sans">
+            <h3 className="text-sm font-mono text-[#723ECF] mb-1 flex items-center tracking-widest uppercase">
+              <span className="w-2 h-2 bg-[#723ECF] rounded-full mr-2"></span> RECOMMENDED OPPORTUNITIES
+            </h3>
+            <h2 className="text-xl font-black text-[#171024] uppercase font-sans m-0">
               Matched Opportunities with Deterministic Fit
             </h2>
           </div>
@@ -157,6 +313,10 @@ export function StudentAiAdvisorPage() {
         {loadingRecs ? (
           <div className="py-12 flex justify-center">
             <Loader2 className="w-6 h-6 animate-spin text-[#723ECF]" />
+          </div>
+        ) : recommendations.length === 0 ? (
+          <div className="py-8 text-center text-xs text-slate-500 font-mono">
+            No active open internship postings matched at this moment. Check back soon!
           </div>
         ) : (
           <div className="space-y-4">
