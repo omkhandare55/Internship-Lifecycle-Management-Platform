@@ -9,6 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "node scripts/test-loop.mjs --once",
+    "test:qa": "node scripts/qa-test-suite.mjs",
     "test:loop": "node scripts/test-loop.mjs --loop",
     "test:fast": "node scripts/test-loop.mjs --interval=5 --loop"
   },
