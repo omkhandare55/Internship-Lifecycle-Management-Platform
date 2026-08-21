@@ -51,10 +51,18 @@ public class InputSanitizationAdvice extends RequestBodyAdviceAdapter {
         if (obj == null) return;
 
         Class<?> clazz = obj.getClass();
+        // Skip enums, primitives, arrays, and standard non-DTO types
+        if (clazz.isEnum() || clazz.isPrimitive() || clazz.isArray()) return;
         // Only sanitize objects from our DTO packages
         if (!clazz.getName().startsWith("com.vilp")) return;
 
         for (Field field : getAllFields(clazz)) {
+            // Never touch static or final fields
+            if (java.lang.reflect.Modifier.isStatic(field.getModifiers()) ||
+                java.lang.reflect.Modifier.isFinal(field.getModifiers())) {
+                continue;
+            }
+
             if (!field.canAccess(obj)) {
                 field.setAccessible(true);
             }
@@ -76,14 +84,14 @@ public class InputSanitizationAdvice extends RequestBodyAdviceAdapter {
                         }
                         field.set(obj, sanitized);
                     }
-                } else if (field.getType().getName().startsWith("com.vilp")) {
-                    // Recurse into nested DTOs
+                } else if (field.getType().getName().startsWith("com.vilp") && !field.getType().isEnum()) {
+                    // Recurse into nested non-enum DTOs
                     Object nested = field.get(obj);
                     if (nested != null) {
                         sanitizeObject(nested);
                     }
                 }
-            } catch (IllegalAccessException e) {
+            } catch (Exception e) {
                 log.debug("Could not sanitize field {}.{}: {}", clazz.getSimpleName(),
                         field.getName(), e.getMessage());
             }
