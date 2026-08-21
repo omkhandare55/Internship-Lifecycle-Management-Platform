@@ -9,6 +9,8 @@ import com.vilp.internship.entity.Internship;
 import com.vilp.internship.repository.InternshipRepository;
 import com.vilp.student.entity.Student;
 import com.vilp.student.repository.StudentRepository;
+import com.vilp.user.entity.User;
+import com.vilp.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,12 +34,12 @@ public class ApplicationService {
     private final ApplicationRepository applicationRepository;
     private final StudentRepository studentRepository;
     private final InternshipRepository internshipRepository;
-    private final com.vilp.user.repository.UserRepository userRepository;
+    private final UserRepository userRepository;
 
     /** Student submits application */
     public ApplicationDto.ApplicationResponse apply(UUID userId, ApplicationDto.ApplyRequest req) {
         Student student = studentRepository.findByUserId(userId).orElseGet(() -> {
-            com.vilp.user.entity.User user = userRepository.findById(userId)
+            User user = userRepository.findById(userId)
                     .orElseThrow(() -> new ResourceNotFoundException("User not found"));
             String studentNumber = "REG-" + System.currentTimeMillis();
             Student newStudent = Student.builder()
