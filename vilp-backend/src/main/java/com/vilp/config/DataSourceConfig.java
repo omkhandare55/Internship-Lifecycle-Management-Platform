@@ -14,6 +14,7 @@ import java.net.URI;
 /**
  * Universal Cloud PostgreSQL DataSource Configuration
  * Automatically parses any URL format (Render, Heroku, Supabase, standard JDBC)
+ * and enforces PgBouncer-safe connection parameters.
  */
 @Configuration
 @Slf4j
@@ -65,8 +66,35 @@ public class DataSourceConfig {
                     path = path.substring(1);
                 }
 
-                url = "jdbc:postgresql://" + host + ":" + port + "/" + path;
+                // Preserve original query parameters and append PgBouncer-safe defaults
+                String query = uri.getRawQuery();
+                StringBuilder jdbcUrl = new StringBuilder("jdbc:postgresql://")
+                        .append(host).append(":").append(port).append("/").append(path);
+
+                // Build query parameters — preserve originals, ensure critical ones exist
+                StringBuilder params = new StringBuilder();
+                if (query != null && !query.isBlank()) {
+                    params.append(query);
+                }
+                if (!params.toString().contains("sslmode")) {
+                    if (params.length() > 0) params.append("&");
+                    params.append("sslmode=require");
+                }
+                if (!params.toString().contains("prepareThreshold")) {
+                    if (params.length() > 0) params.append("&");
+                    params.append("prepareThreshold=0");
+                }
+                if (params.length() > 0) {
+                    jdbcUrl.append("?").append(params);
+                }
+
+                url = jdbcUrl.toString();
                 log.info("Auto-formatted cloud PostgreSQL connection URL for host: {}:{}", host, port);
+            } else if (url != null && url.startsWith("jdbc:postgresql://")) {
+                // Standard JDBC URL — ensure prepareThreshold=0 is present
+                if (!url.contains("prepareThreshold")) {
+                    url += (url.contains("?") ? "&" : "?") + "prepareThreshold=0";
+                }
             }
 
             config.setJdbcUrl(url);
@@ -77,11 +105,19 @@ public class DataSourceConfig {
                 config.setPassword(password);
             }
 
-            config.setMaximumPoolSize(10);
-            config.setMinimumIdle(2);
+            // PgBouncer-compatible pool settings (small pool for free-tier Supabase/Render)
+            config.setMaximumPoolSize(3);
+            config.setMinimumIdle(1);
             config.setConnectionTimeout(30000);
-            config.setIdleTimeout(600000);
-            config.setMaxLifetime(1800000);
+            config.setIdleTimeout(30000);
+            config.setMaxLifetime(120000);
+            config.setLeakDetectionThreshold(60000);
+            config.setConnectionTestQuery("SELECT 1");
+
+            // Critical: disable named prepared statements for PgBouncer transaction mode
+            config.addDataSourceProperty("prepareThreshold", "0");
+            config.addDataSourceProperty("preparedStatementCacheQueries", "0");
+            config.addDataSourceProperty("tcpKeepAlive", "true");
 
             return new HikariDataSource(config);
         } catch (Exception e) {
@@ -89,6 +125,9 @@ public class DataSourceConfig {
             config.setJdbcUrl(rawUrl);
             config.setUsername(defaultUsername);
             config.setPassword(defaultPassword);
+            config.setMaximumPoolSize(3);
+            config.addDataSourceProperty("prepareThreshold", "0");
+            config.addDataSourceProperty("preparedStatementCacheQueries", "0");
             return new HikariDataSource(config);
         }
     }
