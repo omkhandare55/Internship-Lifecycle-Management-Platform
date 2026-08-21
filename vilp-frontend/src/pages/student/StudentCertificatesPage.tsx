@@ -15,28 +15,28 @@ export function StudentCertificatesPage() {
     queryFn: certificateApi.getMyCertificates,
   });
 
-  const certificates = certsData?.data || [
-    {
-      id: 'cert-001',
-      studentId: 'stu-001',
-      studentName: MOCK_STUDENT_PROFILE.fullName || 'Verified Candidate',
-      studentNumber: MOCK_STUDENT_PROFILE.studentNumber || 'REG-2026-001',
-      departmentName: 'Computer Science & Engineering',
-      internshipId: 'int-001',
-      internshipTitle: 'Cloud Engineering & Microservices Intern',
-      companyId: 'comp-001',
-      companyName: 'Google Cloud India',
-      certificateNumber: 'VILP-2026-CSE-8841',
-      issueDate: '2026-02-18',
-      grade: 'O (Outstanding)',
-      totalHoursCompleted: 240,
-      status: 'ISSUED',
-      verificationHash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-      createdAt: '2026-02-18T10:00:00Z',
-    },
-  ];
+  const fallbackCert = {
+    id: 'cert-001',
+    studentId: 'stu-001',
+    studentName: MOCK_STUDENT_PROFILE.fullName || 'Verified Candidate',
+    studentNumber: MOCK_STUDENT_PROFILE.studentNumber || 'REG-2026-001',
+    departmentName: 'Computer Science & Engineering',
+    internshipId: 'int-001',
+    internshipTitle: 'Cloud Engineering & Microservices Intern',
+    companyId: 'comp-001',
+    companyName: 'Google Cloud India',
+    certificateNumber: 'VILP-2026-CSE-8841',
+    issueDate: '2026-02-18',
+    grade: 'O (Outstanding)',
+    totalHoursCompleted: 240,
+    status: 'ISSUED',
+    verificationHash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+    createdAt: '2026-02-18T10:00:00Z',
+  };
 
-  const cert = certificates[0];
+  const rawCerts = certsData?.data;
+  const certificates = Array.isArray(rawCerts) && rawCerts.length > 0 ? rawCerts : [fallbackCert];
+  const cert = certificates[0] || fallbackCert;
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-12 animate-fade-in font-mono text-[#171024]">
@@ -68,7 +68,7 @@ export function StudentCertificatesPage() {
                 AICTE / UGC ACCREDITED PROTOCOL
               </div>
               <div className="absolute top-4 right-4 text-[9px] text-[#723ECF] font-mono font-bold">
-                REF: {cert.certificateNumber}
+                REF: {cert?.certificateNumber || 'VILP-2026-CSE-8841'}
               </div>
 
               {/* Certificate Masthead */}
@@ -88,22 +88,22 @@ export function StudentCertificatesPage() {
               <div className="space-y-6 text-xs sm:text-sm text-zinc-800 leading-relaxed text-center max-w-xl mx-auto font-mono">
                 <p className="text-xs text-zinc-500 uppercase">THIS IS TO OFFICIALLY CERTIFY THAT</p>
                 <p className="text-2xl font-black text-[#171024] font-sans uppercase underline decoration-[#723ECF] decoration-2 underline-offset-4">
-                  {cert.studentName}
+                  {cert?.studentName || 'Verified Candidate'}
                 </p>
                 <p className="text-xs text-zinc-600">
-                  Candidate Number: <strong>{cert.studentNumber}</strong> · Department of <strong>{cert.departmentName || 'Computer Science & Engineering'}</strong>
+                  Candidate Number: <strong>{cert?.studentNumber || 'REG-2026-001'}</strong> · Department of <strong>{cert?.departmentName || 'Computer Science & Engineering'}</strong>
                 </p>
                 <p>
-                  has successfully satisfied all rigorous technical requirements and completed <strong>{cert.totalHoursCompleted} Approved Engineering Hours</strong> of verified corporate internship as
+                  has successfully satisfied all rigorous technical requirements and completed <strong>{cert?.totalHoursCompleted || 240} Approved Engineering Hours</strong> of verified corporate internship as
                 </p>
                 <p className="text-base font-black text-[#171024] font-sans uppercase">
-                  {cert.internshipTitle}
+                  {cert?.internshipTitle || 'Cloud Engineering & Microservices Intern'}
                 </p>
                 <p className="text-xs text-zinc-600">
-                  at <strong>{cert.companyName}</strong>, achieving the final academic grade evaluation of
+                  at <strong>{cert?.companyName || 'Google Cloud India'}</strong>, achieving the final academic grade evaluation of
                 </p>
                 <span className="inline-block px-4 py-1.5 bg-[#FEF8E7] text-[#723ECF] border border-[#723ECF] font-black text-sm uppercase">
-                  GRADE: {cert.grade}
+                  GRADE: {cert?.grade || 'O (Outstanding)'}
                 </span>
               </div>
 
@@ -117,7 +117,7 @@ export function StudentCertificatesPage() {
 
                 <div className="flex flex-col items-center justify-center text-center">
                   <a
-                    href={`/verify/certificate/${cert.certificateNumber}`}
+                    href={`/verify/certificate/${cert?.certificateNumber || 'VILP-2026-CSE-8841'}`}
                     target="_blank"
                     rel="noreferrer"
                     className="w-18 h-18 border border-[#E0D3E8] bg-[#FEF8E7] p-1 flex items-center justify-center cursor-pointer group hover:scale-105 transition-transform shadow-xs"
@@ -126,8 +126,8 @@ export function StudentCertificatesPage() {
                     <img
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
                         typeof window !== 'undefined'
-                          ? `${window.location.origin}/verify/certificate/${cert.certificateNumber}`
-                          : `https://internship-lifecycle-management-pla.vercel.app/verify/certificate/${cert.certificateNumber}`
+                          ? `${window.location.origin}/verify/certificate/${cert?.certificateNumber || 'VILP-2026-CSE-8841'}`
+                          : `https://internship-lifecycle-management-pla.vercel.app/verify/certificate/${cert?.certificateNumber || 'VILP-2026-CSE-8841'}`
                       )}&bgcolor=FEF8E7&color=171024`}
                       alt="Verification QR Code"
                       className="w-full h-full object-contain"
@@ -145,7 +145,7 @@ export function StudentCertificatesPage() {
 
               {/* Cryptographic SHA-256 Footer */}
               <div className="border-t border-[#E0D3E8] pt-4 text-[10px] text-zinc-500 flex flex-col sm:flex-row justify-between items-center gap-2 font-mono">
-                <span className="truncate max-w-md">HASH: {cert.verificationHash}</span>
+                <span className="truncate max-w-md">HASH: {cert?.verificationHash || 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}</span>
                 <span className="text-emerald-700 font-bold flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3" /> 100% AUTHENTIC
                 </span>
@@ -161,7 +161,7 @@ export function StudentCertificatesPage() {
                 <Printer className="w-3.5 h-3.5" /> PRINT HARDCOPY
               </button>
               <a
-                href={`/verify/certificate/${cert.certificateNumber}`}
+                href={`/verify/certificate/${cert?.certificateNumber || 'VILP-2026-CSE-8841'}`}
                 target="_blank"
                 rel="noreferrer"
                 className="btn-primary text-xs flex items-center gap-2"
@@ -178,11 +178,11 @@ export function StudentCertificatesPage() {
               <div className="border border-[#E0D3E8] divide-y divide-[#E0D3E8] text-xs">
                 <div className="p-3 flex justify-between">
                   <span className="text-zinc-500">Certificate No:</span>
-                  <span className="font-bold text-[#723ECF]">{cert.certificateNumber}</span>
+                  <span className="font-bold text-[#723ECF]">{cert?.certificateNumber || 'VILP-2026-CSE-8841'}</span>
                 </div>
                 <div className="p-3 flex justify-between">
                   <span className="text-zinc-500">Issue Date:</span>
-                  <span className="font-bold text-[#171024]">{cert.issueDate}</span>
+                  <span className="font-bold text-[#171024]">{cert?.issueDate || '2026-02-18'}</span>
                 </div>
                 <div className="p-3 flex justify-between">
                   <span className="text-zinc-500">Degree Credits:</span>
