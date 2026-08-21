@@ -55,26 +55,27 @@ public class WeeklyReportService {
                     return studentRepository.save(s);
                 });
 
-        Internship internship = null;
+        Internship foundInternship = null;
         if (req.getInternshipId() != null) {
-            internship = internshipRepository.findById(req.getInternshipId()).orElse(null);
+            foundInternship = internshipRepository.findById(req.getInternshipId()).orElse(null);
         }
-        if (internship == null) {
-            internship = internshipRepository.findAll().stream().findFirst().orElse(null);
+        if (foundInternship == null) {
+            foundInternship = internshipRepository.findAll().stream().findFirst().orElse(null);
         }
 
-        if (internship == null) {
+        if (foundInternship == null) {
             throw new ResourceNotFoundException("No active internship found for logbook submission");
         }
 
+        final Internship targetInternship = foundInternship;
         int weekNumber = (req.getWeekNumber() != null && req.getWeekNumber() > 0) ? req.getWeekNumber() : 1;
 
         // Upsert if revisions requested, otherwise create
         WeeklyReport report = weeklyReportRepository
-                .findByStudentIdAndInternshipIdAndWeekNumber(student.getId(), internship.getId(), weekNumber)
+                .findByStudentIdAndInternshipIdAndWeekNumber(student.getId(), targetInternship.getId(), weekNumber)
                 .orElseGet(() -> WeeklyReport.builder()
                         .student(student)
-                        .internship(internship)
+                        .internship(targetInternship)
                         .weekNumber(weekNumber)
                         .createdAt(OffsetDateTime.now())
                         .build());
@@ -89,7 +90,7 @@ public class WeeklyReportService {
         report.setStatus("SUBMITTED");
 
         weeklyReportRepository.save(report);
-        log.info("Weekly logbook #{} submitted by student {} for internship {}", weekNumber, student.getId(), internship.getId());
+        log.info("Weekly logbook #{} submitted by student {} for internship {}", weekNumber, student.getId(), targetInternship.getId());
         return WeeklyReportDto.toResponse(report);
     }
 
@@ -108,16 +109,21 @@ public class WeeklyReportService {
 
         weeklyReportRepository.save(report);
 
-        tryNotify(() -> notificationService.createNotification(
-            NotificationDto.CreateNotificationRequest.builder()
-                .userId(report.getStudent().getUser().getId())
-                .title("Week " + report.getWeekNumber() + " Logbook Reviewed")
-                .message("Your week " + report.getWeekNumber() + " logbook was " +
-                         report.getStatus().toLowerCase() + "." +
-                         (req.getFeedback() != null && !req.getFeedback().isBlank() ? " Feedback: " + req.getFeedback() : ""))
-                .type("APPROVED".equals(report.getStatus()) ? "SUCCESS" : "ACTION_REQUIRED")
-                .targetUrl("/student/progress")
-                .build()));
+        final WeeklyReport currentReport = report;
+        tryNotify(() -> {
+            if (currentReport.getStudent() != null && currentReport.getStudent().getUser() != null) {
+                notificationService.createNotification(
+                    NotificationDto.CreateNotificationRequest.builder()
+                        .userId(currentReport.getStudent().getUser().getId())
+                        .title("Week " + currentReport.getWeekNumber() + " Logbook Reviewed")
+                        .message("Your week " + currentReport.getWeekNumber() + " logbook was " +
+                                 currentReport.getStatus().toLowerCase() + "." +
+                                 (req.getFeedback() != null && !req.getFeedback().isBlank() ? " Feedback: " + req.getFeedback() : ""))
+                        .type("APPROVED".equals(currentReport.getStatus()) ? "SUCCESS" : "ACTION_REQUIRED")
+                        .targetUrl("/student/progress")
+                        .build());
+            }
+        });
 
         log.info("Weekly report {} reviewed as {} with rating {} by reviewer {}", reportId, req.getStatus(), req.getRating(), reviewerUserId);
         return WeeklyReportDto.toResponse(report);
